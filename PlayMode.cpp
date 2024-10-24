@@ -42,6 +42,9 @@ static uint32_t activeIndex = 0;
 static uint32_t lastIndex = 0;
 static int choices = 0;
 static std::vector<std::string> links;
+static bool editMode = false;
+static std::string editStr = "";
+static uint32_t cursor_pos = 0;
 
 GLuint hexapod_meshes_for_lit_color_texture_program = 0;
 Load< MeshBuffer > hexapod_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -459,7 +462,7 @@ PlayMode::~PlayMode() {
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 
-	if (evt.type == SDL_KEYDOWN) {
+	if (evt.type == SDL_KEYDOWN && !editMode) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
 				SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -484,8 +487,161 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.downs += 1;
 			down.pressed = true;
 			return true;
+		}else if (evt.key.keysym.sym == SDLK_RETURN) {
+			//enter.pressed = false;
+			editMode = !editMode;
 		}
-	} else if (evt.type == SDL_KEYUP) {
+	} else if (evt.type == SDL_KEYDOWN) {
+		if (evt.key.keysym.sym == SDLK_RETURN) {
+			//enter.pressed = false;
+			editMode = !editMode;
+		} else if (evt.key.keysym.sym == SDLK_LEFT) {
+			if(cursor_pos != 0){
+				cursor_pos -= 1;
+			}
+		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
+			if(cursor_pos != editStr.length()){
+				cursor_pos += 1;
+			}
+		}
+		//else if (keysym.unicode ) { // Maybe maintain and check a list of acceptable keys
+		else {
+			std::string in = "";
+			bool success = false;
+			switch (evt.key.keysym.sym) {
+				case SDLK_a:
+					in = "A";
+					success = true;
+					break;
+				case SDLK_b:
+					in = "B";
+					success = true;
+					break;
+				case SDLK_c:
+					in = "C";
+					success = true;
+					break;
+				case SDLK_d:
+					in = "D";
+					success = true;
+					break;
+				case SDLK_e:
+					in = "E";
+					success = true;
+					break;
+				case SDLK_f:
+					in = "F";
+					success = true;
+					break;
+				case SDLK_g:
+					in = "G";
+					success = true;
+					break;
+				case SDLK_h:
+					in = "H";
+					success = true;
+					break;
+				case SDLK_i:
+					in = "I";
+					success = true;
+					break;
+				case SDLK_j:
+					in = "J";
+					success = true;
+					break;
+				case SDLK_k:
+					in = "K";
+					success = true;
+					break;
+				case SDLK_l:
+					in = "L";
+					success = true;
+					break;
+				case SDLK_m:
+					in = "M";
+					success = true;
+					break;
+				case SDLK_n:
+					in = "N";
+					success = true;
+					break;
+				case SDLK_o:
+					in = "O";
+					success = true;
+					break;
+				case SDLK_p:
+					in = "P";
+					success = true;
+					break;
+				case SDLK_q:
+					in = "Q";
+					success = true;
+					break;
+				case SDLK_r:
+					in = "R";
+					success = true;
+					break;
+				case SDLK_s:
+					in = "S";
+					success = true;
+					break;
+				case SDLK_t:
+					in = "T";
+					success = true;
+					break;
+				case SDLK_u:
+					in = "U";
+					success = true;
+					break;
+				case SDLK_v:
+					in = "V";
+					success = true;
+					break;
+				case SDLK_w:
+					in = "W";
+					success = true;
+					break;
+				case SDLK_x:
+					in = "X";
+					success = true;
+					break;
+				case SDLK_y:
+					in = "Y";
+					success = true;
+					break;
+				case SDLK_z:
+					in = "Z";
+					success = true;
+					break;
+				case SDLK_COMMA:
+					in = ",";
+					success = true;
+					break;
+				case SDLK_SPACE:
+					in = " ";
+					success = true;
+					break;
+				case SDLK_PERIOD:
+					in = ".";
+					success = true;
+					break;
+				default:
+					break;
+			}
+			if (success) {
+				editStr.insert(cursor_pos, in);
+				cursor_pos += 1;
+			}
+			if (evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
+				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
+				cursor_pos -= 1;
+			}
+		}
+		clear_png(&text_render[0][0], window_height/3, window_width);
+		render_text(editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+		update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;
+	} else if (evt.type == SDL_KEYUP && !editMode) {
 		
 		if (evt.key.keysym.sym == SDLK_a) {
 			left.pressed = false;
@@ -501,7 +657,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
-			std::cout << std::to_string(choices) << std::endl;
+			// std::cout << std::to_string(choices) << std::endl;
 			if (choices > 0){
 				//std::cout << links[0] << std::endl;
 				//std::cout << links[1] << std::endl;
