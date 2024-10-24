@@ -636,7 +636,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
 				cursor_pos -= 1;
 			}
-		}
+		} 
 		clear_png(&text_render[0][0], window_height/3, window_width);
 		render_text(editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
 		update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
