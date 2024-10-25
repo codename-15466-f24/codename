@@ -36,7 +36,9 @@ static constexpr std::string textbg_path = "textbg.png";
 static std::string font_path = "SpaceGrotesk-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
-static glm::u8vec4 text_render[window_height/3][window_width];
+static constexpr uint32_t render_height = window_height/3;
+static constexpr uint32_t render_width = window_width;
+static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 static uint32_t activeIndex = 0;
 static uint32_t lastIndex = 0;
@@ -104,7 +106,7 @@ void draw_png(FT_Bitmap *bitmap, glm::u8vec4 *out, uint32_t x, uint32_t y, uint3
 }
 
 //Nightmare loop, takes text and a color and turns it into a png of text in that color.
-void render_text(std::string line_in, glm::u8vec4 color) {
+void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
 	choices = 0;
 	links; //idk why I did this
 
@@ -303,8 +305,21 @@ void render_text(std::string line_in, glm::u8vec4 color) {
 	//This is a disk-heavy line and not quite necessary.
 	//Originally did this in part for debugging purposes.
 	//TODO: Figure out how to store this in a variable and not on disk, lol.
-	save_png(data_path("out.png"), glm::uvec2(window_width, h), &text_render[0][0], UpperLeftOrigin); //Upper left worked.
+	//save_png(data_path("out.png"), glm::uvec2(window_width, h), &text_render[0][0], UpperLeftOrigin); //Upper left worked.
 	
+	std::vector<glm::u8vec4> data_out;
+
+	//Based on https://cplusplus.com/forum/beginner/190966/
+	for (int row = render_height-1; row > -1; row--)
+	{
+		for (int col = 0; col < render_width; col++)
+		{
+			data_out.push_back(text_render[row][col]);
+		}
+	}
+
+	tex_in->data = data_out;
+	tex_in->size = glm::uvec2(window_width, h);
 
 	hb_buffer_destroy (hb_buffer);
 	hb_font_destroy (hb_font);
@@ -314,19 +329,22 @@ void render_text(std::string line_in, glm::u8vec4 color) {
 }
 
 //x0,x1,y0,y1,z encode the coords for where on the screen the texture is.
-int update_texture(PlayMode::TextureItem *tex_in, std::string path_in, float x0, float x1, float y0, float y1, float z){
+int update_texture(PlayMode::TextureItem *tex_in, float x0, float x1, float y0, float y1, float z){
 	// Code is from Jim via Sasha's notes, cross-referenced against Jim's copied
 	// code in discord where Sasha's notes were missing, with a few changes to make this
 	// work in this context
+
 	glGenTextures(1, &tex_in->tex);
 	{ // upload a texture
 		// note: load_png throws on failure
-		glm::uvec2 size;
-		std::vector<glm::u8vec4> data;
-		load_png(data_path(path_in), &size, &data, LowerLeftOrigin);
+		//glm::uvec2 size;
+		//std::vector<glm::u8vec4> data;
+		if (tex_in->loadme == true){
+			load_png(data_path(tex_in->path), &tex_in->size, &tex_in->data, LowerLeftOrigin);
+		}
 		glBindTexture(GL_TEXTURE_2D, tex_in->tex);
 		// here, "data()" is the member function that gives a pointer to the first element
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_in->size.x, tex_in->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_in->data.data());
 
 		glGenerateMipmap(GL_TEXTURE_2D); // MIPMAP!!!!!! realizing this was missing took a while...
 		// i for integer. wrap mode, minification, magnification
@@ -338,6 +356,7 @@ int update_texture(PlayMode::TextureItem *tex_in, std::string path_in, float x0,
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+	GL_ERRORS();
 	glGenBuffers(1, &tex_in->tristrip);
 	
 	glGenVertexArrays(1, &tex_in->tristrip_for_texture_program);
@@ -354,6 +373,7 @@ int update_texture(PlayMode::TextureItem *tex_in, std::string path_in, float x0,
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
+	GL_ERRORS();
 
 	std::vector< PlayMode::PosTexVertex > verts;
 	
@@ -451,10 +471,12 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 
 	loadScript("start.txt");
 
-	render_text(activeScript[activeIndex], white);
+	render_text(&tex_example, activeScript[activeIndex], white);
 	
-	update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
-	update_texture(&tex_textbg, textbg_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
+	update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+	tex_textbg.path = textbg_path;
+	tex_textbg.loadme = true;
+	update_texture(&tex_textbg, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
 }
 
 PlayMode::~PlayMode() {
@@ -638,8 +660,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 		} 
 		clear_png(&text_render[0][0], window_height/3, window_width);
-		render_text(editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
-		update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		render_text(&tex_example, editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 		std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;
 	} else if (evt.type == SDL_KEYUP && !editMode) {
 		
@@ -669,8 +691,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					links.clear();
 				}
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(activeScript[activeIndex], white);
-				update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+				render_text(&tex_example, activeScript[activeIndex], white);
+				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
@@ -679,8 +701,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				loadScript(links[0]);
 				links.clear();
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(activeScript[activeIndex], white);
-				update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+				render_text(&tex_example, activeScript[activeIndex], white);
+				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
 		} 
@@ -692,8 +714,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else {
 			advance_step(evt.button.x , evt.button.y);
 		}
-		render_text(activeScript[activeIndex], white);
-		update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		render_text(&tex_example, activeScript[activeIndex], white);
+		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(
