@@ -1,0 +1,10 @@
+1 Character player You Human
+2 Text "You are [insert name] and you run the [whatever the name of this shop is]."
+3 Speech player "Sigh... . . ."
+4 Text "This is the third line of text."
+5 Change_File "test.txt"
+6 Choice_Text 2 "Start Game" "Quit" 7 9
+7 Text "Okay hi"
+8 Jump 10
+9 Text "Okay bye"
+10 Text "End"

@@ -11,6 +11,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+#include <fstream>
+#include <sstream>
 
 GLuint hexapod_meshes_for_lit_color_texture_program = 0;
 Load< MeshBuffer > hexapod_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -62,6 +64,129 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
 	leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
+
+	// read from the file
+	display_state.current_lines = lines_from_file(display_state.file);
+	display_state.jumps.push_back(0);
+
+	update_state();
+}
+
+/* This function should refresh the display according to whatever is in the state.
+ * Might be necessary at the very start.
+ * Could also be useful if something goes wrong.
+ */
+void PlayMode::refresh_display() {
+	// draw bottom_text
+	// draw the characters and images displayed
+	// these are all comments because I'm not sure what exactly this should look like yet
+}
+
+// Advance the script by one line.
+void PlayMode::update_one_line(uint32_t jump_index) {
+	std::string line = display_state.current_lines[display_state.jumps[jump_index]];
+	std::vector<std::string> parsed = parse_script_line(line, " ");
+
+	display_state.line_number = atoi(parsed[0].c_str()) - 1; // indexing problem fix
+	std::string keyword = parsed[1];
+	if (keyword == "Character") {
+		if (characters.find(parsed[2]) == characters.end()) {
+			GameCharacter g;
+			g.id = parsed[2];
+			g.name = parsed[3];
+			g.species = parsed[4];
+			characters[parsed[2]] = g;
+		}
+		else {
+			std::cerr << parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Display") {
+		if (characters.find(parsed[2]) != characters.end()) {
+			// loop through existing characters on display, which should be fine since there aren't many
+			for (auto it = display_state.chars.begin(); it != display_state.chars.end(); ++it) {
+				if (it->ref->id == parsed[2]) display_state.chars.erase(it);
+			}
+			DisplayCharacter dc;
+			dc.ref = &characters[parsed[2]];
+			dc.pos = MIDDLE; // TODO: change depending on code
+			display_state.chars.push_back(dc);
+		}
+		else {
+			std::cerr << parsed[0] + ": There was no character with ID " + parsed[2] << std::endl;
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Remove") {
+		if (characters.find(parsed[2]) != characters.end()) {
+			// loop through existing characters on display, which should be fine since there aren't many
+			for (auto it = display_state.chars.begin(); it != display_state.chars.end(); ++it) {
+				if (it->ref->id == parsed[2]) display_state.chars.erase(it);
+			}
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Clear") {
+		display_state.chars.clear();
+		display_state.images.clear();
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Speech") {
+		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
+		else {
+			// TODO: speech bubble stuff; not implemented yet
+			display_state.bottom_text = parsed[3];
+		}
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Text") {
+		display_state.bottom_text = parsed[2];
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Input") {
+		display_state.bottom_text = parsed[2];
+		// something similar but with text input like we discussed
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Image") {
+		// TODO
+		display_state.status = IMAGE;
+	}
+	else if (keyword == "Change_File") {
+		display_state.file = parsed[2];
+		display_state.current_lines = lines_from_file(display_state.file);
+		display_state.bottom_text = "";
+		display_state.line_number = 0;
+		display_state.jumps.clear();
+		display_state.jumps.push_back(0);
+		display_state.status = CHANGING;
+	}
+
+	// jump-modifying keywords
+	if (keyword == "Choice_Text") {
+		uint32_t count = atoi(parsed[2].c_str());
+		count = 0;
+		// TODO
+
+		display_state.status = CHOICE_TEXT;
+	}
+	else if (keyword == "Choice_Image") {
+		// TODO
+		display_state.status = CHOICE_IMAGE;
+	}
+	else if (keyword == "Jump") {
+		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str() - 1)};
+		display_state.status = CHANGING;
+	}
+	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
+}
+
+// This is the main implementation. This should advance the game's script until the player needs to advance the display again.
+// In other words, things like character displays should run automatically.
+void PlayMode::update_state() {
+	update_one_line(0);
+	while (display_state.status == CHANGING) update_one_line(0);
 }
 
 PlayMode::~PlayMode() {
@@ -105,10 +230,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			return true;
-		}
+		// if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
+		// 	SDL_SetRelativeMouseMode(SDL_TRUE);
+		// 	return true;
+		// }
+		update_state();
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(
@@ -217,12 +343,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		));
 
 		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
+		lines.draw_text(display_state.bottom_text,
 			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
+		lines.draw_text(display_state.bottom_text,
 			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
