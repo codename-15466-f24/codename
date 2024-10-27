@@ -30,8 +30,8 @@
 
 // Storing font here, we can also refactor the text storage to load a font path as the first line per script or have a font buffer.
 
-static constexpr std::string tex_path = "out.png";
-static constexpr std::string textbg_path = "textbg.png";
+static std::string tex_path = "out.png";
+static std::string textbg_path = "textbg.png";
 //static constexpr std::string bg_path = "black.png";
 static std::string font_path = "SpaceGrotesk-Regular.ttf";
 static constexpr uint32_t window_height = 720;
@@ -39,7 +39,7 @@ static constexpr uint32_t window_width = 1280;
 static glm::u8vec4 text_render[window_height/3][window_width];
 static std::vector<std::string> activeScript;
 static uint32_t activeIndex = 0;
-static uint32_t lastIndex = 0;
+// static uint32_t lastIndex = 0;
 static int choices = 0;
 static std::vector<std::string> links;
 
@@ -103,7 +103,7 @@ void draw_png(FT_Bitmap *bitmap, glm::u8vec4 *out, uint32_t x, uint32_t y, uint3
 //Nightmare loop, takes text and a color and turns it into a png of text in that color.
 void render_text(std::string line_in, glm::u8vec4 color) {
 	choices = 0;
-	links; //idk why I did this
+	// links; //idk why I did this
 
 	glm::u8vec4 colorOut = color; //Overriding it if it's a choice because I want to :D
 	std::string line = "";
@@ -342,32 +342,32 @@ int update_texture(PlayMode::TextureItem *tex_in, std::string path_in, float x0,
 		glBindVertexArray(tex_in->tristrip_for_texture_program);
 		glBindBuffer(GL_ARRAY_BUFFER, tex_in->tristrip);
 
-		glVertexAttribPointer( texture_program->Position_vec4, 3, GL_FLOAT, GL_FALSE, sizeof(PlayMode::PosTexVertex), (GLbyte *)0 + offsetof(PlayMode::PosTexVertex, Position) );
+		glVertexAttribPointer( texture_program->Position_vec4, 3, GL_FLOAT, GL_FALSE, sizeof(PosTexVertex), (GLbyte *)0 + offsetof(PosTexVertex, Position) );
 		glEnableVertexAttribArray( texture_program->Position_vec4 );
 
-		glVertexAttribPointer( texture_program->TexCoord_vec2, 2, GL_FLOAT, GL_FALSE, sizeof(PlayMode::PosTexVertex), (GLbyte *)0 + offsetof(PlayMode::PosTexVertex, TexCoord) );
+		glVertexAttribPointer( texture_program->TexCoord_vec2, 2, GL_FLOAT, GL_FALSE, sizeof(PosTexVertex), (GLbyte *)0 + offsetof(PosTexVertex, TexCoord) );
 		glEnableVertexAttribArray( texture_program->TexCoord_vec2 );
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
 
-	std::vector< PlayMode::PosTexVertex > verts;
+	std::vector< PosTexVertex > verts;
 	
 	// Define top right quadrant to full texture
-	verts.emplace_back(PlayMode::PosTexVertex{
+	verts.emplace_back(PosTexVertex{
 		.Position = glm::vec3(x0, y0, z),
 		.TexCoord = glm::vec2(0.0f, 0.0f), // extra comma lets you make a 1 line change later
 	});
-	verts.emplace_back(PlayMode::PosTexVertex{
+	verts.emplace_back(PosTexVertex{
 		.Position = glm::vec3(x0, y1, z),
 		.TexCoord = glm::vec2(0.0f, 1.0f),
 	});
-	verts.emplace_back(PlayMode::PosTexVertex{
+	verts.emplace_back(PosTexVertex{
 		.Position = glm::vec3(x1, y0, z),
 		.TexCoord = glm::vec2(1.0f, 0.0f),
 	});
-	verts.emplace_back(PlayMode::PosTexVertex{
+	verts.emplace_back(PosTexVertex{
 		.Position = glm::vec3(x1, y1, z),
 		.TexCoord = glm::vec2(1.0f, 1.0f),
 	});
@@ -422,6 +422,7 @@ void advance_step (uint32_t x, uint32_t y){
 void reverse_step (uint32_t x, uint32_t y){
 	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
 }
+	
 
 PlayMode::PlayMode() : scene(*hexapod_scene) {
 	//get pointers to leg for convenience:
@@ -452,12 +453,25 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	
 	update_texture(&tex_example, tex_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	update_texture(&tex_textbg, textbg_path, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
+
+	textures = initializeTextures(alignments);
+	addTextures(textures, paths, texture_program);
+	std::cout << textures[0]->relativeSizeX << std::endl;
 }
 
 PlayMode::~PlayMode() {
 }
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+
+	// perform the initial scaling of UI textures because we only have the window_size here 
+	if (!hasRescaled)
+	{
+		rescaleTextures(textures, window_size);
+		hasRescaled = true;
+
+	}
+
 
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
@@ -499,6 +513,20 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
 			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_i) {
+
+			// toggle the left (inventory) pane
+			
+			togglePanel(textures, LeftPane);
+			return true;
+
+		} else if (evt.key.keysym.sym == SDLK_c) {
+
+			// toggle the right (codebook) pane
+			togglePanel(textures, RightPane);
+			return true;
+
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
 			std::cout << std::to_string(choices) << std::endl;
@@ -552,6 +580,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		}
 	}
+
 
 	return false;
 }
@@ -607,6 +636,8 @@ void PlayMode::update(float elapsed) {
 		Sound::listener.set_position_right(frame_at, frame_right, 1.0f / 60.0f);
 	}
 
+	updateTextures(textures);
+
 	//reset button press counters:
 	left.downs = 0;
 	right.downs = 0;
@@ -635,7 +666,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	//Code taken from Jim's copied code + Sashas
+	drawTextures(textures, texture_program);
+
+	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing
 	
 		glEnable(GL_BLEND);
