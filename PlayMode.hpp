@@ -142,7 +142,9 @@ struct PlayMode : Mode {
 	struct DisplayState {
 		std::string file = "test.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
-		uint32_t line_number = 0; // note: this is 0-indexed while the script is 1-indexed currently...
+		uint32_t line_number = 1;
+		// Note: line number, jump, etc. are according to the script, so 1-indexed.
+		// Unfortunately, current_lines itself is 0-indexed.
 
 		enum Status status = CHANGING;
 		std::string bottom_text = "";

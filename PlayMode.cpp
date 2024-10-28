@@ -146,9 +146,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	// I removed the choice checking for now. ~Yoseph
 	// I'll change it in a bit, but it doesn't work for the current script purposes right now.
 	
-	if (choices == 1) {
-		line = line_in;
-	} else {
+	line = line_in;
+	if (choices != 1) {
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
@@ -468,7 +467,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
 	// read from the file
 	display_state.current_lines = lines_from_file(display_state.file);
-	display_state.jumps.push_back(0);
+	display_state.jumps.push_back(1);
 
 	update_state(0);
 }
@@ -485,10 +484,11 @@ void PlayMode::refresh_display() {
 
 // Advance the script by one line.
 void PlayMode::update_one_line(uint32_t jump_choice) {
-	std::string line = display_state.current_lines[display_state.jumps[jump_choice]];
+	std::string line = display_state.current_lines[display_state.jumps[jump_choice] - 1];
+	std::cout << line << std::endl;
 	std::vector<std::string> parsed = parse_script_line(line, " ");
 
-	display_state.line_number = atoi(parsed[0].c_str()) - 1; // indexing problem fix
+	display_state.line_number = atoi(parsed[0].c_str());
 	std::string keyword = parsed[1];
 	if (keyword == "Character") {
 		if (characters.find(parsed[2]) == characters.end()) {
@@ -499,7 +499,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 			characters[parsed[2]] = g;
 		}
 		else {
-			std::cerr << parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
+			std::cerr << display_state.file + " " + parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
 		}
 		display_state.status = CHANGING;
 	}
@@ -515,7 +515,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 			display_state.chars.push_back(dc);
 		}
 		else {
-			std::cerr << parsed[0] + ": There was no character with ID " + parsed[2] << std::endl;
+			std::cerr << display_state.file + " " + parsed[0] + ": There was no character with ID " + parsed[2] << std::endl;
 		}
 		display_state.status = CHANGING;
 	}
@@ -581,10 +581,12 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 		display_state.status = CHOICE_IMAGE;
 	}
 	else if (keyword == "Jump") {
-		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str() - 1)};
+		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str())};
 		display_state.status = CHANGING;
 	}
 	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
+
+	display_state.current_choice = 0; // reset choice
 }
 
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
@@ -593,9 +595,16 @@ void PlayMode::update_state(uint32_t jump_choice) {
 	update_one_line(jump_choice);
 	while (display_state.status == CHANGING) update_one_line(0);
   
- 	 // note: should check if this was meant to be in this function later ~Yoseph
-	render_text(&tex_example, display_state.bottom_text, white);
+ 	// Draw different text depending on the status.
+	std::string text_to_draw = "";
+	if (display_state.status == CHOICE_TEXT) {
+		for (std::string s : display_state.jump_names) {
+			text_to_draw += s + '\n';
+		}
+	}
+	else text_to_draw = display_state.bottom_text;
 	
+	render_text(&tex_example, text_to_draw, white);
 	update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
@@ -829,7 +838,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			// std::cout << std::to_string(choices) << std::endl;
 			size_t choices = display_state.jumps.size();
 			if (choices > 0) {
-				if (display_state.current_choice != choices - 1) display_state.current_choice += 1;
+				if (display_state.current_choice < choices - 1) display_state.current_choice++;
 				
 				clear_png(&text_render[0][0], window_height/3, window_width);
 				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
@@ -839,7 +848,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
 			if (display_state.jumps.size() > 0) {
-				if (display_state.current_choice != 0) display_state.current_choice += 1;
+				if (display_state.current_choice > 0) display_state.current_choice--;
 				
 				clear_png(&text_render[0][0], window_height/3, window_width);
 				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
@@ -987,30 +996,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUseProgram(0);
 		glDisable(GL_BLEND);
 	}
-	//Default Line-y text code, if necessary
-	/*
-	{ //use DrawLines to overlay some text:
-		glDisable(GL_DEPTH_TEST);
-		float aspect = float(drawable_size.x) / float(drawable_size.y);
-		DrawLines lines(glm::mat4(
-			1.0f / aspect, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		));
-
-		constexpr float H = 0.09f;
-		lines.draw_text(display_state.bottom_text,
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text(display_state.bottom_text,
-			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
-	}
-	GL_ERRORS();*/
+	GL_ERRORS();
 }
 
 glm::vec3 PlayMode::get_leg_tip_position() {
