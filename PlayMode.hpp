@@ -2,6 +2,7 @@
 
 #include "Scene.hpp"
 #include "Sound.hpp"
+#include "UIHandler.hpp"
 
 #include <glm/glm.hpp>
 
@@ -24,11 +25,7 @@ struct PlayMode : Mode {
 
 	//----- game state -----
 
-	struct PosTexVertex {
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
-	};
-	static_assert( sizeof(PosTexVertex) == 3*4 + 2*4, "PosTexVertex is size 20");
+
 	struct TextureItem{
 	// handles
 		GLuint tex = 0;
@@ -53,6 +50,8 @@ struct PlayMode : Mode {
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 	
+
+	
 	//Color constants because why not
 	glm::u8vec4 white = glm::u8vec4(255,255,255,1);
 	glm::u8vec4 red = glm::u8vec4(255,0,0,1);
@@ -64,6 +63,23 @@ struct PlayMode : Mode {
 	//void update_texture(TextureItem *tex_in, std::string path);
 
 	std::vector<TextureItem> allTextures;
+	
+	
+	std::vector<TexStruct *> textures;
+
+	bool hasRescaled = false;
+
+	// use these to initialize textures
+	// note: the buttons (for toggling the menu on/off) 
+	// have to be first in the vector for the visibility to work properly
+
+	// right is true, left is false
+	std::vector<PanePosition> alignments = {LeftPane, RightPane, 
+											LeftPane, LeftPane, LeftPane, LeftPane,
+											RightPane};
+	std::vector<std::string> paths = {"pressI.png", "pressC.png", 
+									"inventory1.png", "inventory1.png", "inventory1.png", "inventory1.png",
+									"cheatsheet_placeholder.png"};
 
 	//hexapod leg to wobble:
 	Scene::Transform *hip = nullptr;
