@@ -142,6 +142,7 @@ const game_names = [
 
 const common_names = [
 	maek.CPP('data_path.cpp'),
+	maek.CPP('string_parsing.cpp'),
 	maek.CPP('PathFont.cpp'),
 	maek.CPP('PathFont-font.cpp'),
 	maek.CPP('DrawLines.cpp'),

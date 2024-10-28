@@ -22,6 +22,8 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <fstream>
+#include <sstream>
 
 #define FONT_SIZE 36
 #define TOPMARGIN (FONT_SIZE * .5)
@@ -42,7 +44,6 @@ static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 static uint32_t activeIndex = 0;
 // static uint32_t lastIndex = 0;
-static int choices = 0;
 static std::vector<std::string> links;
 static bool editMode = false;
 static std::string editStr = "";
@@ -130,8 +131,8 @@ std::string decode(std::string str_in, char key){
 }
 
 //Nightmare loop, takes text and a color and turns it into a png of text in that color.
-void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
-	choices = 0;
+void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
+	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
 
 	glm::u8vec4 colorOut = color; //Overriding it if it's a choice because I want to :D
@@ -142,45 +143,11 @@ void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4
 	//TODO (Optional): Move newlines here too. Matias/Jim mentioned I should probably handle them before I generate glyphs
 	//but not 100% on how
 	
-	//if line_in's first character is ₽, it's a choice.
-	if (line_in.length() >= 3 && line_in[0] == -30 && line_in[1] == -126 && line_in[2] == -67 ) {
-		choices += 1;
-		bool display_mode = true; //This determines if current block should be rendered
-		std::string link_now = "";
-		int i = 3;
-		while(i < line_in.length()-2){
-			//new link, checking for ₼
-			if (line_in[i] == -30 && line_in[i+1] == -126 && line_in[i+2] == -68){
-				display_mode = false;
-				line = line + "₿";
-				i+=3;
-				continue;
-			}
-			//new choice (text), checking for ₽ again (same as initial if)
-			if (line_in[i] == -30 && line_in[i+1] == -126 && line_in[i+2] == -67){
-				display_mode = true;
-				links.emplace_back(link_now);
-				choices += 1;
-				link_now = "";
-				line = "Up: " + line + "Down: ";
-				i+=3;
-				continue;
-			}
-			// If text, display it, if not, it's a link, so add it to the list of links.
-			if (display_mode){
-				line = line + line_in[i];
-			} else {
-				link_now = link_now + line_in[i];
-			}
-			i++;
-		}
-		if (!display_mode){
-			links.emplace_back(link_now);
-		}
-	}
-	if (choices == 0) {
-		line = line_in;
-	} else {
+	// I removed the choice checking for now. ~Yoseph
+	// I'll change it in a bit, but it doesn't work for the current script purposes right now.
+	
+	line = line_in;
+	if (choices != 1) {
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
@@ -195,20 +162,23 @@ void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4
 
 	// Initialize Freetype basics and check for failure
 	// Load freetype library into ft_library
-	if ((ft_error = FT_Init_FreeType (&ft_library))){ 
+	ft_error = FT_Init_FreeType (&ft_library);
+	if (ft_error) {
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Init Freetype Library failed, aborting..." << std::endl;
 		abort();
 	}
 	// Load font face through path (font_path)
-	if ((ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face))){ // .c_str() converts to char *
+	ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face);
+	if (ft_error) { // .c_str() converts to char *
 		std::cout << "Failed while loading " << data_path(font_path).c_str() << std::endl;
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Init Freetype Face failed, aborting..." << std::endl;
 		abort();
 	}
 	// Define a character size based on constant literals
-	if ((ft_error = FT_Set_Char_Size (ft_face, FONT_SIZE*64, FONT_SIZE*64, 0, 0))){
+	ft_error = FT_Set_Char_Size (ft_face, FONT_SIZE*64, FONT_SIZE*64, 0, 0);
+	if (ft_error){
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Setting character size failed, aborting..." << std::endl;
 		abort();
@@ -447,30 +417,30 @@ int update_texture(PlayMode::TextureItem *tex_in, float x0, float x1, float y0, 
 	return 0;
 }
 
-//Using filestreams - maybe don't use this in final
-void loadScript (std::string path_in){
-	// following partially adopted from example in https://cplusplus.com/doc/tutorial/files/
-	std::string line;
-	std::ifstream thisScript (data_path("script/" + path_in));
-	activeScript.clear();
-	activeIndex = 0;
-	if (thisScript.is_open()) {
-		while ( getline (thisScript,line, '\r') ){
-			activeScript.emplace_back(line);
-		}
-		thisScript.close();
-	}
-	else { //script failed to load
-		std::cout << "not sure how to handle this lol" << std::endl; 
-	}
-}
+// //Using filestreams - maybe don't use this in final
+// void loadScript (std::string path_in){
+// 	// following partially adopted from example in https://cplusplus.com/doc/tutorial/files/
+// 	std::string line;
+// 	std::ifstream thisScript (data_path("script/" + path_in));
+// 	activeScript.clear();
+// 	activeIndex = 0;
+// 	if (thisScript.is_open()) {
+// 		while ( getline (thisScript,line, '\r') ){
+// 			activeScript.emplace_back(line);
+// 		}
+// 		thisScript.close();
+// 	}
+// 	else { //script failed to load
+// 		std::cout << "not sure how to handle this lol" << std::endl; 
+// 	}
+// }
 
-void advance_step (uint32_t x, uint32_t y){
-	if (activeScript[activeIndex] != activeScript.back()) activeIndex += 1;
-}
-void reverse_step (uint32_t x, uint32_t y){
-	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
-}
+// void advance_step (uint32_t x, uint32_t y){
+// 	if (activeScript[activeIndex] != activeScript.back()) activeIndex += 1;
+// }
+// void reverse_step (uint32_t x, uint32_t y){
+// 	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
+// }
 	
 
 PlayMode::PlayMode() : scene(*hexapod_scene) {
@@ -495,16 +465,151 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	//start music loop playing:
 	// (note: position will be over-ridden in update())
 	leg_tip_loop = Sound::loop_3D(*dusty_floor_sample, 1.0f, get_leg_tip_position(), 10.0f);
+	// read from the file
+	display_state.current_lines = lines_from_file(display_state.file);
+	display_state.jumps.push_back(1);
 
-	loadScript("start.txt");
+	update_state(0);
+}
 
-	render_text(&tex_example, activeScript[activeIndex], white);
+/* This function should refresh the display according to whatever is in the state.
+ * Might be necessary at the very start.
+ * Could also be useful if something goes wrong.
+ */
+void PlayMode::refresh_display() {
+	// draw bottom_text
+	// draw the characters and images displayed
+	// these are all comments because I'm not sure what exactly this should look like yet
+}
+
+// Advance the script by one line.
+void PlayMode::update_one_line(uint32_t jump_choice) {
+	std::string line = display_state.current_lines[display_state.jumps[jump_choice] - 1];
+	std::cout << line << std::endl;
+	std::vector<std::string> parsed = parse_script_line(line, " ");
+
+	display_state.line_number = atoi(parsed[0].c_str());
+	std::string keyword = parsed[1];
+	if (keyword == "Character") {
+		if (characters.find(parsed[2]) == characters.end()) {
+			GameCharacter g;
+			g.id = parsed[2];
+			g.name = parsed[3];
+			g.species = parsed[4];
+			characters[parsed[2]] = g;
+		}
+		else {
+			std::cerr << display_state.file + " " + parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Display") {
+		if (characters.find(parsed[2]) != characters.end()) {
+			// loop through existing characters on display, which should be fine since there aren't many
+			for (auto it = display_state.chars.begin(); it != display_state.chars.end(); ++it) {
+				if (it->ref->id == parsed[2]) display_state.chars.erase(it);
+			}
+			DisplayCharacter dc;
+			dc.ref = &characters[parsed[2]];
+			dc.pos = MIDDLE; // TODO: change depending on code
+			display_state.chars.push_back(dc);
+		}
+		else {
+			std::cerr << display_state.file + " " + parsed[0] + ": There was no character with ID " + parsed[2] << std::endl;
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Remove") {
+		if (characters.find(parsed[2]) != characters.end()) {
+			// loop through existing characters on display, which should be fine since there aren't many
+			for (auto it = display_state.chars.begin(); it != display_state.chars.end(); ++it) {
+				if (it->ref->id == parsed[2]) display_state.chars.erase(it);
+			}
+		}
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Clear") {
+		display_state.chars.clear();
+		display_state.images.clear();
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Speech") {
+		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
+		else {
+			// TODO: speech bubble stuff; not implemented yet
+			display_state.bottom_text = parsed[3];
+		}
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Text") {
+		display_state.bottom_text = parsed[2];
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Input") {
+		display_state.bottom_text = parsed[2];
+		// something similar but with text input like we discussed
+		display_state.status = TEXT;
+	}
+	else if (keyword == "Image") {
+		// TODO
+		display_state.status = IMAGE;
+	}
+	else if (keyword == "Change_File") {
+		display_state.file = parsed[2];
+		display_state.current_lines = lines_from_file(display_state.file);
+		display_state.bottom_text = "";
+		display_state.line_number = 0;
+		display_state.jumps.clear();
+		display_state.jumps.push_back(0);
+		display_state.status = CHANGING;
+	}
+
+	// jump-modifying keywords
+	if (keyword == "Choice_Text") {
+		uint32_t count = atoi(parsed[2].c_str());
+		display_state.jump_names.clear();
+		display_state.jumps.clear();
+		for (uint32_t i = 0; i < count; i++) {
+			display_state.jump_names.push_back(parsed[3 + i]);
+			display_state.jumps.push_back(atoi(parsed[3 + count + i].c_str()));
+		}
+
+		display_state.status = CHOICE_TEXT;
+	}
+	else if (keyword == "Choice_Image") {
+		// TODO
+		display_state.status = CHOICE_IMAGE;
+	}
+	else if (keyword == "Jump") {
+		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str())};
+		display_state.status = CHANGING;
+	}
+	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
+
+	display_state.current_choice = 0; // reset choice
+}
+
+// This is the main implementation. This should advance the game's script until the player needs to advance the display again.
+// In other words, things like character displays should run automatically.
+void PlayMode::update_state(uint32_t jump_choice) {
+	update_one_line(jump_choice);
+	while (display_state.status == CHANGING) update_one_line(0);
+  
+ 	// Draw different text depending on the status.
+	std::string text_to_draw = "";
+	if (display_state.status == CHOICE_TEXT) {
+		for (std::string s : display_state.jump_names) {
+			text_to_draw += s + '\n';
+		}
+	}
+	else text_to_draw = display_state.bottom_text;
 	
+	render_text(&tex_example, text_to_draw, white);
 	update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	update_texture(&tex_textbg, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
-  textures = initializeTextures(alignments);
+  	textures = initializeTextures(alignments);
 	addTextures(textures, paths, texture_program);
 	std::cout << textures[0]->relativeSizeX << std::endl;
 }
@@ -715,8 +820,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
 			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_i) {
+		} else if (evt.key.keysym.sym == SDLK_i) {
 
 			// toggle the left (inventory) pane
 			
@@ -732,28 +836,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
 			// std::cout << std::to_string(choices) << std::endl;
-			if (choices > 0){
-				//std::cout << links[0] << std::endl;
-				//std::cout << links[1] << std::endl;
-				if (choices > 1){
-					loadScript(links[1]);
-					links.clear();
-				}else{
-					loadScript(links[0]);
-					links.clear();
-				}
+			size_t choices = display_state.jumps.size();
+			if (choices > 0) {
+				if (display_state.current_choice < choices - 1) display_state.current_choice++;
+				
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, activeScript[activeIndex], white);
+				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
 				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
-			if (choices > 0){
-				loadScript(links[0]);
-				links.clear();
+			if (display_state.jumps.size() > 0) {
+				if (display_state.current_choice > 0) display_state.current_choice--;
+				
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, activeScript[activeIndex], white);
+				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
 				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
@@ -761,13 +859,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		
 		clear_png(&text_render[0][0], window_height/3, window_width);
-		if (evt.button.button == SDL_BUTTON_RIGHT){
-			reverse_step(evt.button.x , evt.button.y);
-		} else {
-			advance_step(evt.button.x , evt.button.y);
-		}
-		render_text(&tex_example, activeScript[activeIndex], white);
-		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		update_state(display_state.current_choice);
+		// render_text(&tex_example, display_state.bottom_text, white);
+		// update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(
@@ -902,30 +996,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUseProgram(0);
 		glDisable(GL_BLEND);
 	}
-	//Default Line-y text code, if necessary
-	/*
-	{ //use DrawLines to overlay some text:
-		glDisable(GL_DEPTH_TEST);
-		float aspect = float(drawable_size.x) / float(drawable_size.y);
-		DrawLines lines(glm::mat4(
-			1.0f / aspect, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		));
-
-		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + + 0.1f * H + ofs, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
-	}
-	GL_ERRORS();*/
+	GL_ERRORS();
 }
 
 glm::vec3 PlayMode::get_leg_tip_position() {

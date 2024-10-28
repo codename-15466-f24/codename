@@ -59,8 +59,8 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 
 			load_png(data_path(paths[path_index]), &size, &data, LowerLeftOrigin);
 
-			tex.sizeX = size.x;
-			tex.sizeY = size.y;
+			tex.sizeX = (float)size.x;
+			tex.sizeY = (float)size.y;
 
 			glBindTexture(GL_TEXTURE_2D, tex.tex);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
@@ -187,7 +187,7 @@ void updateTextures(std::vector<TexStruct *> textures)
 		glBufferData(GL_ARRAY_BUFFER, verts.size()*sizeof(verts[0]), verts.data(), GL_STREAM_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		tex->count = verts.size();
+		tex->count = (GLuint)verts.size();
 	};
 
 	float left_offset = 0.0f;
