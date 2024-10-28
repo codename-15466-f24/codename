@@ -30,6 +30,9 @@ struct PlayMode : Mode {
 		GLsizei count = 0; 
 		glm::mat4 CLIP_FROM_LOCAL = glm::mat4(1.0f);
 		std::string path = "error.png";
+		bool loadme = false;
+		glm::uvec2 size;
+		std::vector<glm::u8vec4> data;
 	} tex_example, tex_bg, tex_textbg;
 
 
