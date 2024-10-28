@@ -82,8 +82,8 @@ struct PlayMode : Mode {
 
 	//stuff in the scene
 	Scene::Transform *swap_creature = nullptr;
-	float x_by_counter = 2.9;
-	float creature_speed = 3.;
+	float x_by_counter = 2.9f;
+	float creature_speed = 3.0f;
 	
 	//camera:
 	Scene::Camera *camera = nullptr;
