@@ -106,10 +106,10 @@ void draw_png(FT_Bitmap *bitmap, glm::u8vec4 *out, uint32_t x, uint32_t y, uint3
     }
 }
 
-std::string decode(std::string str_in, char key){
+std::string decode(std::string str_in, Species key){
 	std::string out = "";
 	switch (key){
-		case 'e':
+		case EXAMPLE:
 			for (int i = 0; i < str_in.length(); i++){
 				if (str_in[i] >= 'a' && str_in[i] <= 'z') {
 					out = out + substitution[str_in[i] - 'a'];
@@ -184,7 +184,7 @@ void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
-	line = decode(line, 'e');
+	line = decode(line, EXAMPLE);
 	
 	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
 	// since the below code follows the code from the example basically exactly, I'm also including some annotations

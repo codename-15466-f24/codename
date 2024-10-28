@@ -8,6 +8,11 @@
 #include <vector>
 #include <deque>
 
+enum Species {
+		SELF,
+		EXAMPLE
+	};
+
 struct PlayMode : Mode {
 	PlayMode();
 	virtual ~PlayMode();
