@@ -44,7 +44,6 @@ static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 static uint32_t activeIndex = 0;
 // static uint32_t lastIndex = 0;
-static int choices = 0;
 static std::vector<std::string> links;
 static bool editMode = false;
 static std::string editStr = "";
@@ -132,8 +131,8 @@ std::string decode(std::string str_in, char key){
 }
 
 //Nightmare loop, takes text and a color and turns it into a png of text in that color.
-void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
-	choices = 0;
+void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
+	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
 
 	glm::u8vec4 colorOut = color; //Overriding it if it's a choice because I want to :D
@@ -144,43 +143,10 @@ void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4
 	//TODO (Optional): Move newlines here too. Matias/Jim mentioned I should probably handle them before I generate glyphs
 	//but not 100% on how
 	
-	//if line_in's first character is ₽, it's a choice.
-	if (line_in.length() >= 3 && line_in[0] == -30 && line_in[1] == -126 && line_in[2] == -67 ) {
-		choices += 1;
-		bool display_mode = true; //This determines if current block should be rendered
-		std::string link_now = "";
-		int i = 3;
-		while(i < line_in.length()-2){
-			//new link, checking for ₼
-			if (line_in[i] == -30 && line_in[i+1] == -126 && line_in[i+2] == -68){
-				display_mode = false;
-				line = line + "₿";
-				i+=3;
-				continue;
-			}
-			//new choice (text), checking for ₽ again (same as initial if)
-			if (line_in[i] == -30 && line_in[i+1] == -126 && line_in[i+2] == -67){
-				display_mode = true;
-				links.emplace_back(link_now);
-				choices += 1;
-				link_now = "";
-				line = "Up: " + line + "Down: ";
-				i+=3;
-				continue;
-			}
-			// If text, display it, if not, it's a link, so add it to the list of links.
-			if (display_mode){
-				line = line + line_in[i];
-			} else {
-				link_now = link_now + line_in[i];
-			}
-			i++;
-		}
-		if (!display_mode){
-			links.emplace_back(link_now);
-		}
-	}
-	if (choices == 0) {
+	// I removed the choice checking for now. ~Yoseph
+	// I'll change it in a bit, but it doesn't work for the current script purposes right now.
+	
+	if (choices == 1) {
 		line = line_in;
 	} else {
 		colorOut = glm::u8vec4(0,0,255,1);
@@ -197,20 +163,23 @@ void render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4
 
 	// Initialize Freetype basics and check for failure
 	// Load freetype library into ft_library
-	if ((ft_error = FT_Init_FreeType (&ft_library))){ 
+	ft_error = FT_Init_FreeType (&ft_library);
+	if (ft_error) {
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Init Freetype Library failed, aborting..." << std::endl;
 		abort();
 	}
 	// Load font face through path (font_path)
-	if ((ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face))){ // .c_str() converts to char *
+	ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face);
+	if (ft_error) { // .c_str() converts to char *
 		std::cout << "Failed while loading " << data_path(font_path).c_str() << std::endl;
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Init Freetype Face failed, aborting..." << std::endl;
 		abort();
 	}
 	// Define a character size based on constant literals
-	if ((ft_error = FT_Set_Char_Size (ft_face, FONT_SIZE*64, FONT_SIZE*64, 0, 0))){
+	ft_error = FT_Set_Char_Size (ft_face, FONT_SIZE*64, FONT_SIZE*64, 0, 0);
+	if (ft_error){
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Setting character size failed, aborting..." << std::endl;
 		abort();
@@ -501,7 +470,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	display_state.current_lines = lines_from_file(display_state.file);
 	display_state.jumps.push_back(0);
 
-	update_state();
+	update_state(0);
 }
 
 /* This function should refresh the display according to whatever is in the state.
@@ -515,8 +484,8 @@ void PlayMode::refresh_display() {
 }
 
 // Advance the script by one line.
-void PlayMode::update_one_line(uint32_t jump_index) {
-	std::string line = display_state.current_lines[display_state.jumps[jump_index]];
+void PlayMode::update_one_line(uint32_t jump_choice) {
+	std::string line = display_state.current_lines[display_state.jumps[jump_choice]];
 	std::vector<std::string> parsed = parse_script_line(line, " ");
 
 	display_state.line_number = atoi(parsed[0].c_str()) - 1; // indexing problem fix
@@ -598,8 +567,12 @@ void PlayMode::update_one_line(uint32_t jump_index) {
 	// jump-modifying keywords
 	if (keyword == "Choice_Text") {
 		uint32_t count = atoi(parsed[2].c_str());
-		count = 0;
-		// TODO
+		display_state.jump_names.clear();
+		display_state.jumps.clear();
+		for (uint32_t i = 0; i < count; i++) {
+			display_state.jump_names.push_back(parsed[3 + i]);
+			display_state.jumps.push_back(atoi(parsed[3 + count + i].c_str()));
+		}
 
 		display_state.status = CHOICE_TEXT;
 	}
@@ -616,18 +589,18 @@ void PlayMode::update_one_line(uint32_t jump_index) {
 
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
-void PlayMode::update_state() {
-	update_one_line(0);
+void PlayMode::update_state(uint32_t jump_choice) {
+	update_one_line(jump_choice);
 	while (display_state.status == CHANGING) update_one_line(0);
   
-  // note: should check if this was meant to be in this function later ~Yoseph
+ 	 // note: should check if this was meant to be in this function later ~Yoseph
 	render_text(&tex_example, display_state.bottom_text, white);
 	
 	update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	update_texture(&tex_textbg, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
-  textures = initializeTextures(alignments);
+  	textures = initializeTextures(alignments);
 	addTextures(textures, paths, texture_program);
 	std::cout << textures[0]->relativeSizeX << std::endl;
 }
@@ -854,28 +827,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
 			// std::cout << std::to_string(choices) << std::endl;
-			if (choices > 0){
-				//std::cout << links[0] << std::endl;
-				//std::cout << links[1] << std::endl;
-				if (choices > 1){
-					loadScript(links[1]);
-					links.clear();
-				}else{
-					loadScript(links[0]);
-					links.clear();
-				}
+			size_t choices = display_state.jumps.size();
+			if (choices > 0) {
+				if (display_state.current_choice != choices - 1) display_state.current_choice += 1;
+				
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, activeScript[activeIndex], white);
+				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
 				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
-			if (choices > 0){
-				loadScript(links[0]);
-				links.clear();
+			if (display_state.jumps.size() > 0) {
+				if (display_state.current_choice != 0) display_state.current_choice += 1;
+				
 				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, activeScript[activeIndex], white);
+				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
 				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 			}
 			return true;
@@ -883,9 +850,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		
 		clear_png(&text_render[0][0], window_height/3, window_width);
-		update_state();
-		render_text(&tex_example, display_state.bottom_text, white);
-		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		update_state(display_state.current_choice);
+		// render_text(&tex_example, display_state.bottom_text, white);
+		// update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(

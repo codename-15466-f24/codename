@@ -71,7 +71,7 @@ std::vector<std::string> parse_script_line(std::string &s, std::string delim) {
 }
 
 std::vector<std::string> lines_from_file(std::string &file) {
-    std::ifstream infile(data_path(file));
+    std::ifstream infile(data_path("script/" + file));
     std::vector<std::string> lines;
     std::string next_line;
 	while (std::getline(infile, next_line)) {

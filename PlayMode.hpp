@@ -97,7 +97,8 @@ struct PlayMode : Mode {
 	//camera:
 	Scene::Camera *camera = nullptr;
 
-	// inspired by my game4 code ~Yoseph
+	// toss in the nightmare loop for now..
+	void render_text(TextureItem *tex_in, std::string line_in, glm::u8vec4 color);
 
 	// game character
 	struct GameCharacter {
@@ -147,13 +148,16 @@ struct PlayMode : Mode {
 		std::string bottom_text = "";
 		std::vector<DisplayCharacter> chars;
 		std::vector<DisplayImage> images; // extra images to be displayed on screen
+
 		std::vector<uint32_t> jumps; // only 1 option if the status isn't a choice
+		std::vector<std::string> jump_names; // for choices
+		uint32_t current_choice = 0;
 	} display_state;
 
 	std::string player_id = "player";
 
 	void refresh_display();
-	void update_one_line(uint32_t jump_index);
-	void update_state();
+	void update_one_line(uint32_t jump_choice);
+	void update_state(uint32_t jump_choice);
 
 };
