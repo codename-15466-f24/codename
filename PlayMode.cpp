@@ -561,6 +561,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 		// something similar but with text input like we discussed
 		editMode = true;
 		display_state.status = INPUT;
+		editingBox = &tex_box_text;
 	}
 	else if (keyword == "Image") {
 		// TODO
@@ -616,10 +617,20 @@ void PlayMode::update_state(uint32_t jump_choice) {
 	}
 	else text_to_draw = display_state.bottom_text;
 	
+	char cipher_textbox = 'e';
+	switch ('a'){
+		case('a'):
+			cipher_textbox = 'e';
+			break;
+		default:
+			cipher_textbox = 'd';
+			break;
+	};
+
 	tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 	current_line = text_to_draw;
-	render_text(&tex_box_text, text_to_draw, white);
+	render_text(&tex_box_text, text_to_draw, white, cipher_textbox);
 	update_texture(&tex_box_text);
 
 	/*render_text(&tex_cs, editStr, green);
@@ -680,31 +691,33 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			// if (display_state.status == INPUT) editMode = !editMode;
-			std::cout << "not editmode" << std::endl;
-			editMode = true;
+			//std::cout << "not editmode" << std::endl;
+			/*editMode = true;
 			display_state.status = INPUT;
-			editingBox = &tex_box_text;
+			editingBox = &tex_box_text;*/
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			std::cout << "editmode" << std::endl;
+			//std::cout << "editmode" << std::endl;
 			if (editStr != "") {
 				std::cout << "Sent " << editStr << " as input" << std::endl;
 
 				editMode = false;
 				editStr = "";
+				cursor_pos = 0;
+				display_state.status = CHANGING;
+				clear_png(editingBox);
 				if (cs_open){
 					togglePanel(textures, RightPane);
 					cs_open = false;
+				} else {	
+					update_state(display_state.current_choice);
 				}
-				cursor_pos = 0;
-				clear_png(editingBox);
-				display_state.status = CHANGING;
-				clear_png(&tex_box_text);
+				/*clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white);
-				update_texture(&tex_box_text);
+				update_texture(&tex_box_text);*/
 				return true;
 			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
@@ -878,7 +891,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
 			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
 			update_texture(editingBox);
-			std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
+			//std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
 		}
 
 	} else if (evt.type == SDL_KEYUP && !editMode) {
