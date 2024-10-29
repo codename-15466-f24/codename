@@ -37,7 +37,9 @@ struct PlayMode : Mode {
 		bool loadme = false;
 		glm::uvec2 size;
 		std::vector<glm::u8vec4> data;
-	} tex_example, tex_bg, tex_textbg;
+		//x0, x1, y0, y1, z
+		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+	} tex_box_text, tex_bg, tex_textbg, tex_cs;
 
 
 	//input tracking:
@@ -54,8 +56,8 @@ struct PlayMode : Mode {
 	//Color constants because why not
 	glm::u8vec4 white = glm::u8vec4(255,255,255,1);
 	glm::u8vec4 red = glm::u8vec4(255,0,0,1);
-	glm::u8vec4 blue = glm::u8vec4(0,255,0,1);
-	glm::u8vec4 green = glm::u8vec4(0,0,255,1);
+	glm::u8vec4 green = glm::u8vec4(0,255,0,1);
+	glm::u8vec4 blue = glm::u8vec4(0,0,255,1);
 
 	//These are here 
 	//void render_text(std::string line_in);
@@ -76,7 +78,7 @@ struct PlayMode : Mode {
 	std::vector<PanePosition> alignments = {LeftPane, RightPane, 
 											LeftPane, LeftPane, LeftPane, LeftPane,
 											RightPane};
-	std::vector<std::string> paths = {"pressI.png", "pressC.png", 
+	std::vector<std::string> paths = {"pressI.png", "pressC.png",
 									"inventory1.png", "inventory2.png", "inventory3.png", "inventory4.png",
 									"cheatsheet_placeholder.png"};
 
@@ -90,7 +92,7 @@ struct PlayMode : Mode {
 	Scene::Camera *camera = nullptr;
 
 	// toss in the nightmare loop for now..
-	void render_text(TextureItem *tex_in, std::string line_in, glm::u8vec4 color);
+	void render_text(TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher, int font_size);
 
 	// game character
 	struct GameCharacter {
