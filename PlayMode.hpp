@@ -80,7 +80,7 @@ struct PlayMode : Mode {
 											RightPane};
 	std::vector<std::string> paths = {"pressI.png", "pressC.png",
 									"inventory1.png", "inventory2.png", "inventory3.png", "inventory4.png",
-									"cheatsheet_placeholder.png"};
+									"cheatsheet.png"};
 
 	//stuff in the scene
 	Scene::Transform *swap_creature = nullptr;

@@ -674,19 +674,26 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			// if (display_state.status == INPUT) editMode = !editMode;
+			std::cout << "not editmode" << std::endl;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			if (display_state.status == INPUT && editStr != "") {
+			std::cout << "editmode" << std::endl;
+			if (editStr != "") {
 				std::cout << "Sent " << editStr << " as input" << std::endl;
 
-				editMode = !editMode;
+				editMode = false;
 				editStr = "";
+				cs_open = false;
 				cursor_pos = 0;
 				clear_png(&tex_box_text);
-				update_state(display_state.current_choice);
+				togglePanel(textures, RightPane);
+				display_state.status = CHANGING;
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, current_line, white);
+				update_texture(&tex_box_text);
 				return true;
 			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
@@ -882,7 +889,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			// toggle the right (codebook) pane
 			togglePanel(textures, RightPane);
-			cs_open = !cs_open;
+			cs_open = true;
 			editingBox = &tex_cs;
 			editStr = "";
 			cursor_pos = 0;
