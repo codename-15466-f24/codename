@@ -488,6 +488,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			g.species = parsed[4];
+			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
 			characters[parsed[2]] = g;
 		}
 		else {
@@ -541,6 +542,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 		display_state.bottom_text = parsed[2];
 		// something similar but with text input like we discussed
 		display_state.status = TEXT;
+		editMode = true;
 	}
 	else if (keyword == "Image") {
 		// TODO
@@ -643,7 +645,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		}else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			editMode = !editMode;
+			// editMode = !editMode;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_RETURN) {

@@ -84,7 +84,8 @@ struct PlayMode : Mode {
 	Scene::Transform *swap_creature = nullptr;
 	float x_by_counter = 2.9f;
 	float creature_speed = 3.0f;
-	
+	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
+
 	//camera:
 	Scene::Camera *camera = nullptr;
 
@@ -97,6 +98,7 @@ struct PlayMode : Mode {
 		std::string name;
 		std::string species; // can change this type later
 		// any other data here. maybe assets?
+		uint8_t asset_idx;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
 
