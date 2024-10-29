@@ -158,5 +158,5 @@ struct PlayMode : Mode {
 	void refresh_display();
 	void update_one_line(uint32_t jump_choice);
 	void update_state(uint32_t jump_choice);
-
+	void check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump);
 };

@@ -653,6 +653,16 @@ void PlayMode::update_state(uint32_t jump_choice) {
 PlayMode::~PlayMode() {
 }
 
+void PlayMode::check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump){
+	if (input == correct){
+		// Jump to correct line
+		PlayMode::update_state(correctJump);
+	} else {
+		// Jump to incorrect line
+		PlayMode::update_state(incorrectJump);
+	}
+}
+
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 
 	// perform the initial scaling of UI textures because we only have the window_size here 
@@ -703,21 +713,25 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			//std::cout << "editmode" << std::endl;
 			if (editStr != "") {
 				std::cout << "Sent " << editStr << " as input" << std::endl;
+				
+				// checking function
+				// check_jump(editStr, correctStr, int correctJump, int incorrectJump);
 
+				if (cs_open){
+					togglePanel(textures, RightPane);
+					clear_png(&tex_box_text);
+					render_text(&tex_box_text, current_line, white);
+					update_texture(&tex_box_text);
+					cs_open = false;
+				} else {	
+					clear_png(editingBox);
+					update_state(display_state.current_choice);
+				}
 				editMode = false;
 				editStr = "";
 				cursor_pos = 0;
 				display_state.status = CHANGING;
-				clear_png(editingBox);
-				if (cs_open){
-					togglePanel(textures, RightPane);
-					cs_open = false;
-				} else {	
-					update_state(display_state.current_choice);
-				}
-				/*clear_png(&tex_box_text);
-				render_text(&tex_box_text, current_line, white);
-				update_texture(&tex_box_text);*/
+				/**/
 				return true;
 			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
