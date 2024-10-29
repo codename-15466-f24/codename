@@ -42,7 +42,7 @@ static constexpr uint32_t render_height = window_height/3;
 static constexpr uint32_t render_width = window_width;
 static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
-static uint32_t activeIndex = 0;
+// static uint32_t activeIndex = 0;
 // static uint32_t lastIndex = 0;
 static std::vector<std::string> links;
 static bool editMode = false;
@@ -469,8 +469,9 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	// read from the file
 	display_state.current_lines = lines_from_file(display_state.file);
 	display_state.jumps.push_back(1);
-
 	editingBox = &tex_box_text;
+	textures = initializeTextures(alignments);
+	addTextures(textures, paths, texture_program);
 
 	update_state(0);
 }
@@ -499,6 +500,7 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			g.species = parsed[4];
+			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
 			characters[parsed[2]] = g;
 		}
 		else {
@@ -551,7 +553,8 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 	else if (keyword == "Input") {
 		display_state.bottom_text = parsed[2];
 		// something similar but with text input like we discussed
-		display_state.status = TEXT;
+		editMode = true;
+		display_state.status = INPUT;
 	}
 	else if (keyword == "Image") {
 		// TODO
@@ -622,15 +625,12 @@ void PlayMode::update_state(uint32_t jump_choice) {
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
 	update_texture(&tex_textbg);
 
-  	textures = initializeTextures(alignments);
-	addTextures(textures, paths, texture_program);
-	
 	tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
 	//tex_cs.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, -0.00001f};
 	update_texture(&tex_cs);
-	std::cout << textures[0]->relativeSizeX << std::endl;
+
 }
 
 PlayMode::~PlayMode() {
@@ -671,15 +671,24 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.downs += 1;
 			down.pressed = true;
 			return true;
-		}else if (evt.key.keysym.sym == SDLK_RETURN) {
+		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			editMode = !editMode;
+			// if (display_state.status == INPUT) editMode = !editMode;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			editMode = !editMode;
+			if (display_state.status == INPUT && editStr != "") {
+				std::cout << "Sent " << editStr << " as input" << std::endl;
+
+				editMode = !editMode;
+				editStr = "";
+				cursor_pos = 0;
+				clear_png(&text_render[0][0], window_height/3, window_width);
+				update_state(display_state.current_choice);
+				return true;
+			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if(cursor_pos != 0){
 				cursor_pos -= 1;
@@ -847,6 +856,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			update_texture(editingBox);
 			std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
 		}
+
 	} else if (evt.type == SDL_KEYUP && !editMode) {
 		
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -909,10 +919,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} 
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		clear_png(&tex_box_text, window_height/3, window_width);
-		update_state(display_state.current_choice);
-		// render_text(&tex_box_text, display_state.bottom_text, white);
-		// update_texture(&tex_box_text);
+		if (display_state.status != INPUT) {
+			clear_png(&tex_box_text, window_height/3, window_width);
+      update_state(display_state.current_choice);
+      // render_text(&tex_box_text, display_state.bottom_text, white);
+      // update_texture(&tex_box_text);
+		}
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(

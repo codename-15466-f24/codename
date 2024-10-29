@@ -215,6 +215,10 @@ void drawTextures(std::vector<TexStruct *> textures, const TextureProgram *ui_te
 	// from in-class example
 	auto drawTex = [&](TexStruct *tex) {
 
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		glUseProgram(ui_texture_program->program);
 		glBindVertexArray(tex->tristrip_buffer_for_texture_program_vao);
 		glActiveTexture(GL_TEXTURE0);
@@ -225,6 +229,7 @@ void drawTextures(std::vector<TexStruct *> textures, const TextureProgram *ui_te
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
+		glDisable(GL_BLEND);
 	};
 
 	for (auto tex : textures)

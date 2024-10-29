@@ -78,15 +78,16 @@ struct PlayMode : Mode {
 	std::vector<PanePosition> alignments = {LeftPane, RightPane, 
 											LeftPane, LeftPane, LeftPane, LeftPane,
 											RightPane};
-	std::vector<std::string> paths = {"pressI.png", "pressC.png", 
-									"inventory1.png", "inventory1.png", "inventory1.png", "inventory1.png",
-									"cheatsheet_blank.png"};
+	std::vector<std::string> paths = {"pressI.png", "pressC.png",
+									"inventory1.png", "inventory2.png", "inventory3.png", "inventory4.png",
+									"cheatsheet_placeholder.png"};
 
 	//stuff in the scene
 	Scene::Transform *swap_creature = nullptr;
 	float x_by_counter = 2.9f;
 	float creature_speed = 3.0f;
-	
+	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
+
 	//camera:
 	Scene::Camera *camera = nullptr;
 
@@ -99,6 +100,7 @@ struct PlayMode : Mode {
 		std::string name;
 		std::string species; // can change this type later
 		// any other data here. maybe assets?
+		uint8_t asset_idx;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
 
@@ -130,7 +132,8 @@ struct PlayMode : Mode {
 		TEXT,
 		CHOICE_TEXT,
 		IMAGE,
-		CHOICE_IMAGE
+		CHOICE_IMAGE,
+		INPUT
 	};
 	struct DisplayState {
 		std::string file = "test.txt"; // whatever we initialize this to is the start of the script
@@ -150,6 +153,7 @@ struct PlayMode : Mode {
 	} display_state;
 
 	std::string player_id = "player";
+	std::string cursor_str = "|";
 
 	void refresh_display();
 	void update_one_line(uint32_t jump_choice);
