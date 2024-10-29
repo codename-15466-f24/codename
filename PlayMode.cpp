@@ -51,6 +51,10 @@ static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
 static std::string current_line = "";
+static std::string correctStr = "";
+static uint32_t cj = 0;
+static uint32_t ij = 0;
+
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
@@ -553,11 +557,13 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 		display_state.status = TEXT;
 	}
 	else if (keyword == "Text") {
-		display_state.bottom_text = parsed[2];
+		display_state.cipher = parsed[2][0];
+		display_state.bottom_text = parsed[3];
 		display_state.status = TEXT;
 	}
 	else if (keyword == "Input") {
-		display_state.bottom_text = parsed[2];
+		display_state.cipher = parsed[2][0];
+		display_state.bottom_text = parsed[3];
 		// something similar but with text input like we discussed
 		editMode = true;
 		display_state.status = INPUT;
@@ -580,11 +586,12 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 	// jump-modifying keywords
 	if (keyword == "Choice_Text") {
 		uint32_t count = atoi(parsed[2].c_str());
+		display_state.cipher = parsed[3][0];
 		display_state.jump_names.clear();
 		display_state.jumps.clear();
 		for (uint32_t i = 0; i < count; i++) {
-			display_state.jump_names.push_back(parsed[3 + i]);
-			display_state.jumps.push_back(atoi(parsed[3 + count + i].c_str()));
+			display_state.jump_names.push_back(parsed[4 + i]);
+			display_state.jumps.push_back(atoi(parsed[4 + count + i].c_str()));
 		}
 
 		display_state.status = CHOICE_TEXT;
@@ -596,6 +603,22 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 	else if (keyword == "Jump") {
 		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str())};
 		display_state.status = CHANGING;
+	}
+	else if (keyword == "Input_Puzzle") {
+		/*for (int i = 0; i < parsed.size(); i++){
+			std::cout << parsed[i] << "; ";
+		}
+		std::cout << std::endl;*/
+		display_state.cipher = parsed[2][0];
+		display_state.bottom_text = parsed[3];
+		// something similar but with text input like we discussed
+		correctStr = parsed[4];
+		cj = (uint32_t)atoi(parsed[5].c_str());
+		ij = (uint32_t)atoi(parsed[6].c_str());
+		//std::cout << "past here" << std::endl;
+		editMode = true;
+		display_state.status = INPUT;
+		editingBox = &tex_box_text;
 	}
 	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
 
@@ -616,21 +639,11 @@ void PlayMode::update_state(uint32_t jump_choice) {
 		}
 	}
 	else text_to_draw = display_state.bottom_text;
-	
-	char cipher_textbox = 'e';
-	switch ('a'){
-		case('a'):
-			cipher_textbox = 'e';
-			break;
-		default:
-			cipher_textbox = 'd';
-			break;
-	};
 
 	tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 	current_line = text_to_draw;
-	render_text(&tex_box_text, text_to_draw, white, cipher_textbox);
+	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
 
 	/*render_text(&tex_cs, editStr, green);
@@ -656,10 +669,14 @@ PlayMode::~PlayMode() {
 void PlayMode::check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump){
 	if (input == correct){
 		// Jump to correct line
-		PlayMode::update_state(correctJump);
+		display_state.jumps = {correctJump};
+		display_state.status = CHANGING;
+		correctStr = "";
 	} else {
 		// Jump to incorrect line
-		PlayMode::update_state(incorrectJump);
+		display_state.jumps = {incorrectJump};
+		display_state.status = CHANGING;
+		correctStr = "";
 	}
 }
 
@@ -715,15 +732,17 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				std::cout << "Sent " << editStr << " as input" << std::endl;
 				
 				// checking function
-				// check_jump(editStr, correctStr, int correctJump, int incorrectJump);
 
 				if (cs_open){
 					togglePanel(textures, RightPane);
 					clear_png(&tex_box_text);
-					render_text(&tex_box_text, current_line, white);
+					render_text(&tex_box_text, current_line, white, display_state.cipher);
 					update_texture(&tex_box_text);
 					cs_open = false;
 				} else {	
+					if (correctStr != ""){
+						check_jump(editStr, correctStr, cj, ij);
+					}
 					clear_png(editingBox);
 					update_state(display_state.current_choice);
 				}
@@ -899,7 +918,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			render_text(&tex_cs, editStr, green, 'd', 75);
 			update_texture(&tex_cs);
 			clear_png(&tex_box_text);
-			render_text(&tex_box_text, current_line, white);
+			render_text(&tex_box_text, current_line, white, display_state.cipher);
 			update_texture(&tex_box_text);
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
@@ -954,8 +973,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (choices > 0) {
 				if (display_state.current_choice < choices - 1) display_state.current_choice++;
 				
-				clear_png(&tex_box_text, window_height/3, window_width);
-				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white);
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
 				update_texture(&tex_box_text);
 			}
 			return true;
@@ -964,15 +983,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (display_state.jumps.size() > 0) {
 				if (display_state.current_choice > 0) display_state.current_choice--;
 				
-				clear_png(&tex_box_text, window_height/3, window_width);
-				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white);
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
 				update_texture(&tex_box_text);
 			}
 			return true;
 		} 
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (display_state.status != INPUT) {
-			clear_png(&tex_box_text, window_height/3, window_width);
+			clear_png(&tex_box_text);
 			update_state(display_state.current_choice);
 			// render_text(&tex_box_text, display_state.bottom_text, white);
 			// update_texture(&tex_box_text);
