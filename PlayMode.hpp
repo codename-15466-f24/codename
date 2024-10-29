@@ -130,7 +130,8 @@ struct PlayMode : Mode {
 		TEXT,
 		CHOICE_TEXT,
 		IMAGE,
-		CHOICE_IMAGE
+		CHOICE_IMAGE,
+		INPUT
 	};
 	struct DisplayState {
 		std::string file = "test.txt"; // whatever we initialize this to is the start of the script
@@ -150,6 +151,7 @@ struct PlayMode : Mode {
 	} display_state;
 
 	std::string player_id = "player";
+	std::string cursor_str = "|";
 
 	void refresh_display();
 	void update_one_line(uint32_t jump_choice);

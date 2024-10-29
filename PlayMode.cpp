@@ -541,8 +541,8 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 	else if (keyword == "Input") {
 		display_state.bottom_text = parsed[2];
 		// something similar but with text input like we discussed
-		display_state.status = TEXT;
 		editMode = true;
+		display_state.status = INPUT;
 	}
 	else if (keyword == "Image") {
 		// TODO
@@ -643,14 +643,23 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.downs += 1;
 			down.pressed = true;
 			return true;
-		}else if (evt.key.keysym.sym == SDLK_RETURN) {
+		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			// editMode = !editMode;
+			// if (display_state.status == INPUT) editMode = !editMode;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
-			editMode = !editMode;
+			if (display_state.status == INPUT && editStr != "") {
+				std::cout << "Sent " << editStr << " as input" << std::endl;
+
+				editMode = !editMode;
+				editStr = "";
+				cursor_pos = 0;
+				clear_png(&text_render[0][0], window_height/3, window_width);
+				update_state(display_state.current_choice);
+				return true;
+			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if(cursor_pos != 0){
 				cursor_pos -= 1;
@@ -794,7 +803,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 		} 
 		clear_png(&text_render[0][0], window_height/3, window_width);
-		render_text(&tex_example, editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+		render_text(&tex_example, editStr.substr(0, cursor_pos) + cursor_str + " " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
 		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
 		std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;
 	} else if (evt.type == SDL_KEYUP && !editMode) {
@@ -848,11 +857,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} 
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		
-		clear_png(&text_render[0][0], window_height/3, window_width);
-		update_state(display_state.current_choice);
-		// render_text(&tex_example, display_state.bottom_text, white);
-		// update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		if (display_state.status != INPUT) {
+			clear_png(&text_render[0][0], window_height/3, window_width);
+			update_state(display_state.current_choice);
+			// render_text(&tex_example, display_state.bottom_text, white);
+			// update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		}
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(
