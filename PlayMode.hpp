@@ -77,7 +77,7 @@ struct PlayMode : Mode {
 											LeftPane, LeftPane, LeftPane, LeftPane,
 											RightPane};
 	std::vector<std::string> paths = {"pressI.png", "pressC.png", 
-									"inventory1.png", "inventory1.png", "inventory1.png", "inventory1.png",
+									"inventory1.png", "inventory2.png", "inventory3.png", "inventory4.png",
 									"cheatsheet_placeholder.png"};
 
 	//stuff in the scene
