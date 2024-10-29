@@ -35,7 +35,7 @@
 static std::string tex_path = "out.png";
 static std::string textbg_path = "textbg.png";
 //static constexpr std::string bg_path = "black.png";
-static std::string font_path = "SpaceGrotesk-Regular.ttf";
+static std::string font_path = "RobotoMono-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
 static constexpr uint32_t render_height = window_height/3;
@@ -48,7 +48,10 @@ static std::vector<std::string> links;
 static bool editMode = false;
 static std::string editStr = "";
 static uint32_t cursor_pos = 0;
-static char substitution[26] = {'b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','a'};
+static PlayMode::TextureItem* editingBox;
+static bool cs_open = false;
+static std::string current_line = "";
+static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
 Load< MeshBuffer > codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -79,32 +82,35 @@ Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample c
 });
 
 //Reset the current text (or other) png
-void clear_png(glm::u8vec4 *png_in, uint32_t height, uint32_t width) {
-    for (uint32_t y = 0; y < height; y++) {
+void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t width = 0) {
+    /*for (uint32_t y = 0; y < height; y++) {
         for (uint32_t x = 0; x < width; x++) {
             png_in[y*width + x] = glm::u8vec4(0, 0, 0, 0);  // RGBA = (0, 0, 0, 0) = transparent black
         }
-    }
+    }*/
+	for (auto i = png_in->data.begin(); i != png_in->data.end(); ++i){
+		*i = glm::u8vec4(0,0,0,0);
+	}
 }
 
 //Draw text in png format from bitmap into out. Takes a color to draw into. 
-void draw_png(FT_Bitmap *bitmap, glm::u8vec4 *out, uint32_t x, uint32_t y, uint32_t height, uint32_t width, glm::u8vec4 color) {
+void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t x, uint32_t y, glm::u8vec4 color) {
+	//auto it = png_out->data.begin();
 	for (uint32_t i = 0; i < bitmap->rows; i++) {
         for (uint32_t j = 0; j < bitmap->width; j++) {
             uint32_t out_x = x + j;
         	uint32_t out_y = y + i;//bitmap->rows - i - 1;
-            if (out_x < width && out_y < height) {
+            if (out_x < png_out->size.x && out_y < png_out->size.y) {
 				// According to freetype.org,  buffer bytes per row is saved as bitmap->pitch
                 uint8_t alpha = bitmap->buffer[i * bitmap->pitch + j];
-                if (alpha > 0) {
-                    // Calculate the index in the RGBA buffer
-                    int index = out_y * width + out_x;
-					
-					out[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
-                }
+				// Calculate the index in the RGBA buffer
+                int index = (png_out->size.y-out_y-1) * png_out->size.x + out_x;
+				//std::cout << std::to_string(index) << " from size " << std::to_string(png_out->data.size());
+				png_out->data[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
             }
         }
     }
+	//std::cout << std::to_string(png_out->data.size());
 }
 
 std::string decode(std::string str_in, char key){
@@ -124,6 +130,7 @@ std::string decode(std::string str_in, char key){
 			}
 			break;
 		default:
+			out = str_in;
 			break;
 	}
 	//std::cout << "from " << str_in << " to " << out << std::endl;
@@ -131,7 +138,7 @@ std::string decode(std::string str_in, char key){
 }
 
 //Nightmare loop, takes text and a color and turns it into a png of text in that color.
-void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color) {
+void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = FONT_SIZE) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
 
@@ -147,12 +154,12 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	// I'll change it in a bit, but it doesn't work for the current script purposes right now.
 	
 	line = line_in;
+	//turn options blue
 	if (choices != 1) {
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
-	line = decode(line, 'e');
-	
+	line = decode(line, cipher);
 	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
 	// since the below code follows the code from the example basically exactly, I'm also including some annotations
 	// of my understanding of what's going on
@@ -177,7 +184,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		abort();
 	}
 	// Define a character size based on constant literals
-	ft_error = FT_Set_Char_Size (ft_face, FONT_SIZE*64, FONT_SIZE*64, 0, 0);
+	ft_error = FT_Set_Char_Size (ft_face, font_size*64, font_size*64, 0, 0);
 	if (ft_error){
 		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
 		std::cout << "Setting character size failed, aborting..." << std::endl;
@@ -219,15 +226,24 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				glyphname, cluster, x_advance, y_advance, x_offset, y_offset);
 	}*/
 
+
 	// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
 	FT_GlyphSlot  slot = ft_face->glyph; // 
 	int           pen_x, pen_y;
 	static uint32_t h = window_height/3;
+	//reset png
+	clear_png(tex_in);
+	//ensure it's correct size
+	std::vector<glm::u8vec4> cleared_data(tex_in->size.x * tex_in->size.y, glm::u8vec4(0,0,0,0));
+	tex_in->data = cleared_data;
+	//std::cout << "Size: " << std::to_string(tex_in->data.size()) << std::endl;
+	//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
+	
 
 	pen_x = static_cast<int>(LEFTMARGIN);
-	pen_y = static_cast<int>(TOPMARGIN) + FONT_SIZE;
+	pen_y = static_cast<int>(TOPMARGIN) + font_size;
 
-	double line_height = FONT_SIZE;
+	double line_height = font_size;
 	bool lastWasSpace = true;
 	char glyphname[32];
 	for (uint32_t n = 0; n < len; n++ ) {
@@ -251,13 +267,13 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				m+=1;
 			}
 
-			if (x_position + wordWidth >= window_width - 2*LEFTMARGIN) {
+			if (x_position + wordWidth >= tex_in->size.x - 2*LEFTMARGIN) {
 				pen_x = static_cast<int>(LEFTMARGIN); 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
 				x_position = pen_x + pos[n].x_offset / 64.;
 				y_position = pen_y + pos[n].y_offset / 64.;
 
-				line_height = FONT_SIZE;
+				line_height = font_size;
 			}
 		}
 		
@@ -271,7 +287,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			x_position = pen_x + pos[n].x_offset / 64.;
 			y_position = pen_y + pos[n].y_offset / 64.;
 
-			line_height = FONT_SIZE;
+			line_height = font_size;
 			continue;
 		}
 
@@ -286,7 +302,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		}
 		
 		// bitmap drawing function
-		draw_png(&slot->bitmap, &text_render[0][0], static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), h, window_width, colorOut);
+		draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
 
 		// Move the "pen" based on x and y advance given by glyphs
 		pen_x += pos[n].x_advance / 64; 
@@ -298,24 +314,21 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			lastWasSpace = false;
 		}
 	}
-	//This is a disk-heavy line and not quite necessary.
-	//Originally did this in part for debugging purposes.
-	//TODO: Figure out how to store this in a variable and not on disk, lol.
 	//save_png(data_path("out.png"), glm::uvec2(window_width, h), &text_render[0][0], UpperLeftOrigin); //Upper left worked.
 	
-	std::vector<glm::u8vec4> data_out;
+	//std::vector<glm::u8vec4> data_out;
 
 	//Based on https://cplusplus.com/forum/beginner/190966/
-	for (int row = render_height-1; row > -1; row--)
+	/*for (int row = render_height-1; row > -1; row--)
 	{
 		for (int col = 0; col < render_width; col++)
 		{
-			data_out.push_back(text_render[row][col]);
+			data_out.push_back(text_aol]);
 		}
-	}
+	}*/
 
-	tex_in->data = data_out;
-	tex_in->size = glm::uvec2(window_width, h);
+	//tex_in->data = data_out;
+	//tex_in->size = glm::uvec2(window_width, h);
 
 	hb_buffer_destroy (hb_buffer);
 	hb_font_destroy (hb_font);
@@ -325,7 +338,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 }
 
 //x0,x1,y0,y1,z encode the coords for where on the screen the texture is.
-int update_texture(PlayMode::TextureItem *tex_in, float x0, float x1, float y0, float y1, float z){
+int update_texture(PlayMode::TextureItem *tex_in){
 	// Code is from Jim via Sasha's notes, cross-referenced against Jim's copied
 	// code in discord where Sasha's notes were missing, with a few changes to make this
 	// work in this context
@@ -375,19 +388,19 @@ int update_texture(PlayMode::TextureItem *tex_in, float x0, float x1, float y0, 
 	
 	// Define top right quadrant to full texture
 	verts.emplace_back(PosTexVertex{
-		.Position = glm::vec3(x0, y0, z),
+		.Position = glm::vec3(tex_in->bounds[0], tex_in->bounds[2], tex_in->bounds[4]),
 		.TexCoord = glm::vec2(0.0f, 0.0f), // extra comma lets you make a 1 line change later
 	});
 	verts.emplace_back(PosTexVertex{
-		.Position = glm::vec3(x0, y1, z),
+		.Position = glm::vec3(tex_in->bounds[0], tex_in->bounds[3], tex_in->bounds[4]),
 		.TexCoord = glm::vec2(0.0f, 1.0f),
 	});
 	verts.emplace_back(PosTexVertex{
-		.Position = glm::vec3(x1, y0, z),
+		.Position = glm::vec3(tex_in->bounds[1], tex_in->bounds[2], tex_in->bounds[4]),
 		.TexCoord = glm::vec2(1.0f, 0.0f),
 	});
 	verts.emplace_back(PosTexVertex{
-		.Position = glm::vec3(x1, y1, z),
+		.Position = glm::vec3(tex_in->bounds[1], tex_in->bounds[3], tex_in->bounds[4]),
 		.TexCoord = glm::vec2(1.0f, 1.0f),
 	});
 	/*for (int i = 0; i < verts.size(); i++) {
@@ -456,6 +469,8 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	// read from the file
 	display_state.current_lines = lines_from_file(display_state.file);
 	display_state.jumps.push_back(1);
+
+	editingBox = &tex_box_text;
 
 	update_state(0);
 }
@@ -592,13 +607,29 @@ void PlayMode::update_state(uint32_t jump_choice) {
 	}
 	else text_to_draw = display_state.bottom_text;
 	
-	render_text(&tex_example, text_to_draw, white);
-	update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+	tex_box_text.size = glm::uvec2(render_width, render_height);
+	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+	current_line = text_to_draw;
+	render_text(&tex_box_text, text_to_draw, white);
+	update_texture(&tex_box_text);
+
+	/*render_text(&tex_cs, editStr, green);
+	update_texture(&tex_cs, 0.0f, 1.0f, 0.2f, 0.5f, 0.00002f);
+	std::cout << editStr << std::endl;*/
+
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
-	update_texture(&tex_textbg, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
+	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
+	update_texture(&tex_textbg);
+
   	textures = initializeTextures(alignments);
 	addTextures(textures, paths, texture_program);
+	
+	tex_cs.size = glm::uvec2(render_width, render_height);
+	//tex_cs.size = glm::uvec2(800, 200);
+	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
+	//tex_cs.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, -0.00001f};
+	update_texture(&tex_cs);
 	std::cout << textures[0]->relativeSizeX << std::endl;
 }
 
@@ -645,6 +676,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			editMode = !editMode;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
+		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			editMode = !editMode;
@@ -782,18 +814,39 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					break;
 			}
 			if (success) {
-				editStr.insert(cursor_pos, in);
-				cursor_pos += 1;
+				if (cs_open){
+					editStr[cursor_pos] = in[0] - 'A' + 'a';
+					substitution[cursor_pos] = in[0] - 'A' + 'a';
+					std::cout << editStr << std::endl;
+					if (cursor_pos < 25){
+						cursor_pos+=1;
+					}
+				}else{
+					editStr.insert(cursor_pos, in);
+					cursor_pos += 1;
+				}
 			}
-			if (evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
+			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
 				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
 				cursor_pos -= 1;
 			}
 		} 
-		clear_png(&text_render[0][0], window_height/3, window_width);
-		render_text(&tex_example, editStr.substr(0, cursor_pos) + "l " + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
-		update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
-		std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;
+		//clear_png(&text_render[0][0], window_height/3, window_width);
+		//render_text(&tex_box_text, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+		//update_texture(&tex_box_text);
+		if (cs_open){
+			clear_png(&tex_cs);
+			render_text(&tex_cs, editStr, green, 'd', 75);
+			update_texture(&tex_cs);
+			clear_png(&tex_box_text);
+			render_text(&tex_box_text, current_line, white);
+			update_texture(&tex_box_text);
+		}else{
+			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
+			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+			update_texture(editingBox);
+			std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
+		}
 	} else if (evt.type == SDL_KEYUP && !editMode) {
 		
 		if (evt.key.keysym.sym == SDLK_a) {
@@ -818,7 +871,18 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_c) {
 
 			// toggle the right (codebook) pane
-			togglePanel(textures, RightPane);
+			//togglePanel(textures, RightPane);
+			cs_open = !cs_open;
+			editingBox = &tex_cs;
+			editStr = "";
+			cursor_pos = 0;
+			for (int i = 0; i < 26; i++){
+				editStr = editStr + substitution[i];
+			}
+			editMode = true;
+			clear_png(&tex_cs);
+			render_text(&tex_cs, editStr, green, 'd', 75);
+			update_texture(&tex_cs);
 			return true;
 
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
@@ -828,9 +892,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (choices > 0) {
 				if (display_state.current_choice < choices - 1) display_state.current_choice++;
 				
-				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
-				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+				clear_png(&tex_box_text, window_height/3, window_width);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white);
+				update_texture(&tex_box_text);
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
@@ -838,18 +902,17 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (display_state.jumps.size() > 0) {
 				if (display_state.current_choice > 0) display_state.current_choice--;
 				
-				clear_png(&text_render[0][0], window_height/3, window_width);
-				render_text(&tex_example, display_state.jump_names[display_state.current_choice], white);
-				update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+				clear_png(&tex_box_text, window_height/3, window_width);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white);
+				update_texture(&tex_box_text);
 			}
 			return true;
 		} 
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		
-		clear_png(&text_render[0][0], window_height/3, window_width);
+		clear_png(&tex_box_text, window_height/3, window_width);
 		update_state(display_state.current_choice);
-		// render_text(&tex_example, display_state.bottom_text, white);
-		// update_texture(&tex_example, -1.0f, 1.0f, -1.0f, -0.33f, 0.0f);
+		// render_text(&tex_box_text, display_state.bottom_text, white);
+		// update_texture(&tex_box_text);
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 			glm::vec2 motion = glm::vec2(
@@ -917,23 +980,30 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		glUseProgram(texture_program->program);
 		glActiveTexture(GL_TEXTURE0);
-		//std::cout << "Texture ID: " << tex_example.tex << std::endl;
+		//std::cout << "Texture ID: " << tex_box_text.tex << std::endl;
 		glBindVertexArray(tex_textbg.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_textbg.tex);
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_textbg.count);
 
-		glBindVertexArray(tex_example.tristrip_for_texture_program);
-		glBindTexture(GL_TEXTURE_2D, tex_example.tex);
-		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_example.CLIP_FROM_LOCAL) );
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_example.count);
+		glBindVertexArray(tex_box_text.tristrip_for_texture_program);
+		glBindTexture(GL_TEXTURE_2D, tex_box_text.tex);
+		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_box_text.CLIP_FROM_LOCAL) );
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_box_text.count);
+		GL_ERRORS();
+		
+		glBindVertexArray(tex_cs.tristrip_for_texture_program);
+		glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
+		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_cs.CLIP_FROM_LOCAL) );
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_cs.count);
+		GL_ERRORS();
 		
 		/*glBindVertexArray(tex_bg.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_bg.tex);
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_bg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_bg.count);*/
 
-		// std::cout << std::to_string(size_t(tex_example.count)) << std::endl;
+		// std::cout << std::to_string(size_t(tex_box_text.count)) << std::endl;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
