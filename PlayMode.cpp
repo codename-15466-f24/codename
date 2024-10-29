@@ -40,7 +40,7 @@ static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
 static constexpr uint32_t render_height = window_height/3;
 static constexpr uint32_t render_width = window_width;
-static glm::u8vec4 text_render[render_height][render_width];
+// static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 // static uint32_t activeIndex = 0;
 // static uint32_t lastIndex = 0;
@@ -230,7 +230,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
 	FT_GlyphSlot  slot = ft_face->glyph; // 
 	int           pen_x, pen_y;
-	static uint32_t h = window_height/3;
+	// static uint32_t h = window_height/3;
 	//reset png
 	clear_png(tex_in);
 	//ensure it's correct size
@@ -685,7 +685,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				editMode = !editMode;
 				editStr = "";
 				cursor_pos = 0;
-				clear_png(&text_render[0][0], window_height/3, window_width);
+				clear_png(&tex_box_text);
 				update_state(display_state.current_choice);
 				return true;
 			}
@@ -881,7 +881,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_c) {
 
 			// toggle the right (codebook) pane
-			//togglePanel(textures, RightPane);
+			togglePanel(textures, RightPane);
 			cs_open = !cs_open;
 			editingBox = &tex_cs;
 			editStr = "";
@@ -1003,12 +1003,16 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_box_text.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_box_text.count);
 		GL_ERRORS();
-		
-		glBindVertexArray(tex_cs.tristrip_for_texture_program);
-		glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
-		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_cs.CLIP_FROM_LOCAL) );
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_cs.count);
-		GL_ERRORS();
+
+
+		if (!textures[1]->visible)
+		{
+			glBindVertexArray(tex_cs.tristrip_for_texture_program);
+			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
+			glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_cs.CLIP_FROM_LOCAL) );
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_cs.count);
+			GL_ERRORS();
+		}
 		
 		/*glBindVertexArray(tex_bg.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_bg.tex);
