@@ -879,13 +879,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					in = ",";
 					success = true;
 					break;
+					if (cs_open){
+						success = false;
+					}
 				case SDLK_SPACE:
 					in = " ";
 					success = true;
+					if (cs_open){
+						success = false;
+					}
 					break;
 				case SDLK_PERIOD:
 					in = ".";
 					success = true;
+					if (cs_open){
+						success = false;
+					}
 					break;
 				default:
 					break;
