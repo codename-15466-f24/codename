@@ -1,5 +1,5 @@
 1 Character player You Human
-2 Speech player "Good morning, what can I get for you?"
+2 Speech player "[You]: Good morning, what can I get for you?"
 3 Text d " [INSTRUCTION FOR PLAYTESTING: Before advancing through the dialogue, ask one of the Codename group members for instructions]"
 4 Text e "Yevb texl"
 5 Text e "Wxosk"
