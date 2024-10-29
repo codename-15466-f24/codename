@@ -42,7 +42,7 @@ static constexpr uint32_t render_height = window_height/3;
 static constexpr uint32_t render_width = window_width;
 static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
-static uint32_t activeIndex = 0;
+// static uint32_t activeIndex = 0;
 // static uint32_t lastIndex = 0;
 static std::vector<std::string> links;
 static bool editMode = false;
@@ -457,6 +457,10 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	display_state.current_lines = lines_from_file(display_state.file);
 	display_state.jumps.push_back(1);
 
+	textures = initializeTextures(alignments);
+	addTextures(textures, paths, texture_program);
+
+
 	update_state(0);
 }
 
@@ -597,9 +601,6 @@ void PlayMode::update_state(uint32_t jump_choice) {
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	update_texture(&tex_textbg, -1.0f, 1.0f, -1.0f, -0.33f, 0.0001f);
-  	textures = initializeTextures(alignments);
-	addTextures(textures, paths, texture_program);
-	std::cout << textures[0]->relativeSizeX << std::endl;
 }
 
 PlayMode::~PlayMode() {
