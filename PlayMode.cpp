@@ -257,6 +257,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		float wordWidth = 0.0f;
 		std::string word = "";
 		char loop_glyphname[32] = "";
+		//std::cout << glyphname;
 		if (lastWasSpace) {
 			uint32_t m = n;
 			while (strcmp(loop_glyphname,"space") != 0 && strcmp(loop_glyphname,"uni20BF") != 0 && m < len){
@@ -302,7 +303,11 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		}
 		
 		// bitmap drawing function
-		draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
+		if (colorOut == green && n == cursor_pos){
+			draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
+		} else {
+			draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
+		}
 
 		// Move the "pen" based on x and y advance given by glyphs
 		pen_x += pos[n].x_advance / 64; 
@@ -314,6 +319,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			lastWasSpace = false;
 		}
 	}
+	//std::cout << std::endl;
 	//save_png(data_path("out.png"), glm::uvec2(window_width, h), &text_render[0][0], UpperLeftOrigin); //Upper left worked.
 	
 	//std::vector<glm::u8vec4> data_out;
@@ -675,6 +681,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			//enter.pressed = false;
 			// if (display_state.status == INPUT) editMode = !editMode;
 			std::cout << "not editmode" << std::endl;
+			editMode = true;
+			display_state.status = INPUT;
+			editingBox = &tex_box_text;
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
@@ -686,10 +695,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 				editMode = false;
 				editStr = "";
-				cs_open = false;
+				if (cs_open){
+					togglePanel(textures, RightPane);
+					cs_open = false;
+				}
 				cursor_pos = 0;
-				clear_png(&tex_box_text);
-				togglePanel(textures, RightPane);
+				clear_png(editingBox);
 				display_state.status = CHANGING;
 				clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white);
@@ -697,12 +708,16 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				return true;
 			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
-			if(cursor_pos != 0){
+			if (cursor_pos != 0) {
 				cursor_pos -= 1;
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if(cursor_pos != editStr.length()){
 				cursor_pos += 1;
+			} else {
+				if (cs_open){
+					cursor_pos = 0;
+				}
 			}
 		}
 		//else if (keysym.unicode ) { // Maybe maintain and check a list of acceptable keys
@@ -833,9 +848,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				if (cs_open){
 					editStr[cursor_pos] = in[0] - 'A' + 'a';
 					substitution[cursor_pos] = in[0] - 'A' + 'a';
-					std::cout << editStr << std::endl;
+					//std::cout << editStr << std::endl;
 					if (cursor_pos < 25){
 						cursor_pos+=1;
+					} else {
+						cursor_pos = 0;
 					}
 				}else{
 					editStr.insert(cursor_pos, in);
@@ -859,7 +876,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			update_texture(&tex_box_text);
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
-			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
+			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
 			update_texture(editingBox);
 			std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
 		}
@@ -897,6 +914,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				editStr = editStr + substitution[i];
 			}
 			editMode = true;
+			display_state.status = INPUT;
 			clear_png(&tex_cs);
 			render_text(&tex_cs, editStr, green, 'd', 75);
 			update_texture(&tex_cs);
@@ -928,9 +946,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (display_state.status != INPUT) {
 			clear_png(&tex_box_text, window_height/3, window_width);
-      update_state(display_state.current_choice);
-      // render_text(&tex_box_text, display_state.bottom_text, white);
-      // update_texture(&tex_box_text);
+			update_state(display_state.current_choice);
+			// render_text(&tex_box_text, display_state.bottom_text, white);
+			// update_texture(&tex_box_text);
 		}
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
