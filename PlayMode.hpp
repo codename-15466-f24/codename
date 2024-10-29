@@ -136,7 +136,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "test.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "first_interaction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 1;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
