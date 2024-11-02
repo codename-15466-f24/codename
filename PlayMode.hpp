@@ -138,7 +138,7 @@ struct PlayMode : Mode {
 	struct DisplayState {
 		std::string file = "first_interaction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
-		uint32_t line_number = 1;
+		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
 		// Unfortunately, current_lines itself is 0-indexed.
 
@@ -150,6 +150,8 @@ struct PlayMode : Mode {
 
 		std::vector<uint32_t> jumps; // only 1 option if the status isn't a choice
 		std::vector<std::string> jump_names; // for choices
+		
+		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
 	} display_state;
 
@@ -157,7 +159,15 @@ struct PlayMode : Mode {
 	std::string cursor_str = "|";
 
 	void refresh_display();
-	void update_one_line(uint32_t jump_choice);
-	void update_state(uint32_t jump_choice);
+
+	void advance_one_line(uint32_t jump_choice);
+	void update_one_line(uint32_t location);
+
+	void apply_command(std::string line);
+
+	void retreat_state();
+	void advance_state(uint32_t jump_choice);
+	void draw_state_text();
+
 	void check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump);
 };

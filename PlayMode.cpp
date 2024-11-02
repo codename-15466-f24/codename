@@ -483,7 +483,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	textures = initializeTextures(alignments);
 	addTextures(textures, paths, texture_program);
 
-	update_state(0);
+	advance_state(0);
 }
 
 /* This function should refresh the display according to whatever is in the state.
@@ -496,13 +496,26 @@ void PlayMode::refresh_display() {
 	// these are all comments because I'm not sure what exactly this should look like yet
 }
 
+void PlayMode::advance_one_line(uint32_t jump_choice) {
+	uint32_t place = display_state.jumps[jump_choice] - 1;
+	update_one_line(place);
+}
+
 // Advance the script by one line.
-void PlayMode::update_one_line(uint32_t jump_choice) {
-	std::string line = display_state.current_lines[display_state.jumps[jump_choice] - 1];
+void PlayMode::update_one_line(uint32_t location) {
+	apply_command(display_state.current_lines[location]);
+}
+
+// Apply any script line.
+void PlayMode::apply_command(std::string line) {
 	std::cout << line << std::endl;
 	std::vector<std::string> parsed = parse_script_line(line, " ");
 
-	display_state.line_number = atoi(parsed[0].c_str());
+	// Note: A command with a negative number has its line number ignored.
+	// This is useful for applying custom lines
+	int next_num = atoi(parsed[0].c_str());
+	if (next_num >= 0) display_state.line_number = atoi(parsed[0].c_str());
+
 	std::string keyword = parsed[1];
 	if (keyword == "Character") {
 		if (characters.find(parsed[2]) == characters.end()) {
@@ -625,13 +638,30 @@ void PlayMode::update_one_line(uint32_t jump_choice) {
 	display_state.current_choice = 0; // reset choice
 }
 
+// Backspace functionality
+void PlayMode::retreat_state() {
+	if (!display_state.history.size()) return; // no history
+	auto &[file, lnum] = display_state.history.back();
+	if (file != display_state.file) {
+		apply_command("-1 Change_File " + file);
+	}
+	display_state.history.pop_back();
+	apply_command(std::to_string(lnum - 1) + " Jump " + std::to_string(lnum));
+	while (display_state.status == CHANGING) advance_one_line(0);
+	draw_state_text();
+}
+
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
-void PlayMode::update_state(uint32_t jump_choice) {
-	update_one_line(jump_choice);
-	while (display_state.status == CHANGING) update_one_line(0);
-  
- 	// Draw different text depending on the status.
+void PlayMode::advance_state(uint32_t jump_choice) {
+	if (display_state.line_number > 0) display_state.history.push_back(std::pair(display_state.file, display_state.line_number));
+	advance_one_line(jump_choice);
+	while (display_state.status == CHANGING) advance_one_line(0);
+	draw_state_text();
+}
+
+void PlayMode::draw_state_text() {
+	// Draw different text depending on the status.
 	std::string text_to_draw = "";
 	if (display_state.status == CHOICE_TEXT) {
 		for (std::string s : display_state.jump_names) {
@@ -667,7 +697,7 @@ PlayMode::~PlayMode() {
 }
 
 void PlayMode::check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump){
-	if (input == correct){
+	if (input == correct) {
 		// Jump to correct line
 		display_state.jumps = {correctJump};
 		display_state.status = CHANGING;
@@ -690,15 +720,13 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 	}
 
-	if (evt.type == SDL_KEYDOWN && !editMode) {
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_F3) {
+		retreat_state();
+		return true;
+	} else if (evt.type == SDL_KEYDOWN && !editMode) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-			if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
-				SDL_SetRelativeMouseMode(SDL_TRUE);
-				return true;
-			} else {
-				SDL_SetRelativeMouseMode(SDL_FALSE);
-				return true;
-			}
+			SDL_SetRelativeMouseMode(SDL_FALSE);
+			return true;
 		} else if (evt.key.keysym.sym == SDLK_a) {
 			left.downs += 1;
 			left.pressed = true;
@@ -725,7 +753,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
-		if (evt.key.keysym.sym == SDLK_RETURN) {
+		if (evt.key.keysym.sym == SDLK_ESCAPE) {
+			if (cs_open) {
+				togglePanel(textures, RightPane);
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, current_line, white, display_state.cipher);
+				update_texture(&tex_box_text);
+				cs_open = false;
+			}
+			editMode = false;
+			editStr = "";
+			cursor_pos = 0;
+			display_state.status = CHANGING;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			//std::cout << "editmode" << std::endl;
 			if (editStr != "") {
@@ -733,18 +775,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				
 				// checking function
 
-				if (cs_open){
-					togglePanel(textures, RightPane);
-					clear_png(&tex_box_text);
-					render_text(&tex_box_text, current_line, white, display_state.cipher);
-					update_texture(&tex_box_text);
-					cs_open = false;
-				} else {	
+				if (!cs_open) {	
 					if (correctStr != ""){
 						check_jump(editStr, correctStr, cj, ij);
 					}
 					clear_png(editingBox);
-					update_state(display_state.current_choice);
+					advance_state(display_state.current_choice);
 				}
 				editMode = false;
 				editStr = "";
@@ -950,14 +986,14 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_s) {
 			down.pressed = false;
 			return true;
-		} else if (evt.key.keysym.sym == SDLK_i) {
+		} else if (evt.key.keysym.sym == SDLK_F1) {
 
 			// toggle the left (inventory) pane
 			
 			togglePanel(textures, LeftPane);
 			return true;
 
-		} else if (evt.key.keysym.sym == SDLK_c) {
+		} else if (evt.key.keysym.sym == SDLK_F2) {
 
 			// toggle the right (codebook) pane
 			togglePanel(textures, RightPane);
@@ -980,11 +1016,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			// std::cout << std::to_string(choices) << std::endl;
 			size_t choices = display_state.jumps.size();
 			if (choices > 0) {
-				if (display_state.current_choice < choices - 1) display_state.current_choice++;
-				
-				clear_png(&tex_box_text);
-				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
-				update_texture(&tex_box_text);
+				if (display_state.current_choice < choices - 1) {
+					display_state.current_choice++;	
+					clear_png(&tex_box_text);
+					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
+					update_texture(&tex_box_text);
+				}
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
@@ -1001,23 +1038,23 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (display_state.status != INPUT) {
 			clear_png(&tex_box_text);
-			update_state(display_state.current_choice);
+			advance_state(display_state.current_choice);
 			// render_text(&tex_box_text, display_state.bottom_text, white);
 			// update_texture(&tex_box_text);
 		}
 	} else if (evt.type == SDL_MOUSEMOTION) {
-		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
-			glm::vec2 motion = glm::vec2(
-				evt.motion.xrel / float(window_size.y),
-				-evt.motion.yrel / float(window_size.y)
-			);
-			camera->transform->rotation = glm::normalize(
-				camera->transform->rotation
-				* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
-				* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
-			);
-			return true;
-		}
+		// if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
+		// 	glm::vec2 motion = glm::vec2(
+		// 		evt.motion.xrel / float(window_size.y),
+		// 		-evt.motion.yrel / float(window_size.y)
+		// 	);
+		// 	camera->transform->rotation = glm::normalize(
+		// 		camera->transform->rotation
+		// 		* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
+		// 		* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
+		// 	);
+		// 	return true;
+		// }
 	}
 
 
