@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <deque>
-
+#include <iostream>
 
 
 std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments)
@@ -21,6 +21,36 @@ std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments
 		if (i < 2)
 		{
 			t->visible = true;
+		}
+
+		if (i == 0)
+		{
+			t->onClick = [](std::vector<TexStruct *> textures)
+			{
+				for (auto tex : textures)
+				{
+					if (tex->alignment == LeftPane)
+					{
+						tex->visible = !tex->visible;
+
+					}
+				}
+			};
+		}
+
+		if (i == 1)
+		{
+			t->onClick = [](std::vector<TexStruct *> textures)
+			{
+				for (auto tex : textures)
+				{
+					if (tex->alignment == RightPane)
+					{
+						tex->visible = !tex->visible;
+
+					}
+				}
+			};
 		}
 		textures.push_back(t);
 	}
@@ -49,6 +79,7 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 	{
 		assert(tex_);
 		auto &tex = *tex_;
+		tex.path = paths[path_index];
 		
 		// from in-class example
 		glGenTextures(1, &tex.tex); 
@@ -134,6 +165,11 @@ void updateTextures(std::vector<TexStruct *> textures)
 		// is right aligned
 		if (tex->alignment == RightPane)
 		{
+			tex->bounds = {1.0f-tex->relativeSizeX, 
+							1.0f - (offset*tex->relativeSizeY) - (offset*padding), 
+							1.0f, 
+							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding)};
+
 			// pin to right corner (for codebook)
 			verts.emplace_back(PosTexVertex{
 			.Position = glm::vec3(1.0f-tex->relativeSizeX, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
@@ -155,6 +191,12 @@ void updateTextures(std::vector<TexStruct *> textures)
 				.TexCoord = glm::vec2(1.0f, 1.0f),
 			});
 		} else {
+			tex->bounds = { -1.0f,
+							1.0f - (offset*tex->relativeSizeY) - (offset*padding),
+							-1.0f+tex->relativeSizeX,
+							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding)
+			};
+
 			// pin to left corner (for inventory items)
 			verts.emplace_back(PosTexVertex{
 			.Position = glm::vec3(-1.0f, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
@@ -254,5 +296,22 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 	}
 }
 	
+void checkForClick(std::vector<TexStruct *> textures, float x, float y)
+{
+	for (auto tex_ : textures)
+	{
+		assert(tex_);
+		auto &tex = *tex_;
 
+
+		if (x >= tex.bounds[0] &&
+			x < tex.bounds[2] &&
+			y > tex.bounds[3] &&
+			y <= tex.bounds[1])
+		{
+			tex.onClick(textures);
+			return;
+		}
+	}
+}
 

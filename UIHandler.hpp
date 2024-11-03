@@ -14,9 +14,15 @@ struct PosTexVertex {
 // potentially expand to up or down?
 enum PanePosition {
 	LeftPane,
-	RightPane
+	RightPane,
+	MiddlePane
 };
 
+enum CipherDisplayed
+{
+	Reverse, 
+	Substitution
+};
 struct TexStruct {
 	TexStruct(PanePosition align)
 	{
@@ -38,6 +44,14 @@ struct TexStruct {
 	// size in pixels
 	float sizeX = 0;
 	float sizeY = 0;
+
+	std::function<void(std::vector<TexStruct *>)> onClick = 
+			[](std::vector<TexStruct *> textures){};
+
+	//x0, x1, y0, y1, z
+	std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+
+	std::string path;
 	
 	// stick to right or left side of screen
 	PanePosition alignment = LeftPane;
@@ -57,6 +71,6 @@ void drawTextures(std::vector<TexStruct *> textures, const TextureProgram *ui_te
 
 void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size);
 
-	
+void checkForClick(std::vector<TexStruct *> textures, float x, float y);
 
 

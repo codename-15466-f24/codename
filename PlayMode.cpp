@@ -1036,12 +1036,20 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		} 
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
+
+		// convert motion to texture coordinate system
+		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
+		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
+
+		checkForClick(textures, tex_x, tex_y);
+		
 		if (display_state.status != INPUT) {
 			clear_png(&tex_box_text);
 			advance_state(display_state.current_choice);
 			// render_text(&tex_box_text, display_state.bottom_text, white);
 			// update_texture(&tex_box_text);
 		}
+
 	} else if (evt.type == SDL_MOUSEMOTION) {
 		// if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
 		// 	glm::vec2 motion = glm::vec2(
