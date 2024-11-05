@@ -1027,11 +1027,13 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
 			if (display_state.jumps.size() > 0) {
-				if (display_state.current_choice > 0) display_state.current_choice--;
+				if (display_state.current_choice > 0) {
+					display_state.current_choice--;
 				
-				clear_png(&tex_box_text);
-				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
-				update_texture(&tex_box_text);
+					clear_png(&tex_box_text);
+					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
+					update_texture(&tex_box_text);
+				}
 			}
 			return true;
 		} 
