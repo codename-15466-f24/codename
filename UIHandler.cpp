@@ -10,48 +10,19 @@
 #include <iostream>
 
 
-std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments)
+std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments, 
+								std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks)
 {
 	std::vector<TexStruct *> textures;
 	for (size_t i = 0; i < alignments.size(); i++)
 	{
 		TexStruct *t = new TexStruct(alignments[i]);
-
-		// only t
 		if (i < 2)
 		{
 			t->visible = true;
 		}
-
-		if (i == 0)
-		{
-			t->onClick = [](std::vector<TexStruct *> textures)
-			{
-				for (auto tex : textures)
-				{
-					if (tex->alignment == LeftPane)
-					{
-						tex->visible = !tex->visible;
-
-					}
-				}
-			};
-		}
-
-		if (i == 1)
-		{
-			t->onClick = [](std::vector<TexStruct *> textures)
-			{
-				for (auto tex : textures)
-				{
-					if (tex->alignment == RightPane)
-					{
-						tex->visible = !tex->visible;
-
-					}
-				}
-			};
-		}
+		t->onClick = callbacks[i];
+		
 		textures.push_back(t);
 	}
 
@@ -296,22 +267,27 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 	}
 }
 	
-void checkForClick(std::vector<TexStruct *> textures, float x, float y)
+bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 {
 	for (auto tex_ : textures)
 	{
 		assert(tex_);
 		auto &tex = *tex_;
 
-
-		if (x >= tex.bounds[0] &&
-			x < tex.bounds[2] &&
-			y > tex.bounds[3] &&
-			y <= tex.bounds[1])
+		// don't allow clicking on invisible textures
+		if (tex.visible)
 		{
-			tex.onClick(textures);
-			return;
+			if (x >= tex.bounds[0] &&
+				x < tex.bounds[2] &&
+				y > tex.bounds[3] &&
+				y <= tex.bounds[1])
+			{
+				tex.onClick(textures);
+				return true;
+			}
 		}
 	}
+
+	return false;
 }
 

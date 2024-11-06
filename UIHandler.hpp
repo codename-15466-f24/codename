@@ -15,6 +15,7 @@ struct PosTexVertex {
 enum PanePosition {
 	LeftPane,
 	RightPane,
+	TopMiddlePane,
 	MiddlePane
 };
 
@@ -59,8 +60,8 @@ struct TexStruct {
 
 };
 
-std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments);
-
+std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments, 
+								std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks);
 void togglePanel(std::vector<TexStruct *> textures, PanePosition alignment);
 
 void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> paths, const TextureProgram *ui_texture_program);
@@ -71,6 +72,6 @@ void drawTextures(std::vector<TexStruct *> textures, const TextureProgram *ui_te
 
 void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size);
 
-void checkForClick(std::vector<TexStruct *> textures, float x, float y);
+bool checkForClick(std::vector<TexStruct *> textures, float x, float y);
 
 
