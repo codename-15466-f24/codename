@@ -39,7 +39,7 @@ struct PlayMode : Mode {
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
-	} tex_box_text, tex_bg, tex_textbg, tex_cs;
+	} tex_box_text, tex_textbg, tex_cs;
 
 
 	//input tracking:
@@ -76,11 +76,11 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<PanePosition> alignments = {LeftPane, RightPane, 
-											LeftPane, LeftPane, LeftPane, LeftPane,
-											RightPane};
-	std::vector<std::string> paths = {"pressI.png", "pressC.png",
-									"inventory1.png", "inventory2.png", "inventory3.png", "inventory4.png",
-									"cheatsheet.png"};
+											LeftPane, RightPane};
+	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
+									"special_request.png", "cipher_panel_full.png"};
+									
+	std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks;
 
 	//stuff in the scene
 	Scene::Transform *swap_creature = nullptr;
@@ -170,4 +170,6 @@ struct PlayMode : Mode {
 	void draw_state_text();
 
 	void check_jump(std::string input, std::string correct, uint32_t correctJump, uint32_t incorrectJump);
+	void initializeCallbacks();
+
 };

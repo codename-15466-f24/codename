@@ -440,6 +440,57 @@ int update_texture(PlayMode::TextureItem *tex_in){
 	return 0;
 }
 
+void PlayMode::initializeCallbacks()
+{
+
+	for (std::string path : paths)
+	{
+		if (path == "special_request_collapsed.png")
+		{
+			// icon that opens special request menu
+			auto callback = [&](std::vector<TexStruct *> textures){
+				togglePanel(textures, LeftPane);
+			};
+
+			callbacks.emplace_back(callback);
+		}
+		else if (path == "special_request.png")
+		{
+			// special request menu
+			auto callback = [&](std::vector<TexStruct *> textures){
+				togglePanel(textures, LeftPane);
+			};
+
+			callbacks.emplace_back(callback);
+		} 
+		else if (path == "cipher_panel.png")
+		{
+			// special request menu
+			auto callback = [&](std::vector<TexStruct *> textures){
+				togglePanel(textures, RightPane);
+			};
+
+			callbacks.emplace_back(callback);
+		}
+		else if (path == "cipher_panel_full.png")
+		{
+			// special request menu
+			auto callback = [&](std::vector<TexStruct *> textures){
+				togglePanel(textures, RightPane);
+			};
+
+			callbacks.emplace_back(callback);
+		}
+		else
+		{
+			// default case, do nothing for the callback
+			callbacks.emplace_back([&](std::vector<TexStruct *> textures){});
+		}
+		
+	}
+
+}
+
 // //Using filestreams - maybe don't use this in final
 // void loadScript (std::string path_in){
 // 	// following partially adopted from example in https://cplusplus.com/doc/tutorial/files/
@@ -480,7 +531,9 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	display_state.current_lines = lines_from_file(display_state.file);
 	display_state.jumps.push_back(1);
 	editingBox = &tex_box_text;
-	textures = initializeTextures(alignments);
+
+	initializeCallbacks();
+	textures = initializeTextures(alignments, callbacks);
 	addTextures(textures, paths, texture_program);
 
 	advance_state(0);
@@ -1044,8 +1097,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		checkForClick(textures, tex_x, tex_y);
-		
-		if (display_state.status != INPUT) {
+
+		// only advance if click inside of dialogue
+		if (display_state.status != INPUT &&
+			tex_x >= tex_textbg.bounds[0] &&
+			tex_x < tex_textbg.bounds[1] &&
+			tex_y >= tex_textbg.bounds[2] &&
+			tex_y < tex_textbg.bounds[3])
+		{
+
 			clear_png(&tex_box_text);
 			advance_state(display_state.current_choice);
 			// render_text(&tex_box_text, display_state.bottom_text, white);
