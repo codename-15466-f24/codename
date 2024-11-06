@@ -2,6 +2,7 @@
 
 #include "LitColorTextureProgram.hpp"
 #include "TextureProgram.hpp"
+#include "Framebuffers.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -1086,6 +1087,9 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
+	// //make sure framebuffers are the same size as the window:
+	// framebuffers.realloc(drawable_size);
+
 	//update camera aspect ratio for drawable:
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
@@ -1097,6 +1101,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
 	glUseProgram(0);
 
+	// //---- draw scene to HDR framebuffer ----
+	// glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+
 	glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1105,6 +1112,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
 	scene.draw(*camera);
+
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// //apply a bloom effect:
+	// framebuffers.add_bloom();
 
 	drawTextures(textures, texture_program);
 
