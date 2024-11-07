@@ -59,7 +59,7 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 			glm::uvec2 size;
 
 			load_png(data_path(paths[path_index]), &size, &data, LowerLeftOrigin);
-			for (uint i = 0; i < data.size(); i++) {
+			for (size_t i = 0; i < data.size(); i++) {
 				data[i] = glm::u8vec4(255.f * glm::convertSRGBToLinear(glm::vec4(data[i]) / 255.f));
 			}
 

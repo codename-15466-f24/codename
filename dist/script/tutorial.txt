@@ -12,9 +12,9 @@
 12 Text d "Looks like this guy's a Bleebus. Grandpa gave us some notes on these guys. Make sure to check Grandpa's notes sometimes - he left some hints for when you might get stuck ;)"
 13 Text d "Here, we use codesheets to convert alien languages to our own. Try using this one to reverse the bleebus language into ours!"
 14 Text d "Remember, the Bleebus wants Retaw."
-15 Solve_Puzzle subeelb "wateR"
-16 Text d "Great! You've served your first customer."
-17 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
-18 Text d "Make sure to use receipts as hints for future customers!"
-19 Jump 18
-20  Show mini_puzzle eek
+15 Show mini_puzzle eek
+16 Solve_Puzzle subeelb "wateR"
+17 Text d "Great! You've served your first customer."
+18 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
+19 Text d "Make sure to use receipts as hints for future customers!"
+20 Jump 19
