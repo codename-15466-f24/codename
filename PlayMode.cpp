@@ -508,6 +508,13 @@ void PlayMode::initializeCallbacks()
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = false;
+				reverse_cipher.set_feature("flip", cf);
+				std::string res = reverse_cipher.encode(display_state.puzzle_text);
+				std::cout << res << std::endl;
+				display_state.bottom_text = res;
+				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
 
@@ -531,6 +538,13 @@ void PlayMode::initializeCallbacks()
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = true;
+				reverse_cipher.set_feature("flip", cf);
+				std::string res = reverse_cipher.encode(display_state.puzzle_text);
+				std::cout << res << std::endl;
+				display_state.bottom_text = res;
+				draw_state_text();
 			};
 
 			callbacks.emplace_back(callback);
@@ -769,6 +783,7 @@ void PlayMode::apply_command(std::string line) {
 					std::string res = reverse_cipher.encode(parsed[3]);
 					std::cout << res << std::endl;
 					display_state.bottom_text = res;
+					display_state.puzzle_text = parsed[3];
 				}
 			}
 			else {

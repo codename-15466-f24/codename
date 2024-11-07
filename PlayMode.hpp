@@ -168,6 +168,7 @@ struct PlayMode : Mode {
 		uint32_t current_choice = 0;
 
 		bool solved_puzzle = false;
+		std::string puzzle_text;
 	} display_state;
 
 	std::string player_id = "player";
