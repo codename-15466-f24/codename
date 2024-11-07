@@ -55,6 +55,8 @@ static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
 
+// Leaving the cipher up here for now because the substitution is here
+ReverseCipher reverse_cipher;
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
@@ -815,6 +817,7 @@ void PlayMode::advance_state(uint32_t jump_choice) {
 	if (display_state.line_number > 0) display_state.history.push_back(std::pair(display_state.file, display_state.line_number));
 	advance_one_line(jump_choice);
 	while (display_state.status == CHANGING) advance_one_line(0);
+
 	draw_state_text();
 }
 
@@ -827,6 +830,8 @@ void PlayMode::draw_state_text() {
 		}
 	}
 	else text_to_draw = display_state.bottom_text;
+
+	std::cout << "DEBUG: Reversed variant of state text: " << reverse_cipher.encode(text_to_draw) << std::endl;
 
 	tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};

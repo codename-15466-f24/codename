@@ -72,6 +72,7 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "*.rh": "cpp",
-        "cstdarg": "cpp"
+        "cstdarg": "cpp",
+        "unordered_set": "cpp"
     }
 }

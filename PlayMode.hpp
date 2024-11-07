@@ -5,6 +5,7 @@
 #include "UIHandler.hpp"
 
 #include "string_parsing.hpp"
+#include "ReverseCipher.hpp"
 
 #include <glm/glm.hpp>
 
