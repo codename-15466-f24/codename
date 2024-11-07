@@ -75,12 +75,22 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<PanePosition> alignments = {LeftPane, RightPane, 
-											LeftPane, RightPane};
+	std::vector<bool> visibilities = {true, true, 
+									false, false, 
+									true, false, true,
+									true, false, true, true};
+	std::vector<PanePosition> alignments = {LeftPane, RightPane,
+											LeftPane, RightPane,
+											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
+											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG
+											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
-									"special_request.png", "cipher_panel_full.png"};
+									"special_request.png", "cipher_panel_full.png",
+									"customer1.png", "customer1_selected.png", "bg_customer.png",
+									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png"
+									};
 									
-	std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks;
+	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
 
 	//stuff in the scene
 	Scene::Transform *swap_creature = nullptr;

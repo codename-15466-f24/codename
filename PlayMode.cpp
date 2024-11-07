@@ -218,24 +218,6 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	hb_glyph_info_t *info = hb_buffer_get_glyph_infos (hb_buffer, NULL);
 	hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (hb_buffer, NULL);
 	
-	//Commented code is for debugging, should that be necessary.
-	/*printf ("Raw buffer contents:\n");
-	for (unsigned int i = 0; i < len; i++)
-	{
-		hb_codepoint_t gid   = info[i].codepoint;
-		unsigned int cluster = info[i].cluster;
-		double x_advance = pos[i].x_advance / 64.;
-		double y_advance = pos[i].y_advance / 64.;
-		double x_offset  = pos[i].x_offset / 64.;
-		double y_offset  = pos[i].y_offset / 64.;
-
-		char glyphname[32];
-		hb_font_get_glyph_name (hb_font, gid, glyphname, sizeof (glyphname));
-
-		printf ("glyph='%s'	cluster=%d	advance=(%g,%g)	offset=(%g,%g)\n",
-				glyphname, cluster, x_advance, y_advance, x_offset, y_offset);
-	}*/
-
 
 	// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
 	FT_GlyphSlot  slot = ft_face->glyph; // 
@@ -329,22 +311,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			lastWasSpace = false;
 		}
 	}
-	//std::cout << std::endl;
-	//save_png(data_path("out.png"), glm::uvec2(window_width, h), &text_render[0][0], UpperLeftOrigin); //Upper left worked.
 	
-	//std::vector<glm::u8vec4> data_out;
-
-	//Based on https://cplusplus.com/forum/beginner/190966/
-	/*for (int row = render_height-1; row > -1; row--)
-	{
-		for (int col = 0; col < render_width; col++)
-		{
-			data_out.push_back(text_aol]);
-		}
-	}*/
-
-	//tex_in->data = data_out;
-	//tex_in->size = glm::uvec2(window_width, h);
 
 	hb_buffer_destroy (hb_buffer);
 	hb_font_destroy (hb_font);
@@ -454,7 +421,7 @@ void PlayMode::initializeCallbacks()
 		if (path == "special_request_collapsed.png")
 		{
 			// icon that opens special request menu
-			auto callback = [&](std::vector<TexStruct *> textures){
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
 			};
 
@@ -463,7 +430,7 @@ void PlayMode::initializeCallbacks()
 		else if (path == "special_request.png")
 		{
 			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures){
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
 			};
 
@@ -471,8 +438,8 @@ void PlayMode::initializeCallbacks()
 		} 
 		else if (path == "cipher_panel.png")
 		{
-			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures){
+			// cipher panel button, on click expands the cipher panel
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
 			};
 
@@ -480,9 +447,151 @@ void PlayMode::initializeCallbacks()
 		}
 		else if (path == "cipher_panel_full.png")
 		{
-			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures){
+			// full cipher panel, on click collapses the cipher panel
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
+			};
+
+			callbacks.emplace_back(callback);
+		} else if (path.substr(0,8) == "customer")
+		{
+
+			// special customer selector, either select or deselect customer
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+
+				// if the name is longer than customerN.png, we know the 
+				// selected version image was clicked (so we're deselecting)
+				// otherwise, the deselected image was clicked so we're
+				// selecting
+
+				if (path.length() > 13)
+				{
+					std::cout << "deselecting customer: " << path << std::endl;
+					
+					
+				} else {
+					std::cout << "selecting customer: " << path << std::endl;
+
+				}
+
+				// toggle selected/deselected button look
+				for (auto tex : textures)
+				{
+
+					if (tex->path != path && tex->path.substr(0,9) == path.substr(0,9))
+					{
+						tex->visible = true;
+					} else if (tex->path == path)
+					{
+						tex->visible = false;
+					}
+
+
+				}
+
+
+			};
+
+			callbacks.emplace_back(callback);
+		} else if (path == "reverse_button.png")
+		{
+			// button that reverses the text
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+
+				// toggle selected version on
+				for (auto tex : textures)
+				{
+					if (tex->path == "reverse_button.png")
+					{
+						tex->visible = false;
+
+					}
+
+					if (tex->path == "reverse_button_selected.png")
+					{
+						tex->visible = true;
+					}
+				}
+			};
+			callbacks.emplace_back(callback);
+
+
+		} else if (path == "reverse_button_selected.png")
+		{
+			// button that unreverses the text
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+
+				// toggle unselected version on
+				for (auto tex : textures)
+				{
+					if (tex->path == "reverse_button_selected.png")
+					{
+						tex->visible = false;
+
+					}
+
+					if (tex->path == "reverse_button.png")
+					{
+						tex->visible = true;
+					}
+				}
+			};
+
+			callbacks.emplace_back(callback);
+
+		}
+		else if (path == "submitbutton.png")
+		{
+			// submit button for mini puzzle window
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				// example: check if reverse button is enabled
+				bool reverseEnabled = true;
+
+				for (auto tex : textures)
+				{
+					// only member of middlepaneselected is the reverse button
+					// for the submit button for other mini puzzles, can check
+					// other things before submitting
+					if (tex->alignment == MiddlePaneSelected &&
+						!tex->visible)
+					{
+						reverseEnabled = false;
+						break;
+					}
+
+					if (tex->alignment == MiddlePane || 
+						tex->alignment == MiddlePaneBG || 
+						tex->alignment == MiddlePaneSelected)
+					{
+						tex->visible = false;
+					
+					}
+						
+
+				}
+
+				// keep the window up if reverse isn't enabled yet
+				if (!reverseEnabled)
+				{
+					for (auto tex : textures)
+					{
+
+						if (tex->alignment == MiddlePane || 
+							tex->alignment == MiddlePaneBG)
+						{
+							tex->visible = true;
+						}
+							
+
+					}
+
+					std::cout << "Cipher incorrect" << std::endl;
+
+
+				} else {
+					std::cout << "Submitted" << std::endl;
+				}
+
 			};
 
 			callbacks.emplace_back(callback);
@@ -490,7 +599,7 @@ void PlayMode::initializeCallbacks()
 		else
 		{
 			// default case, do nothing for the callback
-			callbacks.emplace_back([&](std::vector<TexStruct *> textures){});
+			callbacks.emplace_back([&](std::vector<TexStruct *> textures, std::string path){});
 		}
 		
 	}
@@ -539,7 +648,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	editingBox = &tex_box_text;
 
 	initializeCallbacks();
-	textures = initializeTextures(alignments, callbacks);
+	textures = initializeTextures(alignments, visibilities, callbacks);
 	addTextures(textures, paths, texture_program);
 
 	for (uint8_t i = 0; i < colorscheme.size() - 2; i+=3) {
@@ -684,10 +793,6 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = CHANGING;
 	}
 	else if (keyword == "Input_Puzzle") {
-		/*for (int i = 0; i < parsed.size(); i++){
-			std::cout << parsed[i] << "; ";
-		}
-		std::cout << std::endl;*/
 		display_state.cipher = parsed[2][0];
 		display_state.bottom_text = parsed[3];
 		// something similar but with text input like we discussed
@@ -742,9 +847,6 @@ void PlayMode::draw_state_text() {
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
 
-	/*render_text(&tex_cs, editStr, green);
-	update_texture(&tex_cs, 0.0f, 1.0f, 0.2f, 0.5f, 0.00002f);
-	std::cout << editStr << std::endl;*/
 
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
@@ -754,7 +856,6 @@ void PlayMode::draw_state_text() {
 	tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
-	//tex_cs.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, -0.00001f};
 	update_texture(&tex_cs);
 
 }
@@ -810,12 +911,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_RETURN) {
-			//enter.pressed = false;
-			// if (display_state.status == INPUT) editMode = !editMode;
-			//std::cout << "not editmode" << std::endl;
-			/*editMode = true;
-			display_state.status = INPUT;
-			editingBox = &tex_box_text;*/
+			
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
@@ -868,138 +964,40 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				}
 			}
 		}
-		//else if (keysym.unicode ) { // Maybe maintain and check a list of acceptable keys
 		else {
 			std::string in = "";
 			bool success = false;
 			switch (evt.key.keysym.sym) {
-				case SDLK_a:
-					in = "A";
-					success = true;
-					break;
-				case SDLK_b:
-					in = "B";
-					success = true;
-					break;
-				case SDLK_c:
-					in = "C";
-					success = true;
-					break;
-				case SDLK_d:
-					in = "D";
-					success = true;
-					break;
-				case SDLK_e:
-					in = "E";
-					success = true;
-					break;
-				case SDLK_f:
-					in = "F";
-					success = true;
-					break;
-				case SDLK_g:
-					in = "G";
-					success = true;
-					break;
-				case SDLK_h:
-					in = "H";
-					success = true;
-					break;
-				case SDLK_i:
-					in = "I";
-					success = true;
-					break;
-				case SDLK_j:
-					in = "J";
-					success = true;
-					break;
-				case SDLK_k:
-					in = "K";
-					success = true;
-					break;
-				case SDLK_l:
-					in = "L";
-					success = true;
-					break;
-				case SDLK_m:
-					in = "M";
-					success = true;
-					break;
-				case SDLK_n:
-					in = "N";
-					success = true;
-					break;
-				case SDLK_o:
-					in = "O";
-					success = true;
-					break;
-				case SDLK_p:
-					in = "P";
-					success = true;
-					break;
-				case SDLK_q:
-					in = "Q";
-					success = true;
-					break;
-				case SDLK_r:
-					in = "R";
-					success = true;
-					break;
-				case SDLK_s:
-					in = "S";
-					success = true;
-					break;
-				case SDLK_t:
-					in = "T";
-					success = true;
-					break;
-				case SDLK_u:
-					in = "U";
-					success = true;
-					break;
-				case SDLK_v:
-					in = "V";
-					success = true;
-					break;
-				case SDLK_w:
-					in = "W";
-					success = true;
-					break;
-				case SDLK_x:
-					in = "X";
-					success = true;
-					break;
-				case SDLK_y:
-					in = "Y";
-					success = true;
-					break;
-				case SDLK_z:
-					in = "Z";
-					success = true;
-					break;
-				case SDLK_COMMA:
-					in = ",";
-					success = true;
-					break;
-					if (cs_open){
-						success = false;
-					}
-				case SDLK_SPACE:
-					in = " ";
-					success = true;
-					if (cs_open){
-						success = false;
-					}
-					break;
-				case SDLK_PERIOD:
-					in = ".";
-					success = true;
-					if (cs_open){
-						success = false;
-					}
-					break;
-				default:
-					break;
+				case SDLK_a: in = "A"; success = true; break;
+				case SDLK_b: in = "B"; success = true; break;
+				case SDLK_c: in = "C"; success = true; break;
+				case SDLK_d: in = "D"; success = true; break;
+				case SDLK_e: in = "E"; success = true; break;
+				case SDLK_f: in = "F"; success = true; break;
+				case SDLK_g: in = "G"; success = true; break;
+				case SDLK_h: in = "H"; success = true; break;
+				case SDLK_i: in = "I"; success = true; break;
+				case SDLK_j: in = "J"; success = true; break;
+				case SDLK_k: in = "K"; success = true; break;
+				case SDLK_l: in = "L"; success = true; break;
+				case SDLK_m: in = "M"; success = true; break;
+				case SDLK_n: in = "N"; success = true; break;
+				case SDLK_o: in = "O"; success = true; break;
+				case SDLK_p: in = "P"; success = true; break;
+				case SDLK_q: in = "Q"; success = true; break;
+				case SDLK_r: in = "R"; success = true; break;
+				case SDLK_s: in = "S"; success = true; break;
+				case SDLK_t: in = "T"; success = true; break;
+				case SDLK_u: in = "U"; success = true; break;
+				case SDLK_v: in = "V"; success = true; break;
+				case SDLK_w: in = "W"; success = true; break;
+				case SDLK_x: in = "X"; success = true; break;
+				case SDLK_y: in = "Y"; success = true; break;
+				case SDLK_z: in = "Z"; success = true; break;
+				case SDLK_COMMA: in = ","; success = !cs_open; break;
+				case SDLK_SPACE: in = " "; success = !cs_open; break;
+				case SDLK_PERIOD: in = "."; success = !cs_open; break;
+				default: break;
 			}
 			if (success) {
 				if (cs_open){
@@ -1021,9 +1019,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				cursor_pos -= 1;
 			}
 		} 
-		//clear_png(&text_render[0][0], window_height/3, window_width);
-		//render_text(&tex_box_text, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white);
-		//update_texture(&tex_box_text);
+
 		if (cs_open){
 			clear_png(&tex_cs);
 			render_text(&tex_cs, editStr, green, 'd', 75);
@@ -1035,7 +1031,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
 			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
 			update_texture(editingBox);
-			//std::cout << editStr.substr(0, cursor_pos) << "(CURSOR)" << editStr.substr(cursor_pos, editStr.length() - cursor_pos) << std::endl;	
 		}
 
 	} else if (evt.type == SDL_KEYUP && !editMode) {
@@ -1079,7 +1074,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
-			// std::cout << std::to_string(choices) << std::endl;
 			size_t choices = display_state.jumps.size();
 			if (choices > 0) {
 				if (display_state.current_choice < choices - 1) {
@@ -1121,23 +1115,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			clear_png(&tex_box_text);
 			advance_state(display_state.current_choice);
-			// render_text(&tex_box_text, display_state.bottom_text, white);
-			// update_texture(&tex_box_text);
+			
 		}
 
 	} else if (evt.type == SDL_MOUSEMOTION) {
-		// if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
-		// 	glm::vec2 motion = glm::vec2(
-		// 		evt.motion.xrel / float(window_size.y),
-		// 		-evt.motion.yrel / float(window_size.y)
-		// 	);
-		// 	camera->transform->rotation = glm::normalize(
-		// 		camera->transform->rotation
-		// 		* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
-		// 		* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
-		// 	);
-		// 	return true;
-		// }
+		// 	float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
+		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
+
+		// std::cout << tex_x << ", " << tex_y << std::endl;
+		
 	}
 
 
@@ -1204,7 +1190,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		glUseProgram(texture_program->program);
 		glActiveTexture(GL_TEXTURE0);
-		//std::cout << "Texture ID: " << tex_box_text.tex << std::endl;
 		glBindVertexArray(tex_textbg.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_textbg.tex);
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
@@ -1225,14 +1210,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_cs.count);
 			GL_ERRORS();
 		}
-		
-		/*glBindVertexArray(tex_bg.tristrip_for_texture_program);
-		glBindTexture(GL_TEXTURE_2D, tex_bg.tex);
-		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_bg.CLIP_FROM_LOCAL) );
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_bg.count);*/
-
-		// std::cout << std::to_string(size_t(tex_box_text.count)) << std::endl;
-
+	
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);

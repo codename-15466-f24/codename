@@ -15,15 +15,19 @@ struct PosTexVertex {
 enum PanePosition {
 	LeftPane,
 	RightPane,
+	TopMiddlePaneSelected,
 	TopMiddlePane,
-	MiddlePane
+	TopMiddlePaneBG,
+	MiddlePane,
+	MiddlePaneSelected,
+	MiddlePaneBG
 };
 
 enum CipherDisplayed
 {
 	Reverse, 
 	Substitution
-};
+}; 
 struct TexStruct {
 	TexStruct(PanePosition align)
 	{
@@ -46,13 +50,14 @@ struct TexStruct {
 	float sizeX = 0;
 	float sizeY = 0;
 
-	std::function<void(std::vector<TexStruct *>)> onClick = 
-			[](std::vector<TexStruct *> textures){};
+	std::function<void(std::vector<TexStruct *>, std::string)> onClick = 
+			[](std::vector<TexStruct *> textures, std::string){};
 
 	//x0, x1, y0, y1, z
 	std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 
 	std::string path;
+
 	
 	// stick to right or left side of screen
 	PanePosition alignment = LeftPane;
@@ -61,7 +66,8 @@ struct TexStruct {
 };
 
 std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments, 
-								std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks);
+								std::vector<bool> visibilities,
+								std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks);
 void togglePanel(std::vector<TexStruct *> textures, PanePosition alignment);
 
 void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> paths, const TextureProgram *ui_texture_program);

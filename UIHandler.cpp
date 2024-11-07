@@ -11,18 +11,16 @@
 
 
 std::vector<TexStruct *> initializeTextures(std::vector<PanePosition> alignments, 
-								std::vector<std::function<void(std::vector<TexStruct *>)>> callbacks)
+								std::vector<bool> visibilities,
+								std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks)
 {
 	std::vector<TexStruct *> textures;
 	for (size_t i = 0; i < alignments.size(); i++)
 	{
 		TexStruct *t = new TexStruct(alignments[i]);
-		if (i < 2)
-		{
-			t->visible = true;
-		}
+		t->visible = visibilities[i];
 		t->onClick = callbacks[i];
-		
+
 		textures.push_back(t);
 	}
 
@@ -51,7 +49,7 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 		assert(tex_);
 		auto &tex = *tex_;
 		tex.path = paths[path_index];
-		
+		 
 		// from in-class example
 		glGenTextures(1, &tex.tex); 
 		{
@@ -137,59 +135,73 @@ void updateTextures(std::vector<TexStruct *> textures)
 		if (tex->alignment == RightPane)
 		{
 			tex->bounds = {1.0f-tex->relativeSizeX, 
-							1.0f - (offset*tex->relativeSizeY) - (offset*padding), 
 							1.0f, 
-							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding)};
-
-			// pin to right corner (for codebook)
-			verts.emplace_back(PosTexVertex{
-			.Position = glm::vec3(1.0f-tex->relativeSizeX, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
-			.TexCoord = glm::vec2(0.0f, 0.0f),
-			});
-
-			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(1.0f -tex->relativeSizeX, 1.0f - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
-				.TexCoord = glm::vec2(0.0f, 1.0f),
-			});
-
-			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(1.0f, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY)  - (offset*padding), 0.0f),
-				.TexCoord = glm::vec2(1.0f, 0.0f),
-			});
-
-			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(1.0f, 1.0f - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
-				.TexCoord = glm::vec2(1.0f, 1.0f),
-			});
-		} else {
+							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding),
+							1.0f - (offset*tex->relativeSizeY) - (offset*padding)};
+			
+		} else if (tex->alignment == LeftPane) {
 			tex->bounds = { -1.0f,
-							1.0f - (offset*tex->relativeSizeY) - (offset*padding),
 							-1.0f+tex->relativeSizeX,
-							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding)
+							1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding),
+							1.0f - (offset*tex->relativeSizeY) - (offset*padding)
+
 			};
 
-			// pin to left corner (for inventory items)
-			verts.emplace_back(PosTexVertex{
-			.Position = glm::vec3(-1.0f, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
+		} else if(tex->alignment == TopMiddlePane || tex->alignment == TopMiddlePaneSelected)
+		{
+			tex->bounds = {
+							10*(offset*padding) + (offset*tex->relativeSizeX)-(2.0f*tex->relativeSizeX),
+							10*(offset*padding) + (offset*tex->relativeSizeX)-tex->relativeSizeX,
+							0.95f - tex->relativeSizeY,
+							0.95f
+						};
+
+		}
+		else if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneSelected)
+		{
+			tex->bounds = { -tex->relativeSizeX/2.0f,
+				tex->relativeSizeX/2.0f,
+				-tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY),
+				3*tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY)};
+		} else if (tex->alignment == MiddlePaneBG)
+		{
+			tex->bounds = { -tex->relativeSizeX/2.0f,
+				tex->relativeSizeX/2.0f,
+				-tex->relativeSizeY/4.0f,
+				3*tex->relativeSizeY/4.0f};
+		} 
+		else
+		{
+
+			// top middle plane bg
+			tex->bounds = {
+				-tex->relativeSizeX/2.0f,
+				tex->relativeSizeX/2.0f,
+				1.0f - tex->relativeSizeY,
+				1.0
+			};
+
+		}
+
+		verts.emplace_back(PosTexVertex{
+			.Position = glm::vec3(tex->bounds[0], tex->bounds[2], 0.0f),
 			.TexCoord = glm::vec2(0.0f, 0.0f),
 			});
 
 			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(-1.0f, 1.0f - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
+				.Position = glm::vec3(tex->bounds[0], tex->bounds[3], 0.0f),
 				.TexCoord = glm::vec2(0.0f, 1.0f),
 			});
 
 			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(-1.0f+tex->relativeSizeX, 1.0f - tex->relativeSizeY - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
+				.Position = glm::vec3(tex->bounds[1], tex->bounds[2], 0.0f),
 				.TexCoord = glm::vec2(1.0f, 0.0f),
 			});
 
 			verts.emplace_back(PosTexVertex{
-				.Position = glm::vec3(-1.0f+tex->relativeSizeX, 1.0f - (offset*tex->relativeSizeY) - (offset*padding), 0.0f),
+				.Position = glm::vec3(tex->bounds[1], tex->bounds[3], 0.0f),
 				.TexCoord = glm::vec2(1.0f, 1.0f),
 			});
-
-		}
 
 
 		glBindBuffer(GL_ARRAY_BUFFER, tex->tristrip_buffer);
@@ -205,6 +217,9 @@ void updateTextures(std::vector<TexStruct *> textures)
 
 	float left_offset = 0.0f;
 	float right_offset = 0.0f;
+	float top_middle_offset = 0.0f;
+	float top_middle_selected_offset = 0.0f;
+	float middle_offset = 0.0f;
 
 	for (auto tex : textures)
 	{
@@ -214,10 +229,25 @@ void updateTextures(std::vector<TexStruct *> textures)
 			{
 				texUpdate(tex, right_offset);
 				right_offset++;
-			} else {
+			} else if (tex->alignment == LeftPane) {
 				texUpdate(tex, left_offset);
 				left_offset++;
+			} else if (tex->alignment == TopMiddlePane) {
+				texUpdate(tex, top_middle_offset);
+				top_middle_offset++;
+			} else if (tex->alignment == TopMiddlePaneSelected) {
+				texUpdate(tex, top_middle_selected_offset);
+				top_middle_selected_offset++;
 			}
+		} 
+
+	if (tex->alignment == MiddlePane)
+		{
+			texUpdate(tex, middle_offset);
+			middle_offset++;
+
+		} else {
+			texUpdate(tex, 0.0f);
 		}
 	}
 
@@ -277,12 +307,13 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 		// don't allow clicking on invisible textures
 		if (tex.visible)
 		{
+
 			if (x >= tex.bounds[0] &&
-				x < tex.bounds[2] &&
-				y > tex.bounds[3] &&
-				y <= tex.bounds[1])
+				x < tex.bounds[1] &&
+				y > tex.bounds[2] &&
+				y <= tex.bounds[3])
 			{
-				tex.onClick(textures);
+				tex.onClick(textures, tex.path);
 				return true;
 			}
 		}
