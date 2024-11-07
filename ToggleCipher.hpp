@@ -17,14 +17,13 @@ typedef std::unordered_map<std::string, CipherFeature> CipherFeatureMap;
 
 // Cipher that allows for toggling features on and off
 struct ToggleCipher {
-    ToggleCipher();
-
     CipherFeatureMap features; // The cipher keeps a specific feature setting.
+    ToggleCipher() {};
 
     // If you were to want to encode/decode with your own feature settings, you can do that here.
     // Any nonspecified features use whatever is in the features map, at least in theory.
-    virtual std::string encode_with_features(std::string text, CipherFeatureMap &cfm);
-    virtual std::string decode_with_features(std::string text, CipherFeatureMap &cfm);
+    virtual std::string encode_with_features(std::string text, CipherFeatureMap &cfm) {return text;};
+    virtual std::string decode_with_features(std::string text, CipherFeatureMap &cfm) {return text;};
 
     // These encode/decode normally using the given feature settings.
     CipherFeatureMap blank;
