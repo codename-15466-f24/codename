@@ -41,8 +41,13 @@ struct PlayMode : Mode {
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
-	} tex_box_text, tex_textbg, tex_cs;
+		bool visible = false;
+	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
 
+	enum Cipher {
+		Reverse,
+		Substituion
+	};
 
 	//input tracking:
 	struct Button {
@@ -80,7 +85,7 @@ struct PlayMode : Mode {
 	std::vector<bool> visibilities = {true, true, 
 									false, false, 
 									true, false, true,
-									true, false, true, true};
+									false, false, false, false};
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
 											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
@@ -99,6 +104,17 @@ struct PlayMode : Mode {
 	float x_by_counter = 2.9f;
 	float creature_speed = 3.0f;
 	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
+
+	// coloring
+	std::vector<float> colorscheme = {
+		0., 0., 0.,
+	    9. / 255., 4. / 255., 70. / 255.,
+        56. / 255., 79. / 255., 113. / 255.,
+        102. / 255., 153. / 255., 155. / 255.,
+        167. / 255., 194. / 255., 150. / 255.,
+        231. / 255., 235. / 255., 144. / 255.,
+    	};
+	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.;
 
 	//camera:
 	Scene::Camera *camera = nullptr;

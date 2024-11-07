@@ -33,4 +33,4 @@ extern Load< TextureProgram > texture_program;
 
 // Commenting the line here because it is not present in Jim's code. Not 100% sure why we would, unless it's specifically
 // invoked for lighting.
-// extern Scene::Drawable::Pipeline texture_program_pipeline;
+extern Scene::Drawable::Pipeline texture_program_pipeline;

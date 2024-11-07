@@ -2,6 +2,9 @@
 
 #include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
+#include "load_save_png.hpp"
+#include "data_path.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 Scene::Drawable::Pipeline lit_color_texture_program_pipeline;
 
@@ -28,8 +31,17 @@ Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> L
 	glGenTextures(1, &tex);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
-	std::vector< glm::u8vec4 > tex_data(1, glm::u8vec4(0xff));
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data.data());
+	std::vector< glm::u8vec4 > tex_data = {};
+	glm::uvec2 imgsize = glm::uvec2(1, 1);
+	// if (lit_color_texture_program_pipeline.asset_texture == 1) {
+	// 	printf("got here\n");
+	// 	tex_data.resize(600 * 830);
+	// 	imgsize = glm::uvec2(600, 830);
+	// 	load_png(data_path("guide.png"), &imgsize, &tex_data, UpperLeftOrigin);
+	// } else {
+		tex_data = {glm::u8vec4(0xff)};
+	// }
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgsize.x, imgsize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data.data());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -75,16 +87,18 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"uniform vec3 LIGHT_DIRECTION;\n"
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
+		"uniform vec3[6] colorscheme;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
 		"in vec2 texCoord;\n"
 		"out vec4 fragColor;\n"
 		"void main() {\n"
+		"	vec3 p = position;\n"
 		"	vec3 n = normalize(normal);\n"
 		"	vec3 e;\n"
 		"	if (LIGHT_TYPE == 0) { //point light \n"
-		"		vec3 l = (LIGHT_LOCATION - position);\n"
+		"		vec3 l = (LIGHT_LOCATION - p);\n"
 		"		float dis2 = dot(l,l);\n"
 		"		l = normalize(l);\n"
 		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
@@ -92,7 +106,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"	} else if (LIGHT_TYPE == 1) { //hemi light \n"
 		"		e = (dot(n,-LIGHT_DIRECTION) * 0.5 + 0.5) * LIGHT_ENERGY;\n"
 		"	} else if (LIGHT_TYPE == 2) { //spot light \n"
-		"		vec3 l = (LIGHT_LOCATION - position);\n"
+		"		vec3 l = (LIGHT_LOCATION - p);\n"
 		"		float dis2 = dot(l,l);\n"
 		"		l = normalize(l);\n"
 		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
@@ -103,7 +117,22 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"		e = max(0.0, dot(n,-LIGHT_DIRECTION)) * LIGHT_ENERGY;\n"
 		"	}\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
-		"	fragColor = vec4(e*albedo.rgb, albedo.a);\n"
+		"	int neighbor = 0;\n"
+		// "   int neighbor2 = 0;\n"
+		"	float min_dist = 1./0.;\n"
+		"	for (int c = 0; c < 6; c++) {\n"
+		"		float dist = length(albedo.rgb - colorscheme[c].rgb);\n"
+		"		if (dist <= min_dist) {\n"
+		// "			neighbor2 = neighbor;\n"
+		"			neighbor = c;\n"
+		"			min_dist = dist;\n"
+		"		}\n"
+		"	}\n"
+		// "	neighbor = 4;\n"
+		"   vec3 final_col = mix(colorscheme[max(neighbor-1, 0)], colorscheme[neighbor], e*(1.-min_dist));\n"
+		// "	final_col = mix(final_col, albedo.rgb * e, 0.);\n"
+		
+		"	fragColor = vec4(final_col, albedo.a);\n"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -126,6 +155,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
 
+	colorscheme_vec3_6 = glGetUniformLocation(program, "colorscheme");
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 

@@ -17,3 +17,4 @@
 17 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
 18 Text d "Make sure to use receipts as hints for future customers!"
 19 Jump 18
+20  Show mini_puzzle eek

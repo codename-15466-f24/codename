@@ -5,6 +5,7 @@
 #include "data_path.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/color_space.hpp>
 #include <vector>
 #include <deque>
 #include <iostream>
@@ -58,6 +59,9 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 			glm::uvec2 size;
 
 			load_png(data_path(paths[path_index]), &size, &data, LowerLeftOrigin);
+			for (uint i = 0; i < data.size(); i++) {
+				data[i] = glm::u8vec4(255.f * glm::convertSRGBToLinear(glm::vec4(data[i]) / 255.f));
+			}
 
 			tex.sizeX = (float)size.x;
 			tex.sizeY = (float)size.y;
@@ -299,10 +303,13 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 	
 bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 {
+	bool isLocked = false;
+
 	for (auto tex_ : textures)
 	{
 		assert(tex_);
 		auto &tex = *tex_;
+
 
 		// don't allow clicking on invisible textures
 		if (tex.visible)
@@ -314,11 +321,21 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 				y <= tex.bounds[3])
 			{
 				tex.onClick(textures, tex.path);
-				return true;
+				break;
 			}
+
 		}
 	}
 
-	return false;
+
+	for (auto tex : textures)
+	{
+		if (tex->visible && tex->path == "mini_puzzle_panel.png")
+		{
+			isLocked = true;
+		}
+	}
+
+	return isLocked;
 }
 
