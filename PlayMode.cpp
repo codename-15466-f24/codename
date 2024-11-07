@@ -955,133 +955,36 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			std::string in = "";
 			bool success = false;
 			switch (evt.key.keysym.sym) {
-				case SDLK_a:
-					in = "A";
-					success = true;
-					break;
-				case SDLK_b:
-					in = "B";
-					success = true;
-					break;
-				case SDLK_c:
-					in = "C";
-					success = true;
-					break;
-				case SDLK_d:
-					in = "D";
-					success = true;
-					break;
-				case SDLK_e:
-					in = "E";
-					success = true;
-					break;
-				case SDLK_f:
-					in = "F";
-					success = true;
-					break;
-				case SDLK_g:
-					in = "G";
-					success = true;
-					break;
-				case SDLK_h:
-					in = "H";
-					success = true;
-					break;
-				case SDLK_i:
-					in = "I";
-					success = true;
-					break;
-				case SDLK_j:
-					in = "J";
-					success = true;
-					break;
-				case SDLK_k:
-					in = "K";
-					success = true;
-					break;
-				case SDLK_l:
-					in = "L";
-					success = true;
-					break;
-				case SDLK_m:
-					in = "M";
-					success = true;
-					break;
-				case SDLK_n:
-					in = "N";
-					success = true;
-					break;
-				case SDLK_o:
-					in = "O";
-					success = true;
-					break;
-				case SDLK_p:
-					in = "P";
-					success = true;
-					break;
-				case SDLK_q:
-					in = "Q";
-					success = true;
-					break;
-				case SDLK_r:
-					in = "R";
-					success = true;
-					break;
-				case SDLK_s:
-					in = "S";
-					success = true;
-					break;
-				case SDLK_t:
-					in = "T";
-					success = true;
-					break;
-				case SDLK_u:
-					in = "U";
-					success = true;
-					break;
-				case SDLK_v:
-					in = "V";
-					success = true;
-					break;
-				case SDLK_w:
-					in = "W";
-					success = true;
-					break;
-				case SDLK_x:
-					in = "X";
-					success = true;
-					break;
-				case SDLK_y:
-					in = "Y";
-					success = true;
-					break;
-				case SDLK_z:
-					in = "Z";
-					success = true;
-					break;
-				case SDLK_COMMA:
-					in = ",";
-					success = true;
-					break;
-					if (cs_open){
-						success = false;
-					}
-				case SDLK_SPACE:
-					in = " ";
-					success = true;
-					if (cs_open){
-						success = false;
-					}
-					break;
-				case SDLK_PERIOD:
-					in = ".";
-					success = true;
-					if (cs_open){
-						success = false;
-					}
-					break;
-				default:
-					break;
+				case SDLK_a: in = "A"; success = true; break;
+				case SDLK_b: in = "B"; success = true; break;
+				case SDLK_c: in = "C"; success = true; break;
+				case SDLK_d: in = "D"; success = true; break;
+				case SDLK_e: in = "E"; success = true; break;
+				case SDLK_f: in = "F"; success = true; break;
+				case SDLK_g: in = "G"; success = true; break;
+				case SDLK_h: in = "H"; success = true; break;
+				case SDLK_i: in = "I"; success = true; break;
+				case SDLK_j: in = "J"; success = true; break;
+				case SDLK_k: in = "K"; success = true; break;
+				case SDLK_l: in = "L"; success = true; break;
+				case SDLK_m: in = "M"; success = true; break;
+				case SDLK_n: in = "N"; success = true; break;
+				case SDLK_o: in = "O"; success = true; break;
+				case SDLK_p: in = "P"; success = true; break;
+				case SDLK_q: in = "Q"; success = true; break;
+				case SDLK_r: in = "R"; success = true; break;
+				case SDLK_s: in = "S"; success = true; break;
+				case SDLK_t: in = "T"; success = true; break;
+				case SDLK_u: in = "U"; success = true; break;
+				case SDLK_v: in = "V"; success = true; break;
+				case SDLK_w: in = "W"; success = true; break;
+				case SDLK_x: in = "X"; success = true; break;
+				case SDLK_y: in = "Y"; success = true; break;
+				case SDLK_z: in = "Z"; success = true; break;
+				case SDLK_COMMA: in = ","; success = !cs_open; break;
+				case SDLK_SPACE: in = " "; success = !cs_open; break;
+				case SDLK_PERIOD: in = "."; success = !cs_open; break;
+				default: break;
 			}
 			if (success) {
 				if (cs_open){

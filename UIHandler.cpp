@@ -49,7 +49,7 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 		assert(tex_);
 		auto &tex = *tex_;
 		tex.path = paths[path_index];
-		
+		 
 		// from in-class example
 		glGenTextures(1, &tex.tex); 
 		{

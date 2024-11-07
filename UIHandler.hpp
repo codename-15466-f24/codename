@@ -27,7 +27,7 @@ enum CipherDisplayed
 {
 	Reverse, 
 	Substitution
-};
+}; 
 struct TexStruct {
 	TexStruct(PanePosition align)
 	{
