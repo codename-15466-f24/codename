@@ -1,6 +1,11 @@
 1 Character player You Human
-2 Text d "You are [insert name] and you run the [whatever the name of this shop is]."
-3 Speech player "Sigh... . . ."
+2 Speech player "[You]₿That darned Grandpa and his scheming, never know what's what with him around."
+3 Speech player "[You]₿Never thought he'd leave me with his dirty old rest stop. What am I gonna do with this?"
+4 Speech player "[You]₿Sigh..."
+5 Speech player "[You]₿24/7 too. Maybe I should just close it while he's away..."
+6 Speech player "[You]₿Oh who am I kidding, Pa didn't raise a quitter."
+
+
 4 Text e "This is the third line of text."
 5 Text e "And this is the fourth line."
 6 Choice_Text 2 d "Start Game" "Quit" 7 13

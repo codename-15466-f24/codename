@@ -1,13 +1,18 @@
 1 Character player You Human
-2 Speech player "[You]: Good morning, what can I get for you?"
-3 Text d " [INSTRUCTION FOR PLAYTESTING: Before advancing through the dialogue, ask one of the Codename group members for instructions]"
-4 Text e "Yevb texl"
-5 Text e "Wxosk"
-6 Text e "Ufxgn"
-7 Text e "Ws nssv… lewsk… [bxwnt], tepsofgni oe lewsk eak … yevgst … oxgqt … pgnvt. Sqsuokgugob… uxn bea osqq ps ofs wekv?"
-8 Input_Puzzle d "[type your reply here]" "BATTERY" 11 9
-9 Text d ".... ????"
-10 Jump 7
-11 Text e "Ofgt gt go… ofxnr bea… uxn bea lao go gn pb uxk jek ps?" 
-12 Text d "Congrats, you learned the Shapers’ language!"
-13 Change_File "first_interaction.txt"
+2 Character subeelb Subeelb Bleebus
+3 Sound "door.opus"
+4 Text d "The sound of the door means a new customer has entered your store. Get ready!"
+5 Text d "It looks like your customer is preparing to buy something! Grandpa's gonna be overjoyed."
+6 Text d "When the customer rings up their purchase, they will often say the name of the item in their language. You have to figure out what it is!"
+7 Speech subeelb "[New Customer]₿Retaw"
+8 Text d "The customer asked for Retaw. I wonder what that could be?"
+9 Text d "To find out, you can consult a few resources. Grandpa's guidebook is a good place to start deciding what kind of customer you're dealing with and get a hint or two."
+10 Text d "Once you've served a few customers, you'll start getting receipts from past sales."
+11 Text d "Looks like this guy's a Bleebus. Grandpa gave us some notes on these guys. Make sure to check Grandpa's notes sometimes - he left some hints for when you might get stuck ;)"
+12 Text d "Here, we use codesheets to convert alien languages to our own. Try using this one to reverse the bleebus language into ours!"
+13 Text d "Remember, the Bleebus wants Retaw."
+14 (we should include some logic here regarding allowing the user to continue based on the puzzle status)
+15 Text d "Great! You've served your first customer."
+16 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
+18 Text d "Make sure to use receipts as hints for future customers!"
+
