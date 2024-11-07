@@ -2,6 +2,7 @@
 
 #include "LitColorTextureProgram.hpp"
 #include "TextureProgram.hpp"
+#include "Framebuffers.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -13,6 +14,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/color_space.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -70,8 +72,12 @@ Load< Scene > codename_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
+		printf("%s\n", mesh_name.c_str());
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
+		// if (mesh_name == "holo_screen") {
+		// 	drawable.pipeline = texture_program_pipeline;
+		// }
 
 		drawable.pipeline.vao = codename_meshes_for_lit_color_texture_program;
 		drawable.pipeline.type = mesh.type;
@@ -327,6 +333,9 @@ int update_texture(PlayMode::TextureItem *tex_in){
 		//std::vector<glm::u8vec4> data;
 		if (tex_in->loadme == true){
 			load_png(data_path(tex_in->path), &tex_in->size, &tex_in->data, LowerLeftOrigin);
+		}
+		for (uint i = 0; i < tex_in->data.size(); i++) {
+				tex_in->data[i] = glm::u8vec4(255.f * glm::convertSRGBToLinear(glm::vec4(tex_in->data[i]) / 255.f));
 		}
 		glBindTexture(GL_TEXTURE_2D, tex_in->tex);
 		// here, "data()" is the member function that gives a pointer to the first element
@@ -644,6 +653,13 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	initializeCallbacks();
 	textures = initializeTextures(alignments, visibilities, callbacks);
 	addTextures(textures, paths, texture_program);
+
+	for (uint8_t i = 0; i < colorscheme.size() - 2; i+=3) {
+		glm::vec3 new_col = glm::convertSRGBToLinear(glm::vec3(colorscheme[i], colorscheme[i+1], colorscheme[i+2]));
+		colorscheme[i] = new_col.x;
+		colorscheme[i+1] = new_col.y;
+		colorscheme[i+2] = new_col.z;
+	}
 
 	advance_state(0);
 }
@@ -1134,6 +1150,9 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
+	// //make sure framebuffers are the same size as the window:
+	// framebuffers.realloc(drawable_size);
+
 	//update camera aspect ratio for drawable:
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
@@ -1142,8 +1161,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 1.f)));
+	glUniform3fv(lit_color_texture_program->colorscheme_vec3_6, 18, colorscheme.data());
 	glUseProgram(0);
+
+	// //---- draw scene to HDR framebuffer ----
+	// glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
 
 	glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
@@ -1153,6 +1176,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
 	scene.draw(*camera);
+
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// //apply a bloom effect:
+	// framebuffers.add_bloom();
 
 	drawTextures(textures, texture_program);
 

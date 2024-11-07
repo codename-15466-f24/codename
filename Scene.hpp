@@ -78,6 +78,8 @@ struct Scene {
 				GLuint texture = 0;
 				GLenum target = GL_TEXTURE_2D;
 			} textures[TextureCount];
+
+			uint8_t asset_texture = 0; //0 is plain, 1 is guide
 		} pipeline;
 	};
 
