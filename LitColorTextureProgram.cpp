@@ -4,6 +4,7 @@
 #include "gl_errors.hpp"
 #include "load_save_png.hpp"
 #include "data_path.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 Scene::Drawable::Pipeline lit_color_texture_program_pipeline;
 
@@ -31,9 +32,15 @@ Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> L
 
 	glBindTexture(GL_TEXTURE_2D, tex);
 	std::vector< glm::u8vec4 > tex_data = {};
-	tex_data.resize(600 * 830);
-	glm::uvec2 imgsize = glm::uvec2(600, 830);
-	load_png(data_path("guide.png"), &imgsize, &tex_data, UpperLeftOrigin);
+	glm::uvec2 imgsize = glm::uvec2(1, 1);
+	// if (lit_color_texture_program_pipeline.asset_texture == 1) {
+	// 	printf("got here\n");
+	// 	tex_data.resize(600 * 830);
+	// 	imgsize = glm::uvec2(600, 830);
+	// 	load_png(data_path("guide.png"), &imgsize, &tex_data, UpperLeftOrigin);
+	// } else {
+		tex_data = {glm::u8vec4(0xff)};
+	// }
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgsize.x, imgsize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data.data());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -80,6 +87,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"uniform vec3 LIGHT_DIRECTION;\n"
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
+		"uniform vec3[6] colorscheme;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
@@ -109,27 +117,21 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"		e = max(0.0, dot(n,-LIGHT_DIRECTION)) * LIGHT_ENERGY;\n"
 		"	}\n"
 		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
-		"	vec3[6] colorscheme = vec3[6]("
-		" 		vec3(0., 0., 0.),"
-        "		vec3(9., 4., 70.) / 255.,"
-        "		vec3(56., 79., 113.) / 255.,"
-        "		vec3(102., 153., 155.) / 255.,"
-        "		vec3(167., 199., 150.) / 255.,"
-        "		vec3(247., 251., 144.) / 255."
-    	"	);\n"
 		"	int neighbor = 0;\n"
-		"   int neighbor2 = 0;\n"
+		// "   int neighbor2 = 0;\n"
 		"	float min_dist = 1./0.;\n"
 		"	for (int c = 0; c < 6; c++) {\n"
-		"		float dist = length(albedo.rgb - colorscheme[c]);\n"
-		"		if (dist < min_dist) {\n"
-		"			neighbor2 = neighbor;\n"
+		"		float dist = length(albedo.rgb - colorscheme[c].rgb);\n"
+		"		if (dist <= min_dist) {\n"
+		// "			neighbor2 = neighbor;\n"
 		"			neighbor = c;\n"
 		"			min_dist = dist;\n"
 		"		}\n"
 		"	}\n"
-		"   vec3 final_col = mix(colorscheme[max(neighbor-1, 0)], colorscheme[neighbor], e + p.y*0.1);\n"
-		"	final_col = mix(final_col, albedo.rgb * e, 0.1);\n"
+		// "	neighbor = 4;\n"
+		"   vec3 final_col = mix(colorscheme[max(neighbor-1, 0)], colorscheme[neighbor], e*(1.-min_dist));\n"
+		// "	final_col = mix(final_col, albedo.rgb * e, 0.);\n"
+		
 		"	fragColor = vec4(final_col, albedo.a);\n"
 		"}\n"
 	);
@@ -153,6 +155,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
 
+	colorscheme_vec3_6 = glGetUniformLocation(program, "colorscheme");
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 

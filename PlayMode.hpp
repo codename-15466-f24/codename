@@ -88,6 +88,17 @@ struct PlayMode : Mode {
 	float creature_speed = 3.0f;
 	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
 
+	// coloring
+	std::vector<float> colorscheme = {
+		0., 0., 0.,
+	    9. / 255., 4. / 255., 70. / 255.,
+        56. / 255., 79. / 255., 113. / 255.,
+        102. / 255., 153. / 255., 155. / 255.,
+        167. / 255., 194. / 255., 150. / 255.,
+        231. / 255., 235. / 255., 144. / 255.,
+    	};
+	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.;
+
 	//camera:
 	Scene::Camera *camera = nullptr;
 
