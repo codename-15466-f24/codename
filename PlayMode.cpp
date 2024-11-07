@@ -334,6 +334,9 @@ int update_texture(PlayMode::TextureItem *tex_in){
 		if (tex_in->loadme == true){
 			load_png(data_path(tex_in->path), &tex_in->size, &tex_in->data, LowerLeftOrigin);
 		}
+		for (uint i = 0; i < tex_in->data.size(); i++) {
+				tex_in->data[i] = glm::u8vec4(255.f * glm::convertSRGBToLinear(glm::vec4(tex_in->data[i]) / 255.f));
+		}
 		glBindTexture(GL_TEXTURE_2D, tex_in->tex);
 		// here, "data()" is the member function that gives a pointer to the first element
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_in->size.x, tex_in->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_in->data.data());

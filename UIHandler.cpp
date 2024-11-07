@@ -5,6 +5,7 @@
 #include "data_path.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/color_space.hpp>
 #include <vector>
 #include <deque>
 #include <iostream>
@@ -58,6 +59,9 @@ void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> pat
 			glm::uvec2 size;
 
 			load_png(data_path(paths[path_index]), &size, &data, LowerLeftOrigin);
+			for (uint i = 0; i < data.size(); i++) {
+				data[i] = glm::u8vec4(255.f * glm::convertSRGBToLinear(glm::vec4(data[i]) / 255.f));
+			}
 
 			tex.sizeX = (float)size.x;
 			tex.sizeY = (float)size.y;
