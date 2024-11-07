@@ -13,8 +13,12 @@ struct ReverseCipher : ToggleCipher {
     ReverseCipher() {
         features["flip"].b = true;
     };
+    ReverseCipher(std::string n) {
+        name = n;
+        features["flip"].b = true;
+    };
 
-    std::string encode_with_features(std::string text, CipherFeatureMap &cfm);
+    virtual std::string encode_with_features(std::string text, CipherFeatureMap &cfm) override;
 
-    std::string decode_with_features(std::string text, CipherFeatureMap &cfm);
+    virtual std::string decode_with_features(std::string text, CipherFeatureMap &cfm) override;
 };

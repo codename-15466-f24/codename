@@ -585,6 +585,8 @@ void PlayMode::initializeCallbacks()
 
 
 				} else {
+					display_state.solved_puzzle = true;
+					advance_state(display_state.current_choice);
 					std::cout << "Submitted" << std::endl;
 				}
 
@@ -686,7 +688,12 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-			g.species = parsed[4];
+			if (parsed[4] == "Bleebus") {
+				g.species = ReverseCipher(parsed[4]);
+			}
+			else {
+
+			}
 			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
 			characters[parsed[2]] = g;
 		}
@@ -728,8 +735,16 @@ void PlayMode::apply_command(std::string line) {
 	else if (keyword == "Speech") {
 		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
 		else {
-			// TODO: speech bubble stuff; not implemented yet
-			display_state.bottom_text = parsed[3];
+			if (characters.find(parsed[2]) != characters.end()) {
+				if (characters[parsed[2]].species.name == "Bleebus") {
+					std::string res = reverse_cipher.encode(parsed[3]);
+					std::cout << res << std::endl;
+					display_state.bottom_text = res;
+				}
+			}
+			else {
+				display_state.bottom_text = parsed[3];
+			}
 		}
 		display_state.status = TEXT;
 	}
@@ -745,6 +760,23 @@ void PlayMode::apply_command(std::string line) {
 		editMode = true;
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
+	}
+	else if (keyword == "Solve_Puzzle") {
+		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				if (characters[parsed[2]].species.name == "Bleebus") {
+					std::string res = reverse_cipher.encode(parsed[3]);
+					std::cout << res << std::endl;
+					display_state.bottom_text = res;
+				}
+			}
+			else {
+				display_state.bottom_text = parsed[3];
+			}
+		}
+		display_state.status = WAIT_FOR_SOLVE;
+		display_state.solved_puzzle = false;
 	}
 	else if (keyword == "Image") {
 		// TODO
@@ -830,8 +862,6 @@ void PlayMode::draw_state_text() {
 		}
 	}
 	else text_to_draw = display_state.bottom_text;
-
-	std::cout << "DEBUG: Reversed variant of state text: " << reverse_cipher.encode(text_to_draw) << std::endl;
 
 	tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
@@ -1099,6 +1129,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		// only advance if click inside of dialogue
 		if (display_state.status != INPUT &&
+			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
 			tex_y >= tex_textbg.bounds[2] &&
@@ -1106,15 +1137,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		{
 
 			clear_png(&tex_box_text);
-			advance_state(display_state.current_choice);
+			advance_state(0);
 			
 		}
 
 	} else if (evt.type == SDL_MOUSEMOTION) {
-		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
-		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
+		// float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
+		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
-		std::cout << tex_x << ", " << tex_y << std::endl;
+		// std::cout << tex_x << ", " << tex_y << std::endl;
 		
 	}
 

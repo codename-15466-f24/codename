@@ -8,8 +8,14 @@
 std::string ToggleCipher::encode(std::string text) {return encode_with_features(text, blank);}
 std::string ToggleCipher::decode(std::string text) {return decode_with_features(text, blank);}
 
-void ToggleCipher::change_feature(std::string key, CipherFeature val) {
+void ToggleCipher::set_feature(std::string key, CipherFeature val) {
     if (features.find(key) != features.end()) features[key] = val;
+};
+CipherFeature ToggleCipher::get_feature(std::string key) {
+    if (features.find(key) != features.end()) return features[key];
+    CipherFeature empty;
+    empty.b = 0;
+    return empty;
 };
 
 // std::string SubstitutionCipher::encode_with_features(std::string text, CipherFeatureMap &cfm) {

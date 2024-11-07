@@ -5,6 +5,7 @@
 #include "UIHandler.hpp"
 
 #include "string_parsing.hpp"
+#include "ToggleCipher.hpp"
 #include "ReverseCipher.hpp"
 
 #include <glm/glm.hpp>
@@ -109,7 +110,7 @@ struct PlayMode : Mode {
 	struct GameCharacter {
 		std::string id;
 		std::string name;
-		std::string species; // can change this type later
+		ToggleCipher species; // can change this type later
 		// any other data here. maybe assets?
 		uint8_t asset_idx;
 	};
@@ -144,10 +145,11 @@ struct PlayMode : Mode {
 		CHOICE_TEXT,
 		IMAGE,
 		CHOICE_IMAGE,
+		WAIT_FOR_SOLVE,
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "first_interaction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "tutorial.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -164,6 +166,8 @@ struct PlayMode : Mode {
 		
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
+
+		bool solved_puzzle = false;
 	} display_state;
 
 	std::string player_id = "player";
