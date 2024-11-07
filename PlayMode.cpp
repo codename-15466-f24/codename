@@ -1135,10 +1135,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 
-	// move creechur
-	if (swap_creature->position.x < x_by_counter) {
-		swap_creature->position.x += creature_speed * elapsed;
-	}
+	// // move creechur
+	// if (swap_creature->position.x < x_by_counter) {
+	// 	swap_creature->position.x += creature_speed * elapsed;
+	// }
 
 	updateTextures(textures);
 
