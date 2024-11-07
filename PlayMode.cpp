@@ -50,10 +50,13 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
+PlayMode::Cipher current_cipher = PlayMode::Reverse;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
+
+bool hasReversed = false;
 
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
@@ -417,6 +420,7 @@ void PlayMode::initializeCallbacks()
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
+				tex_special.visible = true;
 			};
 
 			callbacks.emplace_back(callback);
@@ -426,6 +430,7 @@ void PlayMode::initializeCallbacks()
 			// special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
+				tex_special.visible = false;
 			};
 
 			callbacks.emplace_back(callback);
@@ -434,6 +439,24 @@ void PlayMode::initializeCallbacks()
 		{
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+
+				if (current_cipher == Substituion)
+				{
+					cs_open = true;
+					editingBox = &tex_cs;
+					editStr = "";
+					cursor_pos = 0;
+					for (int i = 0; i < 26; i++){
+						editStr = editStr + substitution[i];
+					}
+					editMode = true;
+					display_state.status = INPUT;
+					clear_png(&tex_cs);
+					render_text(&tex_cs, editStr, green, 'd', 75);
+					update_texture(&tex_cs);
+				} else {
+					// reverse here		
+				}
 				togglePanel(textures, RightPane);
 			};
 
@@ -444,7 +467,24 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
+				if (current_cipher == Substituion)
+				{
+					if (cs_open) {
+						clear_png(&tex_box_text);
+						render_text(&tex_box_text, current_line, white, display_state.cipher);
+						update_texture(&tex_box_text);
+						cs_open = false;
+					}
+					editMode = false;
+					editStr = "";
+					cursor_pos = 0;
+					display_state.status = CHANGING;
+				} else {
+					// reverse here		
+				}
 			};
+
+			
 
 			callbacks.emplace_back(callback);
 		} else if (path.substr(0,8) == "customer")
@@ -584,6 +624,8 @@ void PlayMode::initializeCallbacks()
 
 				} else {
 					std::cout << "Submitted" << std::endl;
+					hasReversed = true;
+					tex_minipuzzle.visible = false;
 				}
 
 			};
@@ -756,6 +798,28 @@ void PlayMode::apply_command(std::string line) {
 		display_state.jumps.clear();
 		display_state.jumps.push_back(0);
 		display_state.status = CHANGING;
+	} else if (keyword == "Show")
+	{
+		auto panel = parsed[2];
+		if (panel == "mini_puzzle")
+		{
+			auto text = parsed[3];
+			for (auto tex : textures)
+			{
+				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
+				{
+					tex->visible = true;
+				}
+
+				if (tex->alignment == MiddlePaneSelected)
+				{
+					tex->visible = false;
+				}
+			}
+
+			tex_minipuzzle.visible = true;
+
+		}
 	}
 
 	// jump-modifying keywords
@@ -839,6 +903,14 @@ void PlayMode::draw_state_text() {
 	tex_textbg.loadme = true;
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
 	update_texture(&tex_textbg);
+
+	tex_special.bounds = {-0.95f, -0.6f, 0.7f, 0.03f};
+	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher);
+	update_texture(&tex_special);
+
+	tex_minipuzzle.bounds = {-0.15, 0.15, 0.3, 0.15};
+	render_text(&tex_minipuzzle, "Water", white, display_state.cipher);
+	update_texture(&tex_minipuzzle);
 
 	tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
@@ -1038,25 +1110,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			// toggle the left (inventory) pane
 			
-			togglePanel(textures, LeftPane);
 			return true;
 
 		} else if (evt.key.keysym.sym == SDLK_F2) {
 
-			// toggle the right (codebook) pane
-			togglePanel(textures, RightPane);
-			cs_open = true;
-			editingBox = &tex_cs;
-			editStr = "";
-			cursor_pos = 0;
-			for (int i = 0; i < 26; i++){
-				editStr = editStr + substitution[i];
-			}
-			editMode = true;
-			display_state.status = INPUT;
-			clear_png(&tex_cs);
-			render_text(&tex_cs, editStr, green, 'd', 75);
-			update_texture(&tex_cs);
 			return true;
 
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
@@ -1090,10 +1147,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
-		checkForClick(textures, tex_x, tex_y);
+		bool isLocked = checkForClick(textures, tex_x, tex_y);
 
 		// only advance if click inside of dialogue
-		if (display_state.status != INPUT &&
+		if (!isLocked && display_state.status != INPUT &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
 			tex_y >= tex_textbg.bounds[2] &&
@@ -1106,10 +1163,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 
 	} else if (evt.type == SDL_MOUSEMOTION) {
-		// 	float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
-		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
+		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
+		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
-		// std::cout << tex_x << ", " << tex_y << std::endl;
+		std::cout << tex_x << ", " << tex_y << std::endl;
 		
 	}
 
@@ -1154,8 +1211,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	drawTextures(textures, texture_program);
-
 	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing
 	
@@ -1170,6 +1225,27 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_textbg.count);
 
+		if (tex_special.visible)
+		{
+			glUseProgram(texture_program->program);
+			glActiveTexture(GL_TEXTURE0);
+			glBindVertexArray(tex_special.tristrip_for_texture_program);
+			glBindTexture(GL_TEXTURE_2D, tex_special.tex);
+			glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_special.CLIP_FROM_LOCAL) );
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_special.count);
+		}
+
+		if (tex_minipuzzle.visible)
+		{
+			glUseProgram(texture_program->program);
+			glActiveTexture(GL_TEXTURE0);
+			glBindVertexArray(tex_minipuzzle.tristrip_for_texture_program);
+			glBindTexture(GL_TEXTURE_2D, tex_minipuzzle.tex);
+			glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_minipuzzle.CLIP_FROM_LOCAL) );
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_minipuzzle.count);
+		}
+
+
 		glBindVertexArray(tex_box_text.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_box_text.tex);
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_box_text.CLIP_FROM_LOCAL) );
@@ -1177,7 +1253,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		GL_ERRORS();
 
 
-		if (!textures[1]->visible)
+		if (tex_cs.visible)
 		{
 			glBindVertexArray(tex_cs.tristrip_for_texture_program);
 			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
@@ -1191,5 +1267,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUseProgram(0);
 		glDisable(GL_BLEND);
 	}
+
+		drawTextures(textures, texture_program);
+
+
+
 	GL_ERRORS();
 }

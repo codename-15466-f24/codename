@@ -299,10 +299,13 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 	
 bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 {
+	bool isLocked = false;
+
 	for (auto tex_ : textures)
 	{
 		assert(tex_);
 		auto &tex = *tex_;
+
 
 		// don't allow clicking on invisible textures
 		if (tex.visible)
@@ -314,11 +317,21 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 				y <= tex.bounds[3])
 			{
 				tex.onClick(textures, tex.path);
-				return true;
+				break;
 			}
+
 		}
 	}
 
-	return false;
+
+	for (auto tex : textures)
+	{
+		if (tex->visible && tex->path == "mini_puzzle_panel.png")
+		{
+			isLocked = true;
+		}
+	}
+
+	return isLocked;
 }
 

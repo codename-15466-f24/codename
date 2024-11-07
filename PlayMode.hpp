@@ -39,8 +39,13 @@ struct PlayMode : Mode {
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
-	} tex_box_text, tex_textbg, tex_cs;
+		bool visible = false;
+	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
 
+	enum Cipher {
+		Reverse,
+		Substituion
+	};
 
 	//input tracking:
 	struct Button {
@@ -78,7 +83,7 @@ struct PlayMode : Mode {
 	std::vector<bool> visibilities = {true, true, 
 									false, false, 
 									true, false, true,
-									true, false, true, true};
+									false, false, false, false};
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
 											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
@@ -146,7 +151,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "first_interaction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "tutorial.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
