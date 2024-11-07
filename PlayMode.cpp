@@ -2,7 +2,7 @@
 
 #include "LitColorTextureProgram.hpp"
 #include "TextureProgram.hpp"
-#include "Framebuffers.hpp"
+// #include "Framebuffers.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -1179,10 +1179,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 
 	} else if (evt.type == SDL_MOUSEMOTION) {
-		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
-		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
+		// float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
+		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
-		std::cout << tex_x << ", " << tex_y << std::endl;
+		// std::cout << tex_x << ", " << tex_y << std::endl;
 		
 	}
 
