@@ -109,14 +109,14 @@ struct PlayMode : Mode {
 
 	// coloring
 	std::vector<float> colorscheme = {
-		0., 0., 0.,
-	    9. / 255., 4. / 255., 70. / 255.,
-        56. / 255., 79. / 255., 113. / 255.,
-        102. / 255., 153. / 255., 155. / 255.,
-        167. / 255., 194. / 255., 150. / 255.,
-        231. / 255., 235. / 255., 144. / 255.,
+		0.0f, 0.0f, 0.0f,
+	    9.0f / 255.0f, 4.0f / 255.0f, 70.0f / 255.0f,
+        56.0f / 255.0f, 79.0f / 255.0f, 113.0f / 255.0f,
+        102.0f / 255.0f, 153.0f / 255.0f, 155.0f / 255.0f,
+        167.0f / 255.0f, 194.0f / 255.0f, 150.0f / 255.0f,
+        231.0f / 255.0f, 235.0f / 255.0f, 144.0f / 255.0f,
     	};
-	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.;
+	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.0f;
 
 	//camera:
 	Scene::Camera *camera = nullptr;
