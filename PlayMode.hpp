@@ -82,19 +82,23 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {true, true, 
+	std::vector<bool> visibilities = {false, true, 
 									false, false, 
+									false, false,
 									true, false, true,
-									false, false, false, false};
+									false, false, false, false, false};
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
+											LeftPaneReversed, LeftPaneReversed,
 											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
-											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG
+											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG, MiddlePaneBGSelected
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png",
+									"special_request_collapsed_reversed.png", 
+									"special_request_reversed.png",
 									"customer1.png", "customer1_selected.png", "bg_customer.png",
-									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png"
+									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
@@ -109,12 +113,12 @@ struct PlayMode : Mode {
 	std::vector<float> colorscheme = {
 		0.0f, 0.0f, 0.0f,
 	    9.0f / 255.0f, 4.0f / 255.0f, 70.0f / 255.0f,
-        56.0f / 255.0f, 79.0f / 255.0f, 113.9f / 255.0f,
+        56.0f / 255.0f, 79.0f / 255.0f, 113.0f / 255.0f,
         102.0f / 255.0f, 153.0f / 255.0f, 155.0f / 255.0f,
         167.0f / 255.0f, 194.0f / 255.0f, 150.0f / 255.0f,
         231.0f / 255.0f, 235.0f / 255.0f, 144.0f / 255.0f,
     	};
-	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.;
+	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.0f;
 
 	//camera:
 	Scene::Camera *camera = nullptr;

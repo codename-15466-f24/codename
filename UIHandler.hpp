@@ -14,13 +14,15 @@ struct PosTexVertex {
 // potentially expand to up or down?
 enum PanePosition {
 	LeftPane,
+	LeftPaneReversed,
 	RightPane,
 	TopMiddlePaneSelected,
 	TopMiddlePane,
 	TopMiddlePaneBG,
 	MiddlePane,
 	MiddlePaneSelected,
-	MiddlePaneBG
+	MiddlePaneBG,
+	MiddlePaneBGSelected
 };
 
 struct TexStruct {

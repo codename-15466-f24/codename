@@ -430,7 +430,7 @@ void PlayMode::initializeCallbacks()
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
-				tex_special.visible = true;
+				// tex_special.visible = true;
 			};
 
 			callbacks.emplace_back(callback);
@@ -440,6 +440,25 @@ void PlayMode::initializeCallbacks()
 			// special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
+				tex_special.visible = false;
+			};
+
+			callbacks.emplace_back(callback);
+		}  else if (path == "special_request_collapsed_reversed.png")
+		{
+			// icon that opens special request menu
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				togglePanel(textures, LeftPaneReversed);
+				// tex_special.visible = true;
+			};
+
+			callbacks.emplace_back(callback);
+		}
+		else if (path == "special_request_reversed.png")
+		{
+			// special request menu
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				togglePanel(textures, LeftPaneReversed);
 				tex_special.visible = false;
 			};
 
@@ -545,13 +564,13 @@ void PlayMode::initializeCallbacks()
 				// toggle selected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button.png")
+					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button_selected.png")
+					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
 					{
 						tex->visible = true;
 					}
@@ -575,13 +594,13 @@ void PlayMode::initializeCallbacks()
 				// toggle unselected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button_selected.png")
+					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button.png")
+					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
 					{
 						tex->visible = true;
 					}
@@ -619,7 +638,8 @@ void PlayMode::initializeCallbacks()
 
 					if (tex->alignment == MiddlePane || 
 						tex->alignment == MiddlePaneBG || 
-						tex->alignment == MiddlePaneSelected)
+						tex->alignment == MiddlePaneSelected || 
+						tex->alignment == MiddlePaneBGSelected)
 					{
 						tex->visible = false;
 					
@@ -652,6 +672,19 @@ void PlayMode::initializeCallbacks()
 					tex_minipuzzle.visible = false;
 					display_state.solved_puzzle = true;
 					advance_state(display_state.current_choice);
+					for (auto tex : textures)
+					{
+						if (tex->path.substr(0,7) == "special")
+						{
+							if (tex->path == "special_request_collapsed_reversed.png")
+							{
+								tex->visible = true;
+							} else {
+								tex->visible = false;
+							}
+							
+						}
+					}
 				}
 
 			};
@@ -881,9 +914,19 @@ void PlayMode::apply_command(std::string line) {
 				}
 			}
 
-			tex_minipuzzle.visible = true;
+			// tex_minipuzzle.visible = true;
+
+		} else if (panel == "special")
+		{
+			for (auto tex : textures)
+			{
+				if (tex->path == "special_request_collapsed.png")
+				{
+					tex->visible = true;
+				}
 
 		}
+	}
 		display_state.status = CHANGING;
 	}
 
