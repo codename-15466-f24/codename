@@ -868,23 +868,6 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
 	}
-	else if (keyword == "Solve_Puzzle") {
-		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
-		else {
-			if (characters.find(parsed[2]) != characters.end()) {
-				if (characters[parsed[2]].species.name == "Bleebus") {
-					std::string res = reverse_cipher.encode(parsed[3]);
-					std::cout << res << std::endl;
-					display_state.bottom_text = res;
-				}
-			}
-			else {
-				display_state.bottom_text = parsed[3];
-			}
-		}
-		display_state.status = WAIT_FOR_SOLVE;
-		display_state.solved_puzzle = false;
-	}
 	else if (keyword == "Image") {
 		// TODO
 		display_state.status = IMAGE;
@@ -917,6 +900,7 @@ void PlayMode::apply_command(std::string line) {
 				}
 			}
 			tex_minipuzzle.visible = true;
+			display_state.status = WAIT_FOR_SOLVE;
 
 		} else if (panel == "special")
 		{
@@ -927,8 +911,8 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = true;
 				}
 
+			}
 		}
-	}
 		display_state.status = CHANGING;
 	}
 
