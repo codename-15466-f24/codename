@@ -6,16 +6,37 @@
 #include <map>
 #include <iostream>
 
+#include "string_parsing.hpp"
 #include "ToggleCipher.hpp"
 
 std::string ReverseCipher::encode_with_features(std::string text, CipherFeatureMap &cfm) {
     // I think every encoding/decoding function should look like this.
     // Basically, get the features you need, then use that information to actually do the cipher.
     bool flip = (cfm.find("flip") == cfm.end()) ? features["flip"].b : cfm["flip"].b;
-    std::cout << flip << std::endl;
     if (!flip) return text;
+
     std::string res = text;
-    for (size_t i = 0; i < text.length(); i++) res[text.length() - i - 1] = text[i];
+    size_t start_to_flip = 0;
+    bool in_alpha_part = false;
+    for (size_t i = 0; i < text.length(); i++) {
+        if (isalpha(text[i])) {
+            if (!in_alpha_part) start_to_flip = i;
+            in_alpha_part = true;
+        }
+        else {
+            if (in_alpha_part) {
+                for (size_t j = 0; j < i - start_to_flip; j++) {
+                    res[i - j - 1] = text[start_to_flip + j];
+                }
+            }
+            in_alpha_part = false;
+        }
+    }
+    if (in_alpha_part) {
+        for (size_t j = 0; j < text.length() - start_to_flip; j++) {
+            res[text.length() - j - 1] = text[start_to_flip + j];
+        }
+    }
     return res;
 }
 

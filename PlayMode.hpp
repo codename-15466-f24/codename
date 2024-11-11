@@ -46,7 +46,7 @@ struct PlayMode : Mode {
 
 	enum Cipher {
 		Reverse,
-		Substituion
+		Substitution
 	};
 
 	//input tracking:
@@ -188,6 +188,7 @@ struct PlayMode : Mode {
 		uint32_t current_choice = 0;
 
 		bool solved_puzzle = false;
+		std::string solution_text;
 		std::string puzzle_text;
 	} display_state;
 

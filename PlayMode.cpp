@@ -151,7 +151,7 @@ std::string decode(std::string str_in, char key){
 	return out;
 }
 
-//Nightmare loop, takes text and a color and turns it into a png of text in that color.
+// Isn't this slightly less of a nightmare loop now?
 void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = FONT_SIZE) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
@@ -173,7 +173,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
-	line = decode(line, cipher);
+	// line = decode(line, cipher); // not ciphering for now
 	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
 	// since the below code follows the code from the example basically exactly, I'm also including some annotations
 	// of my understanding of what's going on
@@ -469,7 +469,7 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (current_cipher == Substituion)
+				if (current_cipher == Substitution)
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -496,7 +496,7 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (current_cipher == Substituion)
+				if (current_cipher == Substitution)
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -564,13 +564,13 @@ void PlayMode::initializeCallbacks()
 				// toggle selected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = true;
 					}
@@ -578,9 +578,7 @@ void PlayMode::initializeCallbacks()
 				CipherFeature cf;
 				cf.b = false;
 				reverse_cipher.set_feature("flip", cf);
-				std::string res = reverse_cipher.encode(display_state.puzzle_text);
-				std::cout << res << std::endl;
-				display_state.bottom_text = res;
+				display_state.puzzle_text = reverse_cipher.encode(display_state.solution_text);
 				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
@@ -594,13 +592,13 @@ void PlayMode::initializeCallbacks()
 				// toggle unselected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = true;
 					}
@@ -608,9 +606,7 @@ void PlayMode::initializeCallbacks()
 				CipherFeature cf;
 				cf.b = true;
 				reverse_cipher.set_feature("flip", cf);
-				std::string res = reverse_cipher.encode(display_state.puzzle_text);
-				std::cout << res << std::endl;
-				display_state.bottom_text = res;
+				display_state.puzzle_text = reverse_cipher.encode(display_state.solution_text);
 				draw_state_text();
 			};
 
@@ -837,19 +833,26 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = CHANGING;
 	}
 	else if (keyword == "Speech") {
-		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
+		std::string speech_text = parsed[3];
+		bool found_character = false;
+		GameCharacter speaker;
+		if (parsed[2] == player_id) {
+			display_state.bottom_text = parsed[3];
+			found_character = true;
+			speaker = characters[parsed[2]];
+		}
 		else {
 			if (characters.find(parsed[2]) != characters.end()) {
+				found_character = true;
+				speaker = characters[parsed[2]];
 				if (characters[parsed[2]].species.name == "Bleebus") {
 					std::string res = reverse_cipher.encode(parsed[3]);
 					std::cout << res << std::endl;
-					display_state.bottom_text = res;
+					speech_text = res;
 				}
 			}
-			else {
-				display_state.bottom_text = parsed[3];
-			}
 		}
+		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
 		display_state.status = TEXT;
 	}
 	else if (keyword == "Text") {
@@ -873,7 +876,6 @@ void PlayMode::apply_command(std::string line) {
 					std::string res = reverse_cipher.encode(parsed[3]);
 					std::cout << res << std::endl;
 					display_state.bottom_text = res;
-					display_state.puzzle_text = parsed[3];
 				}
 			}
 			else {
@@ -900,7 +902,8 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
-			auto text = parsed[3];
+			display_state.solution_text = parsed[3];
+			display_state.puzzle_text = parsed[3];
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -913,8 +916,7 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = false;
 				}
 			}
-
-			// tex_minipuzzle.visible = true;
+			tex_minipuzzle.visible = true;
 
 		} else if (panel == "special")
 		{
@@ -1014,11 +1016,11 @@ void PlayMode::draw_state_text() {
 	update_texture(&tex_textbg);
 
 	tex_special.bounds = {-0.95f, -0.6f, 0.7f, 0.03f};
-	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher);
+	render_text(&tex_special, "No special requests right now!", white, display_state.cipher);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.3f, 0.15f};
-	render_text(&tex_minipuzzle, "Water", white, display_state.cipher);
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);
 
 	tex_cs.size = glm::uvec2(render_width, render_height);
