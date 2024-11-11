@@ -963,12 +963,14 @@ void PlayMode::draw_state_text() {
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
 	update_texture(&tex_textbg);
 
-	tex_special.bounds = {-0.95f, -0.6f, 0.7f, 0.03f};
-	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher);
+	tex_special.size = glm::uvec2(800, 400);
+	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
+	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
-	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.3f, 0.15f};
-	render_text(&tex_minipuzzle, "Water", white, display_state.cipher);
+	tex_minipuzzle.size = glm::uvec2(400, 100);
+	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
+	render_text(&tex_minipuzzle, "Water", white, display_state.cipher, 48);
 	update_texture(&tex_minipuzzle);
 
 	tex_cs.size = glm::uvec2(render_width, render_height);
@@ -1291,7 +1293,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_textbg.count);
 
-		if (tex_special.visible)
+		//if (tex_special.visible)
 		{
 			glUseProgram(texture_program->program);
 			glActiveTexture(GL_TEXTURE0);
@@ -1301,7 +1303,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_special.count);
 		}
 
-		if (tex_minipuzzle.visible)
+		//if (tex_minipuzzle.visible)
 		{
 			glUseProgram(texture_program->program);
 			glActiveTexture(GL_TEXTURE0);
