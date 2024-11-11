@@ -44,11 +44,6 @@ struct PlayMode : Mode {
 		bool visible = false;
 	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
 
-	enum Cipher {
-		Reverse,
-		Substitution
-	};
-
 	//input tracking:
 	struct Button {
 		uint8_t downs = 0;
@@ -130,7 +125,7 @@ struct PlayMode : Mode {
 	struct GameCharacter {
 		std::string id;
 		std::string name;
-		ToggleCipher species; // can change this type later
+		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
 		uint8_t asset_idx;
 	};
@@ -187,6 +182,7 @@ struct PlayMode : Mode {
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
 
+		ToggleCipher *current_cipher;
 		bool solved_puzzle = false;
 		std::string solution_text;
 		std::string puzzle_text;

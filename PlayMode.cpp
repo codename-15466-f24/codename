@@ -52,14 +52,12 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
-PlayMode::Cipher current_cipher = PlayMode::Reverse;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
 
 // Leaving the cipher up here for now because the substitution is here
-ReverseCipher reverse_cipher;
 bool hasReversed = false;
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
@@ -469,7 +467,7 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (current_cipher == Substitution)
+				if (display_state.current_cipher->name == "Substitution")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -496,7 +494,7 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (current_cipher == Substitution)
+				if (display_state.current_cipher->name == "Substitution")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -577,8 +575,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = false;
-				reverse_cipher.set_feature("flip", cf);
-				display_state.puzzle_text = reverse_cipher.encode(display_state.solution_text);
+				display_state.current_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
@@ -605,8 +603,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = true;
-				reverse_cipher.set_feature("flip", cf);
-				display_state.puzzle_text = reverse_cipher.encode(display_state.solution_text);
+				display_state.current_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 
@@ -789,7 +787,7 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
-				g.species = ReverseCipher(parsed[4]);
+				g.species = new ReverseCipher(parsed[4]);
 			}
 			else {
 
@@ -845,8 +843,8 @@ void PlayMode::apply_command(std::string line) {
 			if (characters.find(parsed[2]) != characters.end()) {
 				found_character = true;
 				speaker = characters[parsed[2]];
-				if (characters[parsed[2]].species.name == "Bleebus") {
-					std::string res = reverse_cipher.encode(parsed[3]);
+				if (characters[parsed[2]].species->name == "Bleebus") {
+					std::string res = characters[parsed[2]].species->encode(parsed[3]);
 					std::cout << res << std::endl;
 					speech_text = res;
 				}
@@ -885,8 +883,10 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
-			display_state.solution_text = parsed[3];
-			display_state.puzzle_text = parsed[3];
+			display_state.solution_text = parsed[4];
+			display_state.puzzle_text = parsed[4];
+			display_state.current_cipher = characters[parsed[3]].species;
+			std::cout << display_state.current_cipher->name << std::endl;
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -1003,6 +1003,7 @@ void PlayMode::draw_state_text() {
 	render_text(&tex_special, "No special requests right now!", white, display_state.cipher);
 	update_texture(&tex_special);
 
+	std::cout << "Mini puzzle text: " << display_state.puzzle_text << std::endl;
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.3f, 0.15f};
 	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);

@@ -10,8 +10,8 @@
 10 Text d "When the customer rings up their purchase, they will often say the name of the item in their language. If we figure out what it is, maybe it'll help us with the special request!"
 11 Speech subeelb "wateR"
 12 Text d "The customer asked for Retaw. I wonder what that could be?"
-13 Show mini_puzzle "WATER"
-14 Speech subeelb "WATER"
+13 Show mini_puzzle subeelb "WATER"
+14 Text d "Solve the puzzle!"
 15 Text d "Good job! Looks like this guy's a Bleebus. They speak in reverse. Let's see if we can figure out their request now!"
 16 Text d "By the way, this store carries GENERIC warp drives."
 17 Input_Puzzle d "[type your reply here]" "GENERIC" 21 18
