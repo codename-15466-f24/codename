@@ -40,8 +40,8 @@ static std::string textbg_path = "textbg.png";
 static std::string font_path = "RobotoMono-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
-static constexpr uint32_t render_height = window_height/3;
-static constexpr uint32_t render_width = window_width;
+// static constexpr uint32_t render_height = window_height/3;
+// static constexpr uint32_t render_width = window_width;
 // static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 // static uint32_t activeIndex = 0;
@@ -101,7 +101,7 @@ void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t widt
         }
     }*/
 	for (auto i = png_in->data.begin(); i != png_in->data.end(); ++i){
-		*i = glm::u8vec4(0,0,0,0);
+		// *i = glm::u8vec4(0,0,0,0);
 	}
 }
 
@@ -117,7 +117,6 @@ void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t 
                 uint8_t alpha = bitmap->buffer[i * bitmap->pitch + j];
 				// Calculate the index in the RGBA buffer
                 int index = (png_out->size.y-out_y-1) * png_out->size.x + out_x;
-				//std::cout << std::to_string(index) << " from size " << std::to_string(png_out->data.size());
 				png_out->data[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
             }
         }
@@ -444,25 +443,6 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		}  else if (path == "special_request_collapsed_reversed.png")
-		{
-			// icon that opens special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				tex_special.visible = true;
-			};
-
-			callbacks.emplace_back(callback);
-		}
-		else if (path == "special_request_reversed.png")
-		{
-			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				tex_special.visible = false;
-			};
-
-			callbacks.emplace_back(callback);
 		} 
 		else if (path == "cipher_panel.png")
 		{
@@ -571,6 +551,7 @@ void PlayMode::initializeCallbacks()
 			// button that reverses the text
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
+				std::cout << "pressed!" << std::endl;
 				// toggle selected version on
 				for (auto tex : textures)
 				{
@@ -678,19 +659,13 @@ void PlayMode::initializeCallbacks()
 					tex_minipuzzle_ptr->visible = false;
 					display_state.solved_puzzle = true;
 					advance_state(display_state.current_choice);
-					for (auto tex : textures)
-					{
-						if (tex->path.substr(0,7) == "special")
-						{
-							if (tex->path == "special_request_collapsed_reversed.png")
-							{
-								tex->visible = true;
-							} else {
-								tex->visible = false;
-							}
+					// for (auto tex : textures)
+					// {
+					// 	// if (tex->path.substr(0,7) == "special")
+					// 	// {
 							
-						}
-					}
+					// 	// }
+					// }
 				}
 
 			};
@@ -1343,6 +1318,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
+	glDepthFunc(GL_ALWAYS);
+
+	drawTextures(textures, texture_program);
+
 	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing
 	
@@ -1401,7 +1380,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDisable(GL_BLEND);
 	}
 
-	drawTextures(textures, texture_program);
 
 
 
