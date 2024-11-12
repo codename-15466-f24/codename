@@ -676,7 +676,7 @@ void PlayMode::initializeCallbacks()
 					// Actually propagate the special request text
 					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 					draw_state_text();
-					tex_special_ptr->visible = false;
+					// tex_special_ptr->visible = false;
 				}
 
 			};
@@ -1023,7 +1023,7 @@ void PlayMode::draw_state_text() {
 
 	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
-  set_size(&tex_special);
+  	set_size(&tex_special);
 	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
