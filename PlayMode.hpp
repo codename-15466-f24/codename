@@ -191,7 +191,7 @@ struct PlayMode : Mode {
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
 
-		ToggleCipher *current_cipher;
+		ToggleCipher *current_cipher = new ToggleCipher();
 		bool solved_puzzle = false;
 		std::string solution_text;
 		std::string puzzle_text;
