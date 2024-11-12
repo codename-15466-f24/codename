@@ -38,6 +38,7 @@ struct PlayMode : Mode {
 		std::string path = "error.png";
 		bool loadme = false;
 		glm::uvec2 size;
+		glm::uvec2 margin = glm::uvec2(0, 0);
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
