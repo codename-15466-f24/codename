@@ -467,7 +467,8 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.current_cipher->name == "Substitution")
+				if (display_state.current_cipher->name == "Substitution"
+					|| display_state.current_cipher->name == "Shaper")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -481,8 +482,12 @@ void PlayMode::initializeCallbacks()
 					clear_png(&tex_cs);
 					render_text(&tex_cs, editStr, green, 'd', 75);
 					update_texture(&tex_cs);
+				} else if (display_state.current_cipher->name == "Bleebus"
+					|| display_state.current_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 				togglePanel(textures, RightPane);
 			};
@@ -494,7 +499,8 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (display_state.current_cipher->name == "Substitution")
+				if (display_state.current_cipher->name == "Substitution"
+					|| display_state.current_cipher->name == "Shaper")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -506,8 +512,12 @@ void PlayMode::initializeCallbacks()
 					editStr = "";
 					cursor_pos = 0;
 					display_state.status = CHANGING;
+				} else if (display_state.current_cipher->name == "Bleebus"
+					|| display_state.current_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 			};
 
