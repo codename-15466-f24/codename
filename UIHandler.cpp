@@ -317,6 +317,9 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 {
 	bool isLocked = false;
 
+	//find the topmost texture
+	TexStruct *top_texture = nullptr;
+
 	for (auto tex_ : textures)
 	{
 		assert(tex_);
@@ -332,12 +335,19 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 				y > tex.bounds[2] &&
 				y <= tex.bounds[3])
 			{
-				tex.onClick(textures, tex.path);
-				break;
+				top_texture = tex_;
+				std::cout  << top_texture->path << std::endl;
 			}
 
 		}
 	}
+
+
+	if (top_texture)
+	{
+		top_texture->onClick(textures, top_texture->path);
+	}
+
 
 
 	for (auto tex : textures)
