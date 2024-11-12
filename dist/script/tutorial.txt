@@ -17,6 +17,6 @@
 17 Input_Puzzle d "[type your reply here]" "GENERIC" 21 18
 18 Speech subeelb "???"
 19 Text d "Looks like the customer didn't get it. Let's try this again."
-20 Jump 11
+20 Jump 12
 21 Text d "Great! You've served your first customer."
 22 Jump 21

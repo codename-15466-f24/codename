@@ -899,6 +899,7 @@ void PlayMode::apply_command(std::string line) {
 			display_state.solution_text = parsed[4];
 			display_state.current_cipher = characters[parsed[3]].species;
 			std::cout << "Cipher in use for this puzzle: " << display_state.current_cipher->name << std::endl;
+			display_state.current_cipher->reset_features();
 			display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
 			for (auto tex : textures)
 			{
@@ -925,6 +926,16 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = true;
 				}
 
+			}
+		}
+		display_state.status = CHANGING;
+	} else if (keyword == "Reset_Character_Cipher") {
+		if (parsed[2] == player_id) {
+			// do nothing, why would the player have a ciipher
+		}
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				characters[parsed[2]].species->reset_features();
 			}
 		}
 		display_state.status = CHANGING;
