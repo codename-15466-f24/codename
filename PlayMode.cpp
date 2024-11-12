@@ -428,7 +428,7 @@ void PlayMode::initializeCallbacks()
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
-				// tex_special.visible = true;
+				tex_special_ptr->visible = true;
 			};
 
 			callbacks.emplace_back(callback);
@@ -447,7 +447,7 @@ void PlayMode::initializeCallbacks()
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPaneReversed);
-				// tex_special.visible = true;
+				tex_special.visible = true;
 			};
 
 			callbacks.emplace_back(callback);
@@ -663,7 +663,7 @@ void PlayMode::initializeCallbacks()
 				} else {
 					std::cout << "Submitted" << std::endl;
 					hasReversed = true;
-					tex_minipuzzle.visible = false;
+					tex_minipuzzle_ptr->visible = false;
 					display_state.solved_puzzle = true;
 					advance_state(display_state.current_choice);
 					for (auto tex : textures)
@@ -721,6 +721,9 @@ void PlayMode::initializeCallbacks()
 // }
 
 PlayMode::PlayMode() : scene(*codename_scene) {
+	tex_special_ptr = &tex_special;
+	tex_minipuzzle_ptr = &tex_minipuzzle;
+
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "swap_creature") swap_creature = &transform;
@@ -899,7 +902,8 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = false;
 				}
 			}
-			tex_minipuzzle.visible = true;
+
+			tex_minipuzzle_ptr->visible = true;
 			display_state.status = WAIT_FOR_SOLVE;
 
 		} else if (panel == "special")
@@ -999,13 +1003,15 @@ void PlayMode::draw_state_text() {
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
 	update_texture(&tex_textbg);
 
-	tex_special.bounds = {-0.95f, -0.6f, 0.7f, 0.03f};
-	render_text(&tex_special, "No special requests right now!", white, display_state.cipher);
+	tex_special.size = glm::uvec2(800, 400);
+	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
+	render_text(&tex_special, "No special requests right now!", white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
+	tex_minipuzzle.size = glm::uvec2(400, 100);
 	std::cout << "Mini puzzle text: " << display_state.puzzle_text << std::endl;
-	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.3f, 0.15f};
-	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
+	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher, 48);
 	update_texture(&tex_minipuzzle);
 
 	tex_cs.size = glm::uvec2(render_width, render_height);
@@ -1273,10 +1279,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 
-	// move creechur
-	if (swap_creature->position.x < x_by_counter) {
-		swap_creature->position.x += creature_speed * elapsed;
-	}
+	// // move creechur
+	// if (swap_creature->position.x < x_by_counter) {
+	// 	swap_creature->position.x += creature_speed * elapsed;
+	// }
 
 	updateTextures(textures);
 
@@ -1329,6 +1335,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_textbg.count);
 
+
 		if (tex_special.visible)
 		{
 			glUseProgram(texture_program->program);
@@ -1372,7 +1379,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDisable(GL_BLEND);
 	}
 
-		drawTextures(textures, texture_program);
+	drawTextures(textures, texture_program);
 
 
 

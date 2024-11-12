@@ -1,0 +1,24 @@
+1 Character player You Human
+2 Character blub Blub Bleebus
+3 Sound "door.opus"
+4 Text d "Looks like your first customer is coming!"
+5 Text d "Each customer comes with something they're looking for"
+6 Speech blub ""
+7 Text d "Looks like this one's in a bit of a pickle. They just said a lot but, I'm not sure what it means yet..."
+8 Text d "Sometimes you'll run into a customer with a lot to say! Don't worry, you don't need to figure it all out now."
+9 Text d "They'll wait until you've figured out what they said."
+5 Text d "It looks like your customer is preparing to buy something! Grandpa's gonna be overjoyed."
+6 Text d "When the customer rings up their purchase, they will often say the name of the item in their language. You have to figure out what it is!"
+7 Speech subeelb "[New Customer]₿Retaw"
+8 Text d "The customer asked for Retaw. I wonder what that could be?"
+9 Show mini_puzzle eek
+10 Text d "To find out, you can consult a few resources. Grandpa's guidebook is a good place to start deciding what kind of customer you're dealing with and get a hint or two."
+12 Text d "Once you've served a few customers, you'll start getting receipts from past sales."
+12 Text d "Looks like this guy's a Bleebus. Grandpa gave us some notes on these guys. Make sure to check Grandpa's notes sometimes - he left some hints for when you might get stuck ;)"
+13 Text d "Here, we use codesheets to convert alien languages to our own. Try using this one to reverse the bleebus language into ours!"
+14 Text d "Remember, the Bleebus wants Retaw."
+15 (we should include some logic here regarding allowing the user to continue based on the puzzle status)
+16 Text d "Great! You've served your first customer."
+17 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
+18 Text d "Make sure to use receipts as hints for future customers!"
+
