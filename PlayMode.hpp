@@ -42,6 +42,9 @@ struct PlayMode : Mode {
 		bool visible = false;
 	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
 
+	TextureItem *tex_special_ptr;
+	TextureItem *tex_minipuzzle_ptr;
+
 	enum Cipher {
 		Reverse,
 		Substituion
