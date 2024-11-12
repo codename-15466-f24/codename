@@ -5,6 +5,8 @@
 #include "UIHandler.hpp"
 
 #include "string_parsing.hpp"
+#include "ToggleCipher.hpp"
+#include "ReverseCipher.hpp"
 
 #include <glm/glm.hpp>
 
@@ -131,7 +133,7 @@ struct PlayMode : Mode {
 	struct GameCharacter {
 		std::string id;
 		std::string name;
-		std::string species; // can change this type later
+		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
 		uint8_t asset_idx;
 	};
@@ -166,6 +168,7 @@ struct PlayMode : Mode {
 		CHOICE_TEXT,
 		IMAGE,
 		CHOICE_IMAGE,
+		WAIT_FOR_SOLVE,
 		INPUT
 	};
 	struct DisplayState {
@@ -186,6 +189,11 @@ struct PlayMode : Mode {
 		
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
+
+		ToggleCipher *current_cipher;
+		bool solved_puzzle = false;
+		std::string solution_text;
+		std::string puzzle_text;
 	} display_state;
 
 	std::string player_id = "player";

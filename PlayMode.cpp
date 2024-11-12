@@ -52,14 +52,13 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
-PlayMode::Cipher current_cipher = PlayMode::Reverse;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
 
+// Leaving the cipher up here for now because the substitution is here
 bool hasReversed = false;
-
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
@@ -150,7 +149,7 @@ std::string decode(std::string str_in, char key){
 	return out;
 }
 
-//Nightmare loop, takes text and a color and turns it into a png of text in that color.
+// Isn't this slightly less of a nightmare loop now?
 void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = FONT_SIZE) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
@@ -172,7 +171,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
-	line = decode(line, cipher);
+	// line = decode(line, cipher); // not ciphering for now
 	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
 	// since the below code follows the code from the example basically exactly, I'm also including some annotations
 	// of my understanding of what's going on
@@ -468,7 +467,7 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (current_cipher == Substituion)
+				if (display_state.current_cipher->name == "Substitution")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -495,7 +494,7 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (current_cipher == Substituion)
+				if (display_state.current_cipher->name == "Substitution")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -563,17 +562,22 @@ void PlayMode::initializeCallbacks()
 				// toggle selected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = false;
+				display_state.current_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
+				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
 
@@ -586,17 +590,22 @@ void PlayMode::initializeCallbacks()
 				// toggle unselected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = true;
+				display_state.current_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
+				draw_state_text();
 			};
 
 			callbacks.emplace_back(callback);
@@ -655,6 +664,8 @@ void PlayMode::initializeCallbacks()
 					std::cout << "Submitted" << std::endl;
 					hasReversed = true;
 					tex_minipuzzle_ptr->visible = false;
+					display_state.solved_puzzle = true;
+					advance_state(display_state.current_choice);
 					for (auto tex : textures)
 					{
 						if (tex->path.substr(0,7) == "special")
@@ -778,7 +789,12 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-			g.species = parsed[4];
+			if (parsed[4] == "Bleebus") {
+				g.species = new ReverseCipher(parsed[4]);
+			}
+			else {
+
+			}
 			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
 			characters[parsed[2]] = g;
 		}
@@ -818,11 +834,26 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = CHANGING;
 	}
 	else if (keyword == "Speech") {
-		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
-		else {
-			// TODO: speech bubble stuff; not implemented yet
+		std::string speech_text = parsed[3];
+		bool found_character = false;
+		GameCharacter speaker;
+		if (parsed[2] == player_id) {
 			display_state.bottom_text = parsed[3];
+			found_character = true;
+			speaker = characters[parsed[2]];
 		}
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				found_character = true;
+				speaker = characters[parsed[2]];
+				if (characters[parsed[2]].species->name == "Bleebus") {
+					std::string res = characters[parsed[2]].species->encode(parsed[3]);
+					std::cout << res << std::endl;
+					speech_text = res;
+				}
+			}
+		}
+		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
 		display_state.status = TEXT;
 	}
 	else if (keyword == "Text") {
@@ -855,7 +886,10 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
-			auto text = parsed[3];
+			display_state.solution_text = parsed[4];
+			display_state.current_cipher = characters[parsed[3]].species;
+			std::cout << "Cipher in use for this puzzle: " << display_state.current_cipher->name << std::endl;
+			display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -870,6 +904,7 @@ void PlayMode::apply_command(std::string line) {
 			}
 
 			tex_minipuzzle_ptr->visible = true;
+			display_state.status = WAIT_FOR_SOLVE;
 
 		} else if (panel == "special")
 		{
@@ -880,8 +915,9 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = true;
 				}
 
+			}
 		}
-	}
+		display_state.status = CHANGING;
 	}
 
 	// jump-modifying keywords
@@ -941,6 +977,7 @@ void PlayMode::advance_state(uint32_t jump_choice) {
 	if (display_state.line_number > 0) display_state.history.push_back(std::pair(display_state.file, display_state.line_number));
 	advance_one_line(jump_choice);
 	while (display_state.status == CHANGING) advance_one_line(0);
+
 	draw_state_text();
 }
 
@@ -968,12 +1005,13 @@ void PlayMode::draw_state_text() {
 
 	tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
-	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher, 72);
+	render_text(&tex_special, "No special requests right now!", white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
+	std::cout << "Mini puzzle text: " << display_state.puzzle_text << std::endl;
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
-	render_text(&tex_minipuzzle, "Water", white, display_state.cipher, 48);
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher, 48);
 	update_texture(&tex_minipuzzle);
 
 	tex_cs.size = glm::uvec2(render_width, render_height);
@@ -1215,6 +1253,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		// only advance if click inside of dialogue
 		if (!isLocked && display_state.status != INPUT &&
+			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
 			tex_y >= tex_textbg.bounds[2] &&
@@ -1222,7 +1261,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		{
 
 			clear_png(&tex_box_text);
-			advance_state(display_state.current_choice);
+			advance_state(0);
 			
 		}
 
