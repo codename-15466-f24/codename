@@ -279,7 +279,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		// I've adjusted my text asset pipeline to account for this.
 		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
 		if (strcmp(glyphname, "uni20BF") == 0) {
-			pen_x = static_cast<int>(LEFTMARGIN); 
+			pen_x = tex_in->margin.x; 
 			pen_y += static_cast<int>(line_height + LINE_SPACING); 
 			x_position = pen_x + pos[n].x_offset / 64.;
 			y_position = pen_y + pos[n].y_offset / 64.;
