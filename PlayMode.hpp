@@ -190,10 +190,14 @@ struct PlayMode : Mode {
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
 
-		ToggleCipher *current_cipher = new ToggleCipher();
+		ToggleCipher *puzzle_cipher = new ToggleCipher();
 		bool solved_puzzle = false;
 		std::string solution_text;
 		std::string puzzle_text;
+
+		ToggleCipher *special_cipher = new ToggleCipher();
+		std::string special_solution_text = "No special requests right now!";
+		std::string special_request_text = "No special requests right now!";
 	} display_state;
 
 	std::string player_id = "player";
