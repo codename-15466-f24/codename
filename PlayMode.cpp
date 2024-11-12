@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#define FONT_SIZE 36
+#define FONT_SIZE 72
 #define TOPMARGIN (FONT_SIZE * .5)
 #define LEFTMARGIN (FONT_SIZE * 2)
 #define LINE_SPACING (FONT_SIZE * 0.25)
@@ -233,8 +233,10 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
 	
 
-	pen_x = static_cast<int>(LEFTMARGIN);
-	pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	//pen_x = static_cast<int>(LEFTMARGIN);
+	//pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	pen_x = tex_in->margin.x;
+	pen_y = tex_in->margin.y + font_size;
 
 	double line_height = font_size;
 	bool lastWasSpace = true;
@@ -261,8 +263,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				m+=1;
 			}
 
-			if (x_position + wordWidth >= tex_in->size.x - 2*LEFTMARGIN) {
-				pen_x = static_cast<int>(LEFTMARGIN); 
+			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+				pen_x = tex_in->margin.x; 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
 				x_position = pen_x + pos[n].x_offset / 64.;
 				y_position = pen_y + pos[n].y_offset / 64.;
@@ -447,7 +449,8 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.current_cipher->name == "Substitution")
+				if (display_state.current_cipher->name == "Substitution"
+					|| display_state.current_cipher->name == "Shaper")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -461,8 +464,12 @@ void PlayMode::initializeCallbacks()
 					clear_png(&tex_cs);
 					render_text(&tex_cs, editStr, green, 'd', 75);
 					update_texture(&tex_cs);
+				} else if (display_state.current_cipher->name == "Bleebus"
+					|| display_state.current_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 				togglePanel(textures, RightPane);
 			};
@@ -474,7 +481,8 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (display_state.current_cipher->name == "Substitution")
+				if (display_state.current_cipher->name == "Substitution"
+					|| display_state.current_cipher->name == "Shaper")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -486,8 +494,12 @@ void PlayMode::initializeCallbacks()
 					editStr = "";
 					cursor_pos = 0;
 					display_state.status = CHANGING;
+				} else if (display_state.current_cipher->name == "Bleebus"
+					|| display_state.current_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 			};
 
@@ -946,6 +958,10 @@ void PlayMode::retreat_state() {
 	draw_state_text();
 }
 
+void set_size(PlayMode::TextureItem *in){
+	in->size = glm::uvec2(window_width * (in->bounds[1] - in->bounds[0]), window_height * (in->bounds[3] - in->bounds[2]));
+}
+
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
 void PlayMode::advance_state(uint32_t jump_choice) {
@@ -966,8 +982,10 @@ void PlayMode::draw_state_text() {
 	}
 	else text_to_draw = display_state.bottom_text;
 
-	tex_box_text.size = glm::uvec2(render_width, render_height);
+	//tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+	tex_box_text.margin = glm::uvec2(FONT_SIZE, FONT_SIZE);
+	set_size(&tex_box_text);
 	current_line = text_to_draw;
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
@@ -976,22 +994,26 @@ void PlayMode::draw_state_text() {
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
+	set_size(&tex_textbg);
 	update_texture(&tex_textbg);
 
-	tex_special.size = glm::uvec2(800, 400);
+	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
-	render_text(&tex_special, "No special requests right now!", white, display_state.cipher, 72);
+	set_size(&tex_special);
+	render_text(&tex_special, "No special requests right now!", white, display_state.cipher);
 	update_texture(&tex_special);
 
-	tex_minipuzzle.size = glm::uvec2(400, 100);
+	//tex_minipuzzle.size = glm::uvec2(400, 100);
 	std::cout << "Mini puzzle text: " << display_state.puzzle_text << std::endl;
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
-	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher, 48);
+	set_size(&tex_minipuzzle);
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);
 
-	tex_cs.size = glm::uvec2(render_width, render_height);
+	//tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
+	set_size(&tex_cs);
 	update_texture(&tex_cs);
 
 }

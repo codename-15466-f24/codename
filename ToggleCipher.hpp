@@ -19,7 +19,7 @@ typedef std::unordered_map<std::string, CipherFeature> CipherFeatureMap;
 struct ToggleCipher {
     CipherFeatureMap features; // The cipher keeps a specific feature setting.
     std::string name;
-    ToggleCipher() {};
+    ToggleCipher() {name = "";};
     ToggleCipher(std::string n) {name = n;};
 
     // If you were to want to encode/decode with your own feature settings, you can do that here.
