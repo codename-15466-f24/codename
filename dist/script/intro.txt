@@ -4,16 +4,9 @@
 4 Speech player "[You]₿Sigh..."
 5 Speech player "[You]₿24/7 too. Maybe I should just close it while he's away..."
 6 Speech player "[You]₿Oh who am I kidding, Pa didn't raise a quitter."
-
-
-4 Text e "This is the third line of text."
-5 Text e "And this is the fourth line."
-6 Choice_Text 2 d "Start Game" "Quit" 7 13
-7 Text e "Okay hi"
-8 Input d "hehe type here"
-9 Jump 11
-10 Text e "Are you for real?"
-11 Text e "One more time"
-12 Input_Puzzle d "Type the following: TEST" "TEST" 13 10
-13 Text e "Finished" 
-14 Change_File "test.txt"
+7 Speech player "[You]₿Guess I'll need to figure out how Grandpa ran this place the old fashioned way, trial and error!"
+8 Text d "Welcome to codename! You'll be playing as the shopkeeper of an intergalactic rest stop."
+9 Text d "The galaxy is home to thousands of species of alien, each with their own language and culture."
+10 Text d "Luckily, the intergalactic language council has standardized a lot of things, so every language can be easily translated back into your home language with a few steps."
+11 Text d "Unluckily, those steps might not be very obvious. With some experience and smart problem-solving skills though, you'll be able to learn any language."
+12 Change_File "tutorial.txt"

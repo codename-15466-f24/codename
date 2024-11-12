@@ -39,8 +39,13 @@ struct PlayMode : Mode {
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
-	} tex_box_text, tex_textbg, tex_cs;
+		bool visible = false;
+	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
 
+	enum Cipher {
+		Reverse,
+		Substituion
+	};
 
 	//input tracking:
 	struct Button {
@@ -75,19 +80,23 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {true, true, 
+	std::vector<bool> visibilities = {false, true, 
 									false, false, 
+									false, false,
 									true, false, true,
-									true, false, true, true};
+									false, false, false, false, false};
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
+											LeftPaneReversed, LeftPaneReversed,
 											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
-											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG
+											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG, MiddlePaneBGSelected
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png",
+									"special_request_collapsed_reversed.png", 
+									"special_request_reversed.png",
 									"customer1.png", "customer1_selected.png", "bg_customer.png",
-									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png"
+									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
@@ -100,14 +109,14 @@ struct PlayMode : Mode {
 
 	// coloring
 	std::vector<float> colorscheme = {
-		0., 0., 0.,
-	    9. / 255., 4. / 255., 70. / 255.,
-        56. / 255., 79. / 255., 113. / 255.,
-        102. / 255., 153. / 255., 155. / 255.,
-        167. / 255., 194. / 255., 150. / 255.,
-        231. / 255., 235. / 255., 144. / 255.,
+		0.0f, 0.0f, 0.0f,
+	    9.0f / 255.0f, 4.0f / 255.0f, 70.0f / 255.0f,
+        56.0f / 255.0f, 79.0f / 255.0f, 113.0f / 255.0f,
+        102.0f / 255.0f, 153.0f / 255.0f, 155.0f / 255.0f,
+        167.0f / 255.0f, 194.0f / 255.0f, 150.0f / 255.0f,
+        231.0f / 255.0f, 235.0f / 255.0f, 144.0f / 255.0f,
     	};
-	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.;
+	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.0f;
 
 	//camera:
 	Scene::Camera *camera = nullptr;
@@ -157,7 +166,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "first_interaction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "tutorial.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
