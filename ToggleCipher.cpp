@@ -11,12 +11,21 @@ std::string ToggleCipher::decode(std::string text) {return decode_with_features(
 void ToggleCipher::set_feature(std::string key, CipherFeature val) {
     if (features.find(key) != features.end()) features[key] = val;
 };
+
 CipherFeature ToggleCipher::get_feature(std::string key) {
     if (features.find(key) != features.end()) return features[key];
     CipherFeature empty;
     empty.b = 0;
     return empty;
 };
+
+void ToggleCipher::reset_features() {
+    for (auto &[k, v] : features) {
+        features[k].i = 0;
+        features[k].b = false;
+        for (size_t i = 0; i < 26; i++) features[k].alphabet[i] = '\0';
+    }
+}
 
 // std::string SubstitutionCipher::encode_with_features(std::string text, CipherFeatureMap &cfm) {
 //     // I think every encoding/decoding function should look like this.

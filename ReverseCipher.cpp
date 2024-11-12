@@ -43,3 +43,7 @@ std::string ReverseCipher::encode_with_features(std::string text, CipherFeatureM
 std::string ReverseCipher::decode_with_features(std::string text, CipherFeatureMap &cfm) {
     return encode_with_features(text, cfm); // identical here
 }
+
+void ReverseCipher::reset_features() {
+    features["flip"].b = true;
+}

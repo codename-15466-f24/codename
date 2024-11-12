@@ -21,4 +21,6 @@ struct ReverseCipher : ToggleCipher {
     virtual std::string encode_with_features(std::string text, CipherFeatureMap &cfm) override;
 
     virtual std::string decode_with_features(std::string text, CipherFeatureMap &cfm) override;
+
+    virtual void reset_features() override;
 };

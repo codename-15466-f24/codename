@@ -449,8 +449,8 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.current_cipher->name == "Substitution"
-					|| display_state.current_cipher->name == "Shaper")
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -464,8 +464,8 @@ void PlayMode::initializeCallbacks()
 					clear_png(&tex_cs);
 					render_text(&tex_cs, editStr, green, 'd', 75);
 					update_texture(&tex_cs);
-				} else if (display_state.current_cipher->name == "Bleebus"
-					|| display_state.current_cipher->name == "Reverse")
+				} else if (display_state.puzzle_cipher->name == "Bleebus"
+					|| display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 				} else {
@@ -481,8 +481,8 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (display_state.current_cipher->name == "Substitution"
-					|| display_state.current_cipher->name == "Shaper")
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -494,8 +494,8 @@ void PlayMode::initializeCallbacks()
 					editStr = "";
 					cursor_pos = 0;
 					display_state.status = CHANGING;
-				} else if (display_state.current_cipher->name == "Bleebus"
-					|| display_state.current_cipher->name == "Reverse")
+				} else if (display_state.puzzle_cipher->name == "Bleebus"
+					|| display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 				} else {
@@ -568,8 +568,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = false;
-				display_state.current_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
+				display_state.puzzle_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
@@ -596,8 +596,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = true;
-				display_state.current_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
+				display_state.puzzle_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 
@@ -658,14 +658,25 @@ void PlayMode::initializeCallbacks()
 					hasReversed = true;
 					tex_minipuzzle_ptr->visible = false;
 					display_state.solved_puzzle = true;
-					advance_state(display_state.current_choice);
-					// for (auto tex : textures)
-					// {
-					// 	// if (tex->path.substr(0,7) == "special")
-					// 	// {
-							
-					// 	// }
-					// }
+					advance_state(0);
+
+					// Propagate the cipher text. This is going to get unwieldy eventually.
+					// First change the necessary features.
+					if (display_state.special_cipher->name == "Bleebus"
+						|| display_state.special_cipher->name == "Reverse") {
+						// do not flip anymore
+						CipherFeature cf;
+						cf.b = false;
+						display_state.special_cipher->set_feature("flip", cf);
+					}
+					else if (display_state.special_cipher->name == "Shaper"
+						|| display_state.special_cipher->name == "Substitution") {
+						// tbd source the minipuzzle cipher
+					}
+					// Actually propagate the special request text
+					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+					draw_state_text();
+					tex_special_ptr->visible = false;
 				}
 
 			};
@@ -833,11 +844,9 @@ void PlayMode::apply_command(std::string line) {
 			if (characters.find(parsed[2]) != characters.end()) {
 				found_character = true;
 				speaker = characters[parsed[2]];
-				if (characters[parsed[2]].species->name == "Bleebus") {
-					std::string res = characters[parsed[2]].species->encode(parsed[3]);
-					std::cout << res << std::endl;
-					speech_text = res;
-				}
+				std::string res = speaker.species->encode(parsed[3]);
+				std::cout << res << std::endl;
+				speech_text = res;
 			}
 		}
 		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
@@ -874,9 +883,10 @@ void PlayMode::apply_command(std::string line) {
 		if (panel == "mini_puzzle")
 		{
 			display_state.solution_text = parsed[4];
-			display_state.current_cipher = characters[parsed[3]].species;
-			std::cout << "Cipher in use for this puzzle: " << display_state.current_cipher->name << std::endl;
-			display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
+			display_state.puzzle_cipher = characters[parsed[3]].species;
+			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
+			display_state.puzzle_cipher->reset_features();
+			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -895,6 +905,10 @@ void PlayMode::apply_command(std::string line) {
 
 		} else if (panel == "special")
 		{
+			display_state.special_cipher = characters[parsed[3]].species;
+			display_state.special_cipher->reset_features();
+			display_state.special_solution_text = parsed[4];
+			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->path == "special_request_collapsed.png")
@@ -902,6 +916,16 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = true;
 				}
 
+			}
+		}
+		display_state.status = CHANGING;
+	} else if (keyword == "Reset_Character_Cipher") {
+		if (parsed[2] == player_id) {
+			// do nothing, why would the player have a cipher
+		}
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				characters[parsed[2]].species->reset_features();
 			}
 		}
 		display_state.status = CHANGING;
@@ -999,12 +1023,11 @@ void PlayMode::draw_state_text() {
 
 	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
-	set_size(&tex_special);
-	render_text(&tex_special, "No special requests right now!", white, display_state.cipher);
+  set_size(&tex_special);
+	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
-	//tex_minipuzzle.size = glm::uvec2(400, 100);
-	std::cout << "Mini puzzle text: " << display_state.puzzle_text << std::endl;
+	tex_minipuzzle.size = glm::uvec2(400, 100);
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
 	set_size(&tex_minipuzzle);
 	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
