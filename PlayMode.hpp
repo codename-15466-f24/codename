@@ -38,6 +38,7 @@ struct PlayMode : Mode {
 		std::string path = "error.png";
 		bool loadme = false;
 		glm::uvec2 size;
+		glm::uvec2 margin = glm::uvec2(0, 0);
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
@@ -87,21 +88,18 @@ struct PlayMode : Mode {
 	// right is true, left is false
 	std::vector<bool> visibilities = {false, true, 
 									false, false, 
-									false, false,
-									true, false, true,
-									false, false, false, false, false};
+									true, true, false,
+									false, false, false, false};
+
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
-											LeftPaneReversed, LeftPaneReversed,
-											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
-											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG, MiddlePaneBGSelected
+											TopMiddlePaneBG, TopMiddlePane, TopMiddlePaneSelected,
+											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
-									"special_request.png", "cipher_panel_full.png",
-									"special_request_collapsed_reversed.png", 
-									"special_request_reversed.png",
-									"customer1.png", "customer1_selected.png", "bg_customer.png",
-									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
+									"special_request.png", "cipher_panel_full.png", 
+									"bg_customer.png", "customer1.png", "customer1_selected.png",
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;

@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#define FONT_SIZE 36
+#define FONT_SIZE 72
 #define TOPMARGIN (FONT_SIZE * .5)
 #define LEFTMARGIN (FONT_SIZE * 2)
 #define LINE_SPACING (FONT_SIZE * 0.25)
@@ -40,8 +40,8 @@ static std::string textbg_path = "textbg.png";
 static std::string font_path = "RobotoMono-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
-static constexpr uint32_t render_height = window_height/3;
-static constexpr uint32_t render_width = window_width;
+// static constexpr uint32_t render_height = window_height/3;
+// static constexpr uint32_t render_width = window_width;
 // static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 // static uint32_t activeIndex = 0;
@@ -101,7 +101,7 @@ void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t widt
         }
     }*/
 	for (auto i = png_in->data.begin(); i != png_in->data.end(); ++i){
-		*i = glm::u8vec4(0,0,0,0);
+		// *i = glm::u8vec4(0,0,0,0);
 	}
 }
 
@@ -117,7 +117,6 @@ void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t 
                 uint8_t alpha = bitmap->buffer[i * bitmap->pitch + j];
 				// Calculate the index in the RGBA buffer
                 int index = (png_out->size.y-out_y-1) * png_out->size.x + out_x;
-				//std::cout << std::to_string(index) << " from size " << std::to_string(png_out->data.size());
 				png_out->data[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
             }
         }
@@ -234,8 +233,10 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
 	
 
-	pen_x = static_cast<int>(LEFTMARGIN);
-	pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	//pen_x = static_cast<int>(LEFTMARGIN);
+	//pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	pen_x = tex_in->margin.x;
+	pen_y = tex_in->margin.y + font_size;
 
 	double line_height = font_size;
 	bool lastWasSpace = true;
@@ -262,8 +263,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				m+=1;
 			}
 
-			if (x_position + wordWidth >= tex_in->size.x - 2*LEFTMARGIN) {
-				pen_x = static_cast<int>(LEFTMARGIN); 
+			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+				pen_x = tex_in->margin.x; 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
 				x_position = pen_x + pos[n].x_offset / 64.;
 				y_position = pen_y + pos[n].y_offset / 64.;
@@ -277,7 +278,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		// I've adjusted my text asset pipeline to account for this.
 		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
 		if (strcmp(glyphname, "uni20BF") == 0) {
-			pen_x = static_cast<int>(LEFTMARGIN); 
+			pen_x = tex_in->margin.x; 
 			pen_y += static_cast<int>(line_height + LINE_SPACING); 
 			x_position = pen_x + pos[n].x_offset / 64.;
 			y_position = pen_y + pos[n].y_offset / 64.;
@@ -442,25 +443,6 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		}  else if (path == "special_request_collapsed_reversed.png")
-		{
-			// icon that opens special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				tex_special.visible = true;
-			};
-
-			callbacks.emplace_back(callback);
-		}
-		else if (path == "special_request_reversed.png")
-		{
-			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				tex_special.visible = false;
-			};
-
-			callbacks.emplace_back(callback);
 		} 
 		else if (path == "cipher_panel.png")
 		{
@@ -569,6 +551,7 @@ void PlayMode::initializeCallbacks()
 			// button that reverses the text
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
+				std::cout << "pressed!" << std::endl;
 				// toggle selected version on
 				for (auto tex : textures)
 				{
@@ -693,20 +676,6 @@ void PlayMode::initializeCallbacks()
 					// Actually propagate the special request text
 					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 					draw_state_text();
-
-					for (auto tex : textures)
-					{
-						if (tex->path.substr(0,7) == "special")
-						{
-							if (tex->path == "special_request_collapsed_reversed.png")
-							{
-								tex->visible = true;
-							} else {
-								tex->visible = false;
-							}
-							
-						}
-					}
 					tex_special_ptr->visible = false;
 				}
 
@@ -1013,6 +982,10 @@ void PlayMode::retreat_state() {
 	draw_state_text();
 }
 
+void set_size(PlayMode::TextureItem *in){
+	in->size = glm::uvec2(window_width * (in->bounds[1] - in->bounds[0]), window_height * (in->bounds[3] - in->bounds[2]));
+}
+
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
 void PlayMode::advance_state(uint32_t jump_choice) {
@@ -1033,8 +1006,10 @@ void PlayMode::draw_state_text() {
 	}
 	else text_to_draw = display_state.bottom_text;
 
-	tex_box_text.size = glm::uvec2(render_width, render_height);
+	//tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+	tex_box_text.margin = glm::uvec2(FONT_SIZE, FONT_SIZE);
+	set_size(&tex_box_text);
 	current_line = text_to_draw;
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
@@ -1043,21 +1018,25 @@ void PlayMode::draw_state_text() {
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
+	set_size(&tex_textbg);
 	update_texture(&tex_textbg);
 
-	tex_special.size = glm::uvec2(800, 400);
+	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
+  set_size(&tex_special);
 	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
-	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher, 48);
+	set_size(&tex_minipuzzle);
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);
 
-	tex_cs.size = glm::uvec2(render_width, render_height);
+	//tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
+	set_size(&tex_cs);
 	update_texture(&tex_cs);
 
 }
@@ -1362,6 +1341,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
+	glDepthFunc(GL_ALWAYS);
+
+	drawTextures(textures, texture_program);
+
 	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing
 	
@@ -1420,7 +1403,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDisable(GL_BLEND);
 	}
 
-	drawTextures(textures, texture_program);
 
 
 
