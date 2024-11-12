@@ -887,9 +887,9 @@ void PlayMode::apply_command(std::string line) {
 		if (panel == "mini_puzzle")
 		{
 			display_state.solution_text = parsed[4];
-			display_state.puzzle_text = parsed[4];
 			display_state.current_cipher = characters[parsed[3]].species;
-			std::cout << display_state.current_cipher->name << std::endl;
+			std::cout << "Cipher in use for this puzzle: " << display_state.current_cipher->name << std::endl;
+			display_state.puzzle_text = display_state.current_cipher->encode(display_state.solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
