@@ -50,10 +50,11 @@ struct PlayMode : Mode {
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 		bool visible = false;
-	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
+	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special, tex_rev;
 
 	TextureItem *tex_special_ptr;
 	TextureItem *tex_minipuzzle_ptr;
+	TextureItem *tex_rev_ptr;
 
 	enum Cipher {
 		Reverse,

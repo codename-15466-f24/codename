@@ -519,7 +519,7 @@ void PlayMode::initializeCallbacks()
 			// special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
-				tex_special.visible = false;
+				tex_special_ptr->visible = false;
 			};
 
 			callbacks.emplace_back(callback);
@@ -548,6 +548,10 @@ void PlayMode::initializeCallbacks()
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
+					if (display_state.solved_puzzle)
+					{
+						tex_rev_ptr->visible = true;
+					}
 				} else {
 					// no cipher, do nothing (probably?)
 				}
@@ -578,6 +582,10 @@ void PlayMode::initializeCallbacks()
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
+					if (display_state.solved_puzzle)
+					{
+						tex_rev_ptr->visible = false;
+					}
 				} else {
 					// no cipher, do nothing (probably?)
 				}
@@ -801,6 +809,7 @@ void PlayMode::initializeCallbacks()
 PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_special_ptr = &tex_special;
 	tex_minipuzzle_ptr = &tex_minipuzzle;
+	tex_rev_ptr = &tex_rev;
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
@@ -1120,6 +1129,11 @@ void PlayMode::draw_state_text() {
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
 	set_size(&tex_cs);
 	update_texture(&tex_cs);
+
+	tex_rev.bounds = {0.4f, 0.95f, 0.0f, 0.6f, -0.00001f};
+	set_size(&tex_rev);
+	render_text(&tex_rev, "DROW <———> WORD", white, display_state.cipher);
+	update_texture(&tex_rev);
 
 }
 
@@ -1460,6 +1474,16 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glBindTexture(GL_TEXTURE_2D, tex_minipuzzle.tex);
 			glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_minipuzzle.CLIP_FROM_LOCAL) );
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_minipuzzle.count);
+		}
+
+		if (tex_rev.visible)
+		{
+			glUseProgram(texture_program->program);
+			glActiveTexture(GL_TEXTURE0);
+			glBindVertexArray(tex_rev.tristrip_for_texture_program);
+			glBindTexture(GL_TEXTURE_2D, tex_rev.tex);
+			glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_rev.CLIP_FROM_LOCAL) );
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_rev.count);
 		}
 
 
