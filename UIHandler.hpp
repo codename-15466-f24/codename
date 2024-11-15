@@ -48,7 +48,7 @@ struct TexStruct {
 	float sizeY = 0;
 
 	std::function<void(std::vector<TexStruct *>, std::string)> onClick = 
-			[](std::vector<TexStruct *> textures, std::string){};
+			[](std::vector<TexStruct *> textures, std::string str){};
 
 	//x0, x1, y0, y1, z
 	std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};

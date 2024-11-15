@@ -5,6 +5,8 @@
 #include "UIHandler.hpp"
 
 #include "string_parsing.hpp"
+#include "ToggleCipher.hpp"
+#include "ReverseCipher.hpp"
 
 #include <glm/glm.hpp>
 
@@ -36,11 +38,15 @@ struct PlayMode : Mode {
 		std::string path = "error.png";
 		bool loadme = false;
 		glm::uvec2 size;
+		glm::uvec2 margin = glm::uvec2(0, 0);
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 		bool visible = false;
 	} tex_box_text, tex_textbg, tex_cs, tex_minipuzzle, tex_special;
+
+	TextureItem *tex_special_ptr;
+	TextureItem *tex_minipuzzle_ptr;
 
 	enum Cipher {
 		Reverse,
@@ -81,23 +87,20 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<bool> visibilities = {false, true, 
-									  false, false, 
-									  false, false,
-									  true, false, true,
-									  false, false, false, false, false};
+									false, false, 
+									true, true, false,
+									false, false, false, false};
+
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
-											LeftPaneReversed, LeftPaneReversed,
-											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
-											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG, MiddlePaneBGSelected
-										   };
+											TopMiddlePaneBG, TopMiddlePane, TopMiddlePaneSelected,
+											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
+											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
-									  "special_request.png", "cipher_panel_full.png",
-									  "special_request_collapsed_reversed.png", 
-									  "special_request_reversed.png",
-									  "customer1.png", "customer1_selected.png", "bg_customer.png",
-									  "reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
-									 };
+									"special_request.png", "cipher_panel_full.png", 
+									"bg_customer.png", "customer1.png", "customer1_selected.png",
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
+									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
 
@@ -134,7 +137,7 @@ struct PlayMode : Mode {
 	struct GameCharacter {
 		std::string id;
 		std::string name;
-		std::string species; // can change this type later
+		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
 		uint8_t order_in_line = 0;
 		uint8_t asset_idx;
@@ -170,6 +173,7 @@ struct PlayMode : Mode {
 		CHOICE_TEXT,
 		IMAGE,
 		CHOICE_IMAGE,
+		WAIT_FOR_SOLVE,
 		INPUT
 	};
 	struct DisplayState {
@@ -190,6 +194,15 @@ struct PlayMode : Mode {
 		
 		std::vector<std::pair<std::string, uint32_t>> history; // for backing up
 		uint32_t current_choice = 0;
+
+		ToggleCipher *puzzle_cipher = new ToggleCipher();
+		bool solved_puzzle = false;
+		std::string solution_text;
+		std::string puzzle_text;
+
+		ToggleCipher *special_cipher = new ToggleCipher();
+		std::string special_solution_text = "No special requests right now!";
+		std::string special_request_text = "No special requests right now!";
 	} display_state;
 
 	std::string player_id = "player";

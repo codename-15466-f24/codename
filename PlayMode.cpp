@@ -27,7 +27,7 @@
 #include <fstream>
 #include <sstream>
 
-#define FONT_SIZE 36
+#define FONT_SIZE 72
 #define TOPMARGIN (FONT_SIZE * .5)
 #define LEFTMARGIN (FONT_SIZE * 2)
 #define LINE_SPACING (FONT_SIZE * 0.25)
@@ -40,8 +40,8 @@ static std::string textbg_path = "textbg.png";
 static std::string font_path = "RobotoMono-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
-static constexpr uint32_t render_height = window_height/3;
-static constexpr uint32_t render_width = window_width;
+// static constexpr uint32_t render_height = window_height/3;
+// static constexpr uint32_t render_width = window_width;
 // static glm::u8vec4 text_render[render_height][render_width];
 static std::vector<std::string> activeScript;
 // static uint32_t activeIndex = 0;
@@ -52,14 +52,13 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
-PlayMode::Cipher current_cipher = PlayMode::Reverse;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
 
+// Leaving the cipher up here for now because the substitution is here
 bool hasReversed = false;
-
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
@@ -102,7 +101,7 @@ void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t widt
         }
     }*/
 	for (auto i = png_in->data.begin(); i != png_in->data.end(); ++i){
-		*i = glm::u8vec4(0,0,0,0);
+		// *i = glm::u8vec4(0,0,0,0);
 	}
 }
 
@@ -118,7 +117,6 @@ void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t 
                 uint8_t alpha = bitmap->buffer[i * bitmap->pitch + j];
 				// Calculate the index in the RGBA buffer
                 int index = (png_out->size.y-out_y-1) * png_out->size.x + out_x;
-				//std::cout << std::to_string(index) << " from size " << std::to_string(png_out->data.size());
 				png_out->data[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
             }
         }
@@ -150,7 +148,7 @@ std::string decode(std::string str_in, char key){
 	return out;
 }
 
-//Nightmare loop, takes text and a color and turns it into a png of text in that color.
+// Isn't this slightly less of a nightmare loop now?
 void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = FONT_SIZE) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
@@ -172,7 +170,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
 
-	line = decode(line, cipher);
+	// line = decode(line, cipher); // not ciphering for now
 	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
 	// since the below code follows the code from the example basically exactly, I'm also including some annotations
 	// of my understanding of what's going on
@@ -235,8 +233,10 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
 	
 
-	pen_x = static_cast<int>(LEFTMARGIN);
-	pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	//pen_x = static_cast<int>(LEFTMARGIN);
+	//pen_y = static_cast<int>(TOPMARGIN) + font_size;
+	pen_x = tex_in->margin.x;
+	pen_y = tex_in->margin.y + font_size;
 
 	double line_height = font_size;
 	bool lastWasSpace = true;
@@ -263,8 +263,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				m+=1;
 			}
 
-			if (x_position + wordWidth >= tex_in->size.x - 2*LEFTMARGIN) {
-				pen_x = static_cast<int>(LEFTMARGIN); 
+			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+				pen_x = tex_in->margin.x; 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
 				x_position = pen_x + pos[n].x_offset / 64.;
 				y_position = pen_y + pos[n].y_offset / 64.;
@@ -278,7 +278,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		// I've adjusted my text asset pipeline to account for this.
 		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
 		if (strcmp(glyphname, "uni20BF") == 0) {
-			pen_x = static_cast<int>(LEFTMARGIN); 
+			pen_x = tex_in->margin.x; 
 			pen_y += static_cast<int>(line_height + LINE_SPACING); 
 			x_position = pen_x + pos[n].x_offset / 64.;
 			y_position = pen_y + pos[n].y_offset / 64.;
@@ -429,7 +429,7 @@ void PlayMode::initializeCallbacks()
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, LeftPane);
-				// tex_special.visible = true;
+				tex_special_ptr->visible = true;
 			};
 
 			callbacks.emplace_back(callback);
@@ -443,32 +443,14 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		}  else if (path == "special_request_collapsed_reversed.png")
-		{
-			// icon that opens special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				// tex_special.visible = true;
-			};
-
-			callbacks.emplace_back(callback);
-		}
-		else if (path == "special_request_reversed.png")
-		{
-			// special request menu
-			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				togglePanel(textures, LeftPaneReversed);
-				tex_special.visible = false;
-			};
-
-			callbacks.emplace_back(callback);
 		} 
 		else if (path == "cipher_panel.png")
 		{
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (current_cipher == Substituion)
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 					cs_open = true;
 					editingBox = &tex_cs;
@@ -482,8 +464,12 @@ void PlayMode::initializeCallbacks()
 					clear_png(&tex_cs);
 					render_text(&tex_cs, editStr, green, 'd', 75);
 					update_texture(&tex_cs);
+				} else if (display_state.puzzle_cipher->name == "Bleebus"
+					|| display_state.puzzle_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 				togglePanel(textures, RightPane);
 			};
@@ -495,7 +481,8 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
-				if (current_cipher == Substituion)
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 					if (cs_open) {
 						clear_png(&tex_box_text);
@@ -507,8 +494,12 @@ void PlayMode::initializeCallbacks()
 					editStr = "";
 					cursor_pos = 0;
 					display_state.status = CHANGING;
+				} else if (display_state.puzzle_cipher->name == "Bleebus"
+					|| display_state.puzzle_cipher->name == "Reverse")
+				{
+					// reverse cipher here
 				} else {
-					// reverse here		
+					// no cipher, do nothing (probably?)
 				}
 			};
 
@@ -560,20 +551,26 @@ void PlayMode::initializeCallbacks()
 			// button that reverses the text
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
+				std::cout << "pressed!" << std::endl;
 				// toggle selected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = false;
+				display_state.puzzle_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
+				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
 
@@ -586,17 +583,22 @@ void PlayMode::initializeCallbacks()
 				// toggle unselected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button_selected.png" || tex->path == "mini_puzzle_panel_reverse.png")
+					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = false;
 
 					}
 
-					if (tex->path == "reverse_button.png" || tex->path == "mini_puzzle_panel.png")
+					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = true;
 					}
 				}
+				CipherFeature cf;
+				cf.b = true;
+				display_state.puzzle_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
+				draw_state_text();
 			};
 
 			callbacks.emplace_back(callback);
@@ -654,20 +656,27 @@ void PlayMode::initializeCallbacks()
 				} else {
 					std::cout << "Submitted" << std::endl;
 					hasReversed = true;
-					tex_minipuzzle.visible = false;
-					for (auto tex : textures)
-					{
-						if (tex->path.substr(0,7) == "special")
-						{
-							if (tex->path == "special_request_collapsed_reversed.png")
-							{
-								tex->visible = true;
-							} else {
-								tex->visible = false;
-							}
-							
-						}
+					tex_minipuzzle_ptr->visible = false;
+					display_state.solved_puzzle = true;
+					advance_state(0);
+
+					// Propagate the cipher text. This is going to get unwieldy eventually.
+					// First change the necessary features.
+					if (display_state.special_cipher->name == "Bleebus"
+						|| display_state.special_cipher->name == "Reverse") {
+						// do not flip anymore
+						CipherFeature cf;
+						cf.b = false;
+						display_state.special_cipher->set_feature("flip", cf);
 					}
+					else if (display_state.special_cipher->name == "Shaper"
+						|| display_state.special_cipher->name == "Substitution") {
+						// tbd source the minipuzzle cipher
+					}
+					// Actually propagate the special request text
+					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+					draw_state_text();
+					// tex_special_ptr->visible = false;
 				}
 
 			};
@@ -710,7 +719,10 @@ void PlayMode::initializeCallbacks()
 // }
 
 PlayMode::PlayMode() : scene(*codename_scene) {
-	//get pointers to character transforms
+	tex_special_ptr = &tex_special;
+	tex_minipuzzle_ptr = &tex_minipuzzle;
+
+	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "swap_creature") shaper   = &transform;
 		if (transform.name == "Bleebus_Head")  bleebus  = &transform;
@@ -779,7 +791,12 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-			g.species = parsed[4];
+			if (parsed[4] == "Bleebus") {
+				g.species = new ReverseCipher(parsed[4]);
+			}
+			else {
+
+			}
 			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
 			characters[parsed[2]] = g;
 		}
@@ -819,11 +836,24 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = CHANGING;
 	}
 	else if (keyword == "Speech") {
-		if (parsed[2] == player_id) display_state.bottom_text = parsed[3];
-		else {
-			// TODO: speech bubble stuff; not implemented yet
+		std::string speech_text = parsed[3];
+		bool found_character = false;
+		GameCharacter speaker;
+		if (parsed[2] == player_id) {
 			display_state.bottom_text = parsed[3];
+			found_character = true;
+			speaker = characters[parsed[2]];
 		}
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				found_character = true;
+				speaker = characters[parsed[2]];
+				std::string res = speaker.species->encode(parsed[3]);
+				std::cout << res << std::endl;
+				speech_text = res;
+			}
+		}
+		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
 		display_state.status = TEXT;
 	}
 	else if (keyword == "Text") {
@@ -856,7 +886,11 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
-			auto text = parsed[3];
+			display_state.solution_text = parsed[4];
+			display_state.puzzle_cipher = characters[parsed[3]].species;
+			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
+			display_state.puzzle_cipher->reset_features();
+			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -870,10 +904,15 @@ void PlayMode::apply_command(std::string line) {
 				}
 			}
 
-			// tex_minipuzzle.visible = true;
+			tex_minipuzzle_ptr->visible = true;
+			display_state.status = WAIT_FOR_SOLVE;
 
 		} else if (panel == "special")
 		{
+			display_state.special_cipher = characters[parsed[3]].species;
+			display_state.special_cipher->reset_features();
+			display_state.special_solution_text = parsed[4];
+			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 			for (auto tex : textures)
 			{
 				if (tex->path == "special_request_collapsed.png")
@@ -881,8 +920,19 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = true;
 				}
 
+			}
 		}
-	}
+		display_state.status = CHANGING;
+	} else if (keyword == "Reset_Character_Cipher") {
+		if (parsed[2] == player_id) {
+			// do nothing, why would the player have a cipher
+		}
+		else {
+			if (characters.find(parsed[2]) != characters.end()) {
+				characters[parsed[2]].species->reset_features();
+			}
+		}
+		display_state.status = CHANGING;
 	}
 
 	// jump-modifying keywords
@@ -936,12 +986,17 @@ void PlayMode::retreat_state() {
 	draw_state_text();
 }
 
+void set_size(PlayMode::TextureItem *in){
+	in->size = glm::uvec2(window_width * (in->bounds[1] - in->bounds[0]), window_height * (in->bounds[3] - in->bounds[2]));
+}
+
 // This is the main implementation. This should advance the game's script until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
 void PlayMode::advance_state(uint32_t jump_choice) {
 	if (display_state.line_number > 0) display_state.history.push_back(std::pair(display_state.file, display_state.line_number));
 	advance_one_line(jump_choice);
 	while (display_state.status == CHANGING) advance_one_line(0);
+
 	draw_state_text();
 }
 
@@ -955,8 +1010,10 @@ void PlayMode::draw_state_text() {
 	}
 	else text_to_draw = display_state.bottom_text;
 
-	tex_box_text.size = glm::uvec2(render_width, render_height);
+	//tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
+	tex_box_text.margin = glm::uvec2(FONT_SIZE, FONT_SIZE);
+	set_size(&tex_box_text);
 	current_line = text_to_draw;
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
@@ -965,21 +1022,25 @@ void PlayMode::draw_state_text() {
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
+	set_size(&tex_textbg);
 	update_texture(&tex_textbg);
 
-	tex_special.size = glm::uvec2(800, 400);
+	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
-	render_text(&tex_special, "NO special requests right now!", white, display_state.cipher, 72);
+  	set_size(&tex_special);
+	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
-	render_text(&tex_minipuzzle, "Water", white, display_state.cipher, 48);
+	set_size(&tex_minipuzzle);
+	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);
 
-	tex_cs.size = glm::uvec2(render_width, render_height);
+	//tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
 	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
+	set_size(&tex_cs);
 	update_texture(&tex_cs);
 
 }
@@ -1216,6 +1277,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		// only advance if click inside of dialogue
 		if (!isLocked && display_state.status != INPUT &&
+			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
 			tex_y >= tex_textbg.bounds[2] &&
@@ -1223,7 +1285,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		{
 
 			clear_png(&tex_box_text);
-			advance_state(display_state.current_choice);
+			advance_state(0);
 			
 		}
 
@@ -1287,9 +1349,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//apply a bloom effect:
 	framebuffers.add_bloom();
-
 	//copy scene to main window framebuffer:
 	framebuffers.tone_map();
+
+	glDepthFunc(GL_ALWAYS);
+
+	drawTextures(textures, texture_program);
 
 	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing
@@ -1305,7 +1370,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_textbg.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_textbg.count);
 
-		//if (tex_special.visible)
+
+		if (tex_special.visible)
 		{
 			glUseProgram(texture_program->program);
 			glActiveTexture(GL_TEXTURE0);
@@ -1315,7 +1381,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_special.count);
 		}
 
-		//if (tex_minipuzzle.visible)
+		if (tex_minipuzzle.visible)
 		{
 			glUseProgram(texture_program->program);
 			glActiveTexture(GL_TEXTURE0);
@@ -1348,7 +1414,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDisable(GL_BLEND);
 	}
 
-		drawTextures(textures, texture_program);
 
 
 
