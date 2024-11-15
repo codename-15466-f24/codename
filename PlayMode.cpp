@@ -2,7 +2,7 @@
 
 #include "LitColorTextureProgram.hpp"
 #include "TextureProgram.hpp"
-// #include "Framebuffers.hpp"
+#include "Framebuffers.hpp"
 
 #include "DrawLines.hpp"
 #include "Mesh.hpp"
@@ -75,7 +75,7 @@ Load< Scene > codename_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
-		printf("%s\n", mesh_name.c_str());
+		// printf("%s\n", mesh_name.c_str());
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 		// if (mesh_name == "holo_screen") {
@@ -710,11 +710,15 @@ void PlayMode::initializeCallbacks()
 // }
 
 PlayMode::PlayMode() : scene(*codename_scene) {
-	//get pointers to stuff
+	//get pointers to character transforms
 	for (auto &transform : scene.transforms) {
-		if (transform.name == "swap_creature") swap_creature = &transform;
+		if (transform.name == "swap_creature") shaper   = &transform;
+		if (transform.name == "Bleebus_Head")  bleebus  = &transform;
+		if (transform.name == "CSMajor_Body")  cs_major = &transform;
 	}
-	if (swap_creature == nullptr) throw std::runtime_error("Creature not found.");
+	if (shaper == nullptr) throw std::runtime_error("Shaper not found.");
+	if (bleebus == nullptr) throw std::runtime_error("Bleebus not found.");
+	if (cs_major == nullptr) throw std::runtime_error("CS Major not found.");
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -1252,8 +1256,8 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
-	// //make sure framebuffers are the same size as the window:
-	// framebuffers.realloc(drawable_size);
+	//make sure framebuffers are the same size as the window:
+	framebuffers.realloc(drawable_size);
 
 	//update camera aspect ratio for drawable:
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
@@ -1267,8 +1271,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUniform3fv(lit_color_texture_program->colorscheme_vec3_6, 18, colorscheme.data());
 	glUseProgram(0);
 
-	// //---- draw scene to HDR framebuffer ----
-	// glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+	//---- draw scene to HDR framebuffer ----
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
 
 	glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
@@ -1278,6 +1282,14 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LESS); //this is the default depth comparison function, but FYI you can change it.
 
 	scene.draw(*camera);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//apply a bloom effect:
+	framebuffers.add_bloom();
+
+	//copy scene to main window framebuffer:
+	framebuffers.tone_map();
 
 	// //Code taken from Jim's copied code + Sashas
 	{ //texture example drawing

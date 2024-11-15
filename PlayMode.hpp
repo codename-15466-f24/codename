@@ -81,32 +81,39 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<bool> visibilities = {false, true, 
-									false, false, 
-									false, false,
-									true, false, true,
-									false, false, false, false, false};
+									  false, false, 
+									  false, false,
+									  true, false, true,
+									  false, false, false, false, false};
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
 											LeftPaneReversed, LeftPaneReversed,
 											TopMiddlePane, TopMiddlePaneSelected, TopMiddlePaneBG,
 											MiddlePane, MiddlePaneSelected, MiddlePane, MiddlePaneBG, MiddlePaneBGSelected
-											};
+										   };
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
-									"special_request.png", "cipher_panel_full.png",
-									"special_request_collapsed_reversed.png", 
-									"special_request_reversed.png",
-									"customer1.png", "customer1_selected.png", "bg_customer.png",
-									"reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
-									};
+									  "special_request.png", "cipher_panel_full.png",
+									  "special_request_collapsed_reversed.png", 
+									  "special_request_reversed.png",
+									  "customer1.png", "customer1_selected.png", "bg_customer.png",
+									  "reverse_button.png","reverse_button_selected.png", "submitbutton.png", "mini_puzzle_panel.png", "mini_puzzle_panel_reverse.png"
+									 };
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
 
 	//stuff in the scene
-	Scene::Transform *swap_creature = nullptr;
-	float x_by_counter = 2.9f;
-	float creature_speed = 3.0f;
-	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
-
+	Scene::Transform *shaper = nullptr;
+	Scene::Transform *bleebus = nullptr;
+	Scene::Transform *cs_major = nullptr;
+	const float x_by_counter = 2.9f;
+	const float creature_speed = 3.0f;
+	std::vector<Scene::Transform *> creature_xforms = {bleebus, cs_major, shaper};
+	
+	uint8_t customers_in_line = 0;
+	glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
+	void join_line(Scene::Transform *xform);
+	void rotate_line(uint8_t shift);
+	
 	// coloring
 	std::vector<float> colorscheme = {
 		0.0f, 0.0f, 0.0f,
@@ -116,7 +123,6 @@ struct PlayMode : Mode {
         167.0f / 255.0f, 194.0f / 255.0f, 150.0f / 255.0f,
         231.0f / 255.0f, 235.0f / 255.0f, 144.0f / 255.0f,
     	};
-	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.0f;
 
 	//camera:
 	Scene::Camera *camera = nullptr;
@@ -130,6 +136,7 @@ struct PlayMode : Mode {
 		std::string name;
 		std::string species; // can change this type later
 		// any other data here. maybe assets?
+		uint8_t order_in_line = 0;
 		uint8_t asset_idx;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
