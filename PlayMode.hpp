@@ -27,6 +27,12 @@ struct PlayMode : Mode {
 	//----- game state -----
 
 
+	enum Position {
+			LEFT,
+			MIDDLE,
+			RIGHT
+	};
+	
 	struct TextureItem{
 	// handles
 		GLuint tex = 0;
@@ -39,6 +45,7 @@ struct PlayMode : Mode {
 		bool loadme = false;
 		glm::uvec2 size;
 		glm::uvec2 margin = glm::uvec2(0, 0);
+		Position align = LEFT;
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
 		std::vector<float> bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
@@ -50,7 +57,7 @@ struct PlayMode : Mode {
 
 	enum Cipher {
 		Reverse,
-		Substituion
+		Substitution
 	};
 
 	//input tracking:
@@ -145,11 +152,6 @@ struct PlayMode : Mode {
 	// Jim said something about having a struct for all characters, for example.
 	// I'm not sure how to do that properly here so I'm leaving it like this for now.
 
-	enum Position {
-			LEFT,
-			MIDDLE,
-			RIGHT
-	};
 	
 	struct DisplayCharacter {
 		GameCharacter* ref;

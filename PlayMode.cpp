@@ -165,6 +165,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	// I'll change it in a bit, but it doesn't work for the current script purposes right now.
 	
 	line = line_in;
+	//std::cout << line << std::endl;
 	//turn options blue
 	if (choices != 1) {
 		colorOut = glm::u8vec4(0,0,255,1);
@@ -240,52 +241,131 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 
 	double line_height = font_size;
 	bool lastWasSpace = true;
-	char glyphname[32];
+	bool lastWasNewLine = true;
+	std::string glyphname = "";
+	char gn[32] = "";
+	uint32_t endofline = 0;
 	for (uint32_t n = 0; n < len; n++ ) {
+		memset(gn, 0, sizeof(gn));
 		hb_codepoint_t gid   = info[n].codepoint;
-		hb_font_get_glyph_name (hb_font, gid, glyphname, sizeof (glyphname));
+		hb_font_get_glyph_name (hb_font, gid, gn, sizeof(gn)/sizeof(char));
+		glyphname.assign(gn, sizeof(gn)/sizeof(char));
+		// std::cout << gn << std::endl;
+		// std::cout << glyphname;
 		// unsigned int cluster = info[n].cluster;
 		double x_position = pen_x + pos[n].x_offset / 64.;
 		double y_position = pen_y + pos[n].y_offset / 64.;
-
-		// Cumbersome but this lets us automatically handle new lines.
-		float wordWidth = 0.0f;
-		std::string word = "";
-		char loop_glyphname[32] = "";
-		//std::cout << glyphname;
-		if (lastWasSpace) {
-			uint32_t m = n;
-			while (strcmp(loop_glyphname,"space") != 0 && strcmp(loop_glyphname,"uni20BF") != 0 && m < len){
-				hb_codepoint_t loop_gid  = info[m].codepoint;
-				hb_font_get_glyph_name (hb_font, loop_gid, loop_glyphname, sizeof (loop_glyphname));
-				word = word + loop_glyphname;
-				wordWidth += pos[m].x_advance / 64;
-				m+=1;
-			}
-
-			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
-				pen_x = tex_in->margin.x; 
-				pen_y += static_cast<int>(line_height + LINE_SPACING); 
-				x_position = pen_x + pos[n].x_offset / 64.;
-				y_position = pen_y + pos[n].y_offset / 64.;
-
-				line_height = font_size;
-			}
-		}
 		
-		// The above solution to lines does not allow for \n since it's based in glyphs.
-		// Instead of \n,  I will be using ₿ to indicate line ends.
-		// I've adjusted my text asset pipeline to account for this.
-		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
-		if (strcmp(glyphname, "uni20BF") == 0) {
+		if (glyphname == "uni20BF") {
+			//New Line
 			pen_x = tex_in->margin.x; 
 			pen_y += static_cast<int>(line_height + LINE_SPACING); 
 			x_position = pen_x + pos[n].x_offset / 64.;
 			y_position = pen_y + pos[n].y_offset / 64.;
 
 			line_height = font_size;
-			continue;
+			lastWasNewLine = true;
 		}
+		if (n == endofline && n != 0){
+			pen_x = tex_in->margin.x; 
+			pen_y += static_cast<int>(line_height + LINE_SPACING); 
+			x_position = pen_x + pos[n].x_offset / 64.;
+			y_position = pen_y + pos[n].y_offset / 64.;
+			
+			line_height = font_size;
+			lastWasNewLine = true;
+		}
+
+		// Cumbersome but this lets us automatically handle new lines.
+		float wordWidth = 0.0f;
+		std::string word = "";
+		std::string loop_glyphname = "";
+		if (lastWasNewLine) {
+			float lineWidth = 0.0f;
+			std::string loop_line_glyphname = "";
+			bool keepLooping = true;
+			//std::cout << "checking line" << std::endl;
+			uint32_t m = n;
+			uint32_t lastGoodM = 0;
+			// Had to make the condition a bool here; originally cased on lineWidth but I want to store the maximum lineWidth below the threshold
+			while (keepLooping == true && m < len){
+				wordWidth = 0.0f;
+				//std::string thisWord = "";
+    			loop_line_glyphname = "";
+				//Compute next word
+				while (loop_line_glyphname != "space" && loop_line_glyphname != "uni20BF" && m < len) {
+					hb_codepoint_t loop_gid  = info[m].codepoint;
+					char llgn_array[32] = "";
+					memset(llgn_array, 0, sizeof(llgn_array));
+					hb_font_get_glyph_name (hb_font, loop_gid, llgn_array, sizeof (llgn_array));
+					loop_line_glyphname.assign(llgn_array, strlen(llgn_array));
+					//thisWord = thisWord + loop_line_glyphname;
+					wordWidth += pos[m].x_advance / 64;
+					m+=1;
+				}
+				//std::cout << thisWord << std::endl;
+				//Check if current line + word is larger than final line
+				if (lineWidth + wordWidth < tex_in->size.x - tex_in->margin.x){
+					lineWidth += wordWidth;
+					lastGoodM = m;
+					//std::cout << "current width = " << std::to_string(lineWidth) << std::endl;
+				} else {
+					//std::cout << "Width in loop " << std::to_string(lineWidth) << std::endl;
+					keepLooping = false;
+				}
+				//EOL
+				if (loop_line_glyphname == "uni20BF" ){
+					keepLooping = false;
+					break;
+				}
+			}
+			//std::cout << "This line is " << std::to_string(lineWidth) << "px wide against width " << std::to_string(tex_in->size.x) << std::endl;
+			switch (tex_in->align){
+				case (MIDDLE):
+					pen_x = int((float(tex_in->size.x) - lineWidth)/2.0f);
+					break;
+				case (RIGHT):
+					pen_x = (tex_in->size.x) - int(lineWidth) + (tex_in->margin.x);
+					break;
+				default:
+           			pen_x = tex_in->margin.x;
+					break;
+			}
+			endofline = lastGoodM;
+			lastWasNewLine = false;
+			x_position = pen_x + pos[n].x_offset / 64.; 
+		}
+		/*
+		if (lastWasSpace) {
+			uint32_t m = n;
+			while (loop_glyphname != "space" && loop_glyphname != "uni20BF" && m < len){
+				hb_codepoint_t loop_gid  = info[m].codepoint;
+				char lgn_array[32] = "";
+				memset(lgn_array, 0, sizeof(lgn_array));
+				hb_font_get_glyph_name (hb_font, loop_gid, lgn_array, sizeof (lgn_array));
+				loop_glyphname.assign(lgn_array, strlen(lgn_array));
+				word = word + loop_glyphname;
+				wordWidth += pos[m].x_advance / 64;
+				m+=1;
+			}
+
+			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+				//New Line
+				pen_x = tex_in->margin.x; 
+				pen_y += static_cast<int>(line_height + LINE_SPACING); 
+				x_position = pen_x + pos[n].x_offset / 64.;
+				y_position = pen_y + pos[n].y_offset / 64.;
+
+				line_height = font_size;
+				lastWasNewLine = true;
+			}
+		}*/
+
+		// The above solution to lines does not allow for \n since it's based in glyphs.
+		// Instead of \n,  I will be using ₿ to indicate line ends.
+		// I've adjusted my text asset pipeline to account for this.
+		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
+		
 
 		
 		// load glyph image into the slot (erase previous one) 
@@ -308,7 +388,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		pen_x += pos[n].x_advance / 64; 
 		pen_y += pos[n].y_advance / 64; 
 
-		if (strcmp(glyphname,"space")==0){
+		if (glyphname == "space"){
 			lastWasSpace = true;
 		} else {
 			lastWasSpace = false;
@@ -1009,6 +1089,7 @@ void PlayMode::draw_state_text() {
 	//tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
 	tex_box_text.margin = glm::uvec2(FONT_SIZE, FONT_SIZE);
+	tex_box_text.align = MIDDLE;
 	set_size(&tex_box_text);
 	current_line = text_to_draw;
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
@@ -1029,6 +1110,7 @@ void PlayMode::draw_state_text() {
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
 	tex_minipuzzle.bounds = {-0.15f, 0.15f, 0.15f, 0.3f};
+	tex_minipuzzle.align = MIDDLE;
 	set_size(&tex_minipuzzle);
 	render_text(&tex_minipuzzle, display_state.puzzle_text, white, display_state.cipher);
 	update_texture(&tex_minipuzzle);
