@@ -149,12 +149,17 @@ std::string decode(std::string str_in, char key){
 }
 
 // Isn't this slightly less of a nightmare loop now?
-void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = FONT_SIZE) {
+void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = 591283) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
 
 	glm::u8vec4 colorOut = color; //Overriding it if it's a choice because I want to :D
 	std::string line = "";
+	if (font_size == 591283){
+		font_size = tex_in->f_size;
+	} else {
+		tex_in->f_size = font_size;
+	}
 
 	//I wanted to get special characters done before glyphs were in so this was the easiest solution I could find
 	//Numbers are unicode encodings for my keywords in the script. Change these later if we're using a different method.
@@ -170,237 +175,253 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	if (choices != 1) {
 		colorOut = glm::u8vec4(0,0,255,1);
 	}
-
+	
 	// line = decode(line, cipher); // not ciphering for now
-	// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
-	// since the below code follows the code from the example basically exactly, I'm also including some annotations
-	// of my understanding of what's going on
-	FT_Library ft_library;
-	FT_Face ft_face;
-	FT_Error ft_error;
 
-	// Initialize Freetype basics and check for failure
-	// Load freetype library into ft_library
-	ft_error = FT_Init_FreeType (&ft_library);
-	if (ft_error) {
-		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
-		std::cout << "Init Freetype Library failed, aborting..." << std::endl;
-		abort();
-	}
-	// Load font face through path (font_path)
-	ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face);
-	if (ft_error) { // .c_str() converts to char *
-		std::cout << "Failed while loading " << data_path(font_path).c_str() << std::endl;
-		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
-		std::cout << "Init Freetype Face failed, aborting..." << std::endl;
-		abort();
-	}
-	// Define a character size based on constant literals
-	ft_error = FT_Set_Char_Size (ft_face, font_size*64, font_size*64, 0, 0);
-	if (ft_error){
-		std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
-		std::cout << "Setting character size failed, aborting..." << std::endl;
-		abort();
-	}
 	
-	// Initialize harfbuzz shaper using freetype font
-	hb_font_t *hb_font;
-	hb_font = hb_ft_font_create (ft_face, NULL); //NULL destruction function
-	
-	//Create and fill buffer (test text)
-	hb_buffer_t *hb_buffer;
-	hb_buffer = hb_buffer_create ();
-	hb_buffer_add_utf8 (hb_buffer, line.c_str(), -1, 0, -1); // -1 length values (buffer, string) with 0 offset
-	hb_buffer_guess_segment_properties (hb_buffer);
+	bool checkSize = false;
+	while (checkSize == false){
 
-	hb_shape (hb_font, hb_buffer, NULL, 0); // this actually defining the gylphs into hb_buffer
-	
-	// extract more info about the glyphs
-	unsigned int len = hb_buffer_get_length (hb_buffer);
-	hb_glyph_info_t *info = hb_buffer_get_glyph_infos (hb_buffer, NULL);
-	hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (hb_buffer, NULL);
-	
+		// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
+		// since the below code follows the code from the example basically exactly, I'm also including some annotations
+		// of my understanding of what's going on
+		FT_Library ft_library;
+		FT_Face ft_face;
+		FT_Error ft_error;
 
-	// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
-	FT_GlyphSlot  slot = ft_face->glyph; // 
-	int           pen_x, pen_y;
-	// static uint32_t h = window_height/3;
-	//reset png
-	clear_png(tex_in);
-	//ensure it's correct size
-	std::vector<glm::u8vec4> cleared_data(tex_in->size.x * tex_in->size.y, glm::u8vec4(0,0,0,0));
-	tex_in->data = cleared_data;
-	//std::cout << "Size: " << std::to_string(tex_in->data.size()) << std::endl;
-	//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
-	
-
-	//pen_x = static_cast<int>(LEFTMARGIN);
-	//pen_y = static_cast<int>(TOPMARGIN) + font_size;
-	pen_x = tex_in->margin.x;
-	pen_y = tex_in->margin.y + font_size;
-
-	double line_height = font_size;
-	bool lastWasSpace = true;
-	bool lastWasNewLine = true;
-	std::string glyphname = "";
-	char gn[32] = "";
-	uint32_t endofline = 0;
-	for (uint32_t n = 0; n < len; n++ ) {
-		memset(gn, 0, sizeof(gn));
-		hb_codepoint_t gid   = info[n].codepoint;
-		hb_font_get_glyph_name (hb_font, gid, gn, sizeof(gn)/sizeof(char));
-		glyphname.assign(gn, sizeof(gn)/sizeof(char));
-		// std::cout << gn << std::endl;
-		// std::cout << glyphname;
-		// unsigned int cluster = info[n].cluster;
-		double x_position = pen_x + pos[n].x_offset / 64.;
-		double y_position = pen_y + pos[n].y_offset / 64.;
+		// Initialize Freetype basics and check for failure
+		// Load freetype library into ft_library
+		ft_error = FT_Init_FreeType (&ft_library);
+		if (ft_error) {
+			std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
+			std::cout << "Init Freetype Library failed, aborting..." << std::endl;
+			abort();
+		}
+		// Load font face through path (font_path)
+		ft_error = FT_New_Face (ft_library, data_path(font_path).c_str(), 0, &ft_face);
+		if (ft_error) { // .c_str() converts to char *
+			std::cout << "Failed while loading " << data_path(font_path).c_str() << std::endl;
+			std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
+			std::cout << "Init Freetype Face failed, aborting..." << std::endl;
+			abort();
+		}
+		// Define a character size based on constant literals
+		ft_error = FT_Set_Char_Size (ft_face, font_size*64, font_size*64, 0, 0);
+		if (ft_error){
+			std::cout << "Error: " << FT_Error_String(ft_error) << std::endl;
+			std::cout << "Setting character size failed, aborting..." << std::endl;
+			abort();
+		}
 		
-		if (glyphname == "uni20BF") {
-			//New Line
-			pen_x = tex_in->margin.x; 
-			pen_y += static_cast<int>(line_height + LINE_SPACING); 
-			x_position = pen_x + pos[n].x_offset / 64.;
-			y_position = pen_y + pos[n].y_offset / 64.;
+		// Initialize harfbuzz shaper using freetype font
+		hb_font_t *hb_font;
+		hb_font = hb_ft_font_create (ft_face, NULL); //NULL destruction function
+		
+		//Create and fill buffer (test text)
+		hb_buffer_t *hb_buffer;
+		hb_buffer = hb_buffer_create ();
+		hb_buffer_add_utf8 (hb_buffer, line.c_str(), -1, 0, -1); // -1 length values (buffer, string) with 0 offset
+		hb_buffer_guess_segment_properties (hb_buffer);
 
-			line_height = font_size;
-			lastWasNewLine = true;
-		}
-		if (n == endofline && n != 0){
-			pen_x = tex_in->margin.x; 
-			pen_y += static_cast<int>(line_height + LINE_SPACING); 
-			x_position = pen_x + pos[n].x_offset / 64.;
-			y_position = pen_y + pos[n].y_offset / 64.;
+		hb_shape (hb_font, hb_buffer, NULL, 0); // this actually defining the gylphs into hb_buffer
+		
+		// extract more info about the glyphs
+		unsigned int len = hb_buffer_get_length (hb_buffer);
+		hb_glyph_info_t *info = hb_buffer_get_glyph_infos (hb_buffer, NULL);
+		hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (hb_buffer, NULL);
+		
+
+		// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
+		FT_GlyphSlot  slot = ft_face->glyph; // 
+		int           pen_x, pen_y;
+		// static uint32_t h = window_height/3;
+		//reset png
+		clear_png(tex_in);
+		//ensure it's correct size
+		std::vector<glm::u8vec4> cleared_data(tex_in->size.x * tex_in->size.y, glm::u8vec4(0,0,0,0));
+		tex_in->data = cleared_data;
+		//std::cout << "Size: " << std::to_string(tex_in->data.size()) << std::endl;
+		//std::cout << "First Item: " << glm::to_string(tex_in->data[0]) << std::endl;
+
+		//pen_x = static_cast<int>(LEFTMARGIN);
+		//pen_y = static_cast<int>(TOPMARGIN) + font_size;
+		pen_x = tex_in->margin.x;
+		pen_y = tex_in->margin.y + font_size;
+
+		double line_height = font_size;
+		bool lastWasSpace = true;
+		bool lastWasNewLine = true;
+		std::string glyphname = "";
+		double final_y = 0.;
+		char gn[32] = "";
+		uint32_t endofline = 0;
+		for (uint32_t n = 0; n < len; n++ ) {
+			memset(gn, 0, sizeof(gn));
+			hb_codepoint_t gid   = info[n].codepoint;
+			hb_font_get_glyph_name (hb_font, gid, gn, sizeof(gn)/sizeof(char));
+			glyphname.assign(gn, sizeof(gn)/sizeof(char));
+			// std::cout << gn << std::endl;
+			// std::cout << glyphname;
+			// unsigned int cluster = info[n].cluster;
+			double x_position = pen_x + pos[n].x_offset / 64.;
+			double y_position = pen_y + pos[n].y_offset / 64.;
 			
-			line_height = font_size;
-			lastWasNewLine = true;
-		}
-
-		// Cumbersome but this lets us automatically handle new lines.
-		float wordWidth = 0.0f;
-		std::string word = "";
-		std::string loop_glyphname = "";
-		if (lastWasNewLine) {
-			float lineWidth = 0.0f;
-			std::string loop_line_glyphname = "";
-			bool keepLooping = true;
-			//std::cout << "checking line" << std::endl;
-			uint32_t m = n;
-			uint32_t lastGoodM = 0;
-			// Had to make the condition a bool here; originally cased on lineWidth but I want to store the maximum lineWidth below the threshold
-			while (keepLooping == true && m < len){
-				wordWidth = 0.0f;
-				//std::string thisWord = "";
-    			loop_line_glyphname = "";
-				//Compute next word
-				while (loop_line_glyphname != "space" && loop_line_glyphname != "uni20BF" && m < len) {
-					hb_codepoint_t loop_gid  = info[m].codepoint;
-					char llgn_array[32] = "";
-					memset(llgn_array, 0, sizeof(llgn_array));
-					hb_font_get_glyph_name (hb_font, loop_gid, llgn_array, sizeof (llgn_array));
-					loop_line_glyphname.assign(llgn_array, strlen(llgn_array));
-					//thisWord = thisWord + loop_line_glyphname;
-					wordWidth += pos[m].x_advance / 64;
-					m+=1;
-				}
-				//std::cout << thisWord << std::endl;
-				//Check if current line + word is larger than final line
-				if (lineWidth + wordWidth < tex_in->size.x - tex_in->margin.x){
-					lineWidth += wordWidth;
-					lastGoodM = m;
-					//std::cout << "current width = " << std::to_string(lineWidth) << std::endl;
-				} else {
-					//std::cout << "Width in loop " << std::to_string(lineWidth) << std::endl;
-					keepLooping = false;
-				}
-				//EOL
-				if (loop_line_glyphname == "uni20BF" ){
-					keepLooping = false;
-					break;
-				}
-			}
-			//std::cout << "This line is " << std::to_string(lineWidth) << "px wide against width " << std::to_string(tex_in->size.x) << std::endl;
-			switch (tex_in->align){
-				case (MIDDLE):
-					pen_x = int((float(tex_in->size.x) - lineWidth)/2.0f);
-					break;
-				case (RIGHT):
-					pen_x = (tex_in->size.x) - int(lineWidth) + (tex_in->margin.x);
-					break;
-				default:
-           			pen_x = tex_in->margin.x;
-					break;
-			}
-			endofline = lastGoodM;
-			lastWasNewLine = false;
-			x_position = pen_x + pos[n].x_offset / 64.; 
-		}
-		/*
-		if (lastWasSpace) {
-			uint32_t m = n;
-			while (loop_glyphname != "space" && loop_glyphname != "uni20BF" && m < len){
-				hb_codepoint_t loop_gid  = info[m].codepoint;
-				char lgn_array[32] = "";
-				memset(lgn_array, 0, sizeof(lgn_array));
-				hb_font_get_glyph_name (hb_font, loop_gid, lgn_array, sizeof (lgn_array));
-				loop_glyphname.assign(lgn_array, strlen(lgn_array));
-				word = word + loop_glyphname;
-				wordWidth += pos[m].x_advance / 64;
-				m+=1;
-			}
-
-			if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+			if (glyphname == "uni20BF") {
 				//New Line
 				pen_x = tex_in->margin.x; 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
 				x_position = pen_x + pos[n].x_offset / 64.;
 				y_position = pen_y + pos[n].y_offset / 64.;
+				final_y = y_position;
 
 				line_height = font_size;
 				lastWasNewLine = true;
 			}
-		}*/
+			if (n == endofline && n != 0){
+				pen_x = tex_in->margin.x; 
+				pen_y += static_cast<int>(line_height + LINE_SPACING); 
+				x_position = pen_x + pos[n].x_offset / 64.;
+				y_position = pen_y + pos[n].y_offset / 64.;
+				final_y = y_position;
+				
+				line_height = font_size;
+				lastWasNewLine = true;
+			}
 
-		// The above solution to lines does not allow for \n since it's based in glyphs.
-		// Instead of \n,  I will be using ₿ to indicate line ends.
-		// I've adjusted my text asset pipeline to account for this.
-		// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
-		
+			// Cumbersome but this lets us automatically handle new lines.
+			float wordWidth = 0.0f;
+			std::string word = "";
+			std::string loop_glyphname = "";
+			if (lastWasNewLine) {
+				float lineWidth = 0.0f;
+				std::string loop_line_glyphname = "";
+				bool keepLooping = true;
+				//std::cout << "checking line" << std::endl;
+				uint32_t m = n;
+				uint32_t lastGoodM = 0;
+				// Had to make the condition a bool here; originally cased on lineWidth but I want to store the maximum lineWidth below the threshold
+				while (keepLooping == true && m < len){
+					wordWidth = 0.0f;
+					//std::string thisWord = "";
+					loop_line_glyphname = "";
+					//Compute next word
+					while (loop_line_glyphname != "space" && loop_line_glyphname != "uni20BF" && m < len) {
+						hb_codepoint_t loop_gid  = info[m].codepoint;
+						char llgn_array[32] = "";
+						memset(llgn_array, 0, sizeof(llgn_array));
+						hb_font_get_glyph_name (hb_font, loop_gid, llgn_array, sizeof (llgn_array));
+						loop_line_glyphname.assign(llgn_array, strlen(llgn_array));
+						//thisWord = thisWord + loop_line_glyphname;
+						wordWidth += pos[m].x_advance / 64;
+						m+=1;
+					}
+					//std::cout << thisWord << std::endl;
+					//Check if current line + word is larger than final line
+					if (lineWidth + wordWidth < tex_in->size.x - tex_in->margin.x){
+						lineWidth += wordWidth;
+						lastGoodM = m;
+						//std::cout << "current width = " << std::to_string(lineWidth) << std::endl;
+					} else {
+						//std::cout << "Width in loop " << std::to_string(lineWidth) << std::endl;
+						keepLooping = false;
+					}
+					//EOL
+					if (loop_line_glyphname == "uni20BF" ){
+						keepLooping = false;
+						break;
+					}
+				}
+				//std::cout << "This line is " << std::to_string(lineWidth) << "px wide against width " << std::to_string(tex_in->size.x) << std::endl;
+				switch (tex_in->align){
+					case (MIDDLE):
+						pen_x = int((float(tex_in->size.x) - lineWidth)/2.0f);
+						break;
+					case (RIGHT):
+						pen_x = (tex_in->size.x) - int(lineWidth) + (tex_in->margin.x);
+						break;
+					default:
+						pen_x = tex_in->margin.x;
+						break;
+				}
+				endofline = lastGoodM;
+				lastWasNewLine = false;
+				x_position = pen_x + pos[n].x_offset / 64.; 
+			}
+			/*
+			if (lastWasSpace) {
+				uint32_t m = n;
+				while (loop_glyphname != "space" && loop_glyphname != "uni20BF" && m < len){
+					hb_codepoint_t loop_gid  = info[m].codepoint;
+					char lgn_array[32] = "";
+					memset(lgn_array, 0, sizeof(lgn_array));
+					hb_font_get_glyph_name (hb_font, loop_gid, lgn_array, sizeof (lgn_array));
+					loop_glyphname.assign(lgn_array, strlen(lgn_array));
+					word = word + loop_glyphname;
+					wordWidth += pos[m].x_advance / 64;
+					m+=1;
+				}
 
-		
-		// load glyph image into the slot (erase previous one) 
-		FT_Error error = FT_Load_Glyph(ft_face, gid, FT_LOAD_RENDER); // Glyphs instead of Chars
-		if (error) continue; 
+				if (x_position + wordWidth >= tex_in->size.x - tex_in->margin.x) {
+					//New Line
+					pen_x = tex_in->margin.x; 
+					pen_y += static_cast<int>(line_height + LINE_SPACING); 
+					x_position = pen_x + pos[n].x_offset / 64.;
+					y_position = pen_y + pos[n].y_offset / 64.;
+					final_y = y_position;
 
-		// track max line_height for unification
-		if (slot->bitmap.rows > line_height) {
-			line_height = slot->bitmap.rows;
+					line_height = font_size;
+					lastWasNewLine = true;
+				}
+			}*/
+
+			// The above solution to lines does not allow for \n since it's based in glyphs.
+			// Instead of \n,  I will be using ₿ to indicate line ends.
+			// I've adjusted my text asset pipeline to account for this.
+			// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
+			
+
+			
+			// load glyph image into the slot (erase previous one) 
+			FT_Error error = FT_Load_Glyph(ft_face, gid, FT_LOAD_RENDER); // Glyphs instead of Chars
+			if (error) continue; 
+
+			// track max line_height for unification
+			if (slot->bitmap.rows > line_height) {
+				line_height = slot->bitmap.rows;
+			}
+			
+			// bitmap drawing function
+			if (colorOut == green && n == cursor_pos){
+				draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
+			} else {
+				draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
+			}
+
+			// Move the "pen" based on x and y advance given by glyphs
+			pen_x += pos[n].x_advance / 64; 
+			pen_y += pos[n].y_advance / 64; 
+
+			if (glyphname == "space"){
+				lastWasSpace = true;
+			} else {
+				lastWasSpace = false;
+			}
 		}
-		
-		// bitmap drawing function
-		if (colorOut == green && n == cursor_pos){
-			draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
+		if (final_y + line_height > tex_in->size.y - tex_in->margin.y){
+			if (font_size == tex_in->f_size){
+				tex_in->f_size -= 2;
+				font_size = tex_in->f_size;
+			}
 		} else {
-			draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
+			checkSize = true;
 		}
+		hb_buffer_destroy (hb_buffer);
+		hb_font_destroy (hb_font);
 
-		// Move the "pen" based on x and y advance given by glyphs
-		pen_x += pos[n].x_advance / 64; 
-		pen_y += pos[n].y_advance / 64; 
-
-		if (glyphname == "space"){
-			lastWasSpace = true;
-		} else {
-			lastWasSpace = false;
-		}
+		FT_Done_Face (ft_face);
+		FT_Done_FreeType (ft_library);
 	}
-	
 
-	hb_buffer_destroy (hb_buffer);
-	hb_font_destroy (hb_font);
-
-	FT_Done_Face (ft_face);
-	FT_Done_FreeType (ft_library);
 }
 
 //x0,x1,y0,y1,z encode the coords for where on the screen the texture is.

@@ -32,7 +32,7 @@ struct PlayMode : Mode {
 			MIDDLE,
 			RIGHT
 	};
-	
+
 	struct TextureItem{
 	// handles
 		GLuint tex = 0;
@@ -45,6 +45,7 @@ struct PlayMode : Mode {
 		bool loadme = false;
 		glm::uvec2 size;
 		glm::uvec2 margin = glm::uvec2(0, 0);
+		int f_size = 72;
 		Position align = LEFT;
 		std::vector<glm::u8vec4> data;
 		//x0, x1, y0, y1, z
