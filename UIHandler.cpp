@@ -336,7 +336,6 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 				y <= tex.bounds[3])
 			{
 				top_texture = tex_;
-				std::cout  << top_texture->path << std::endl;
 			}
 
 		}
