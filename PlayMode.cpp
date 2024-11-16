@@ -74,7 +74,6 @@ Load< Scene > codename_scene(LoadTagDefault, []() -> Scene const * {
 
 		scene.drawables.emplace_back(transform);
 		Scene::Drawable &drawable = scene.drawables.back();
-		// printf("%s\n", mesh_name.c_str());
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
 		// if (mesh_name == "holo_screen") {
@@ -731,6 +730,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	if (shaper == nullptr) throw std::runtime_error("Shaper not found.");
 	if (bleebus == nullptr) throw std::runtime_error("Bleebus not found.");
 	if (cs_major == nullptr) throw std::runtime_error("CS Major not found.");
+	creature_xforms = {bleebus, cs_major, shaper};
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -797,13 +797,29 @@ void PlayMode::apply_command(std::string line) {
 			else {
 
 			}
-			g.asset_idx = 0; // this is the "swap creature".  @todo Change this line when we have more characters
+			if (g.name == "Subeelb") g.asset_idx = 0;
+			else if (g.name == "Gremlin") g.asset_idx = 1;
+			if (parsed[4] != "Human") {
+				g.selected = true;
+				g.joining_line = true;
+				if (g.asset_idx >= 0) {
+					creature_xforms[g.asset_idx]->position.x = x_entering_store;
+				}
+			}
 			characters[parsed[2]] = g;
 		}
 		else {
 			std::cerr << display_state.file + " " + parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
 		}
 		display_state.status = CHANGING;
+	}
+	else if (keyword == "Exit") {
+		if (characters.find(parsed[2]) == characters.end()) {
+			printf("Error in 'Exit' script command: Character %s not found\n", parsed[2].c_str());
+			return;
+		}
+		characters.find(parsed[2])->second.selected = false;
+		characters.find(parsed[2])->second.leaving_line = true;
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1303,10 +1319,33 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed) {
 
-	// // move creechur
-	// if (swap_creature->position.x < x_by_counter) {
-	// 	swap_creature->position.x += creature_speed * elapsed;
-	// }
+	// move creechurs
+	for (std::unordered_map<std::string, GameCharacter>::iterator c = characters.begin(); c != characters.end(); c++) {
+		GameCharacter gc = c->second;
+		
+		if (!gc.joining_line && !gc.leaving_line) continue;
+		Scene::Transform *xform = creature_xforms[gc.asset_idx];
+
+		if (gc.joining_line) {
+			if (xform->position.x < x_by_counter) {
+				xform->position.x += creature_speed * elapsed;
+			} 
+			else {
+				c->second.joining_line = false;
+			}
+		}
+		else { // gc.leaving_line == true
+			xform->rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(0., 0., 1.));
+			if (xform->position.y < y_exited_store) {
+				xform->position.y += creature_speed * elapsed;
+			}
+			else {
+				xform->position.x = x_entering_store;
+				xform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(0., 0., 1.));
+				c->second.leaving_line = false;
+			}
+		}
+	}
 
 	updateTextures(textures);
 

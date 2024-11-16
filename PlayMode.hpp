@@ -109,13 +109,16 @@ struct PlayMode : Mode {
 	Scene::Transform *bleebus = nullptr;
 	Scene::Transform *cs_major = nullptr;
 	const float x_by_counter = 2.9f;
-	const float creature_speed = 3.0f;
-	std::vector<Scene::Transform *> creature_xforms = {bleebus, cs_major, shaper};
+	// float x_next_in_line = x_by_counter;
+	const float x_entering_store = -14.f;
+	const float y_exited_store = 14.f;
+	const float creature_speed = 5.0f;
+	std::vector<Scene::Transform *> creature_xforms;
 	
-	uint8_t customers_in_line = 0;
-	glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
-	void join_line(Scene::Transform *xform);
-	void rotate_line(uint8_t shift);
+	// uint8_t customers_in_line = 0;
+	// glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
+	// void join_line(Scene::Transform *xform);
+	// void rotate_line(uint8_t shift);
 	
 	// coloring
 	std::vector<float> colorscheme = {
@@ -139,8 +142,10 @@ struct PlayMode : Mode {
 		std::string name;
 		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
-		uint8_t order_in_line = 0;
-		uint8_t asset_idx;
+		bool selected = false;
+		bool joining_line = false;
+		bool leaving_line = false;
+		int8_t asset_idx = -1;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
 
