@@ -248,7 +248,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		pen_y = tex_in->margin.y + font_size;
 
 		double line_height = font_size;
-		bool lastWasSpace = true;
+		bool lastWasSpace = true; (void) lastWasSpace;
 		bool lastWasNewLine = true;
 		std::string glyphname = "";
 		double final_y = 0.;
@@ -855,11 +855,13 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	textures = initializeTextures(alignments, visibilities, callbacks);
 	addTextures(textures, paths, texture_program);
 
+	printf("modified colorscheme: \n");
 	for (uint8_t i = 0; i < colorscheme.size() - 2; i+=3) {
 		glm::vec3 new_col = glm::convertSRGBToLinear(glm::vec3(colorscheme[i], colorscheme[i+1], colorscheme[i+2]));
 		colorscheme[i] = new_col.x;
 		colorscheme[i+1] = new_col.y;
 		colorscheme[i+2] = new_col.z;
+		printf("%f, %f, %f\n", new_col.x, new_col.y, new_col.z);
 	}
 
 	advance_state(0);
@@ -1474,8 +1476,8 @@ void PlayMode::update(float elapsed) {
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
-	//make sure framebuffers are the same size as the window:
-	framebuffers.realloc(drawable_size);
+	// //make sure framebuffers are the same size as the window:
+	// framebuffers.realloc(drawable_size);
 
 	//update camera aspect ratio for drawable:
 	camera->aspect = float(drawable_size.x) / float(drawable_size.y);
@@ -1490,7 +1492,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUseProgram(0);
 
 	//---- draw scene to HDR framebuffer ----
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
+	// glBindFramebuffer(GL_FRAMEBUFFER, framebuffers.hdr_fb);
 
 	glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
 	glClearDepth(1.0f); //1.0 is actually the default value to clear the depth buffer to, but FYI you can change it.
@@ -1501,12 +1503,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//apply a bloom effect:
-	framebuffers.add_bloom();
+	// framebuffers.add_bloom();
 	//copy scene to main window framebuffer:
-	framebuffers.tone_map();
+	// framebuffers.tone_map();
 
 	glDepthFunc(GL_ALWAYS);
 
