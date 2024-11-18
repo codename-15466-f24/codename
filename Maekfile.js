@@ -145,6 +145,8 @@ const common_names = [
 	maek.CPP('data_path.cpp'),
 	maek.CPP('string_parsing.cpp'),
 	maek.CPP('ReverseCipher.cpp'),
+	maek.CPP('CaesarCipher.cpp'),
+	maek.CPP('SubstitutionCipher.cpp'),
 	maek.CPP('ToggleCipher.cpp'),
 	maek.CPP('PathFont.cpp'),
 	maek.CPP('PathFont-font.cpp'),
