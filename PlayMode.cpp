@@ -622,6 +622,18 @@ void PlayMode::initializeCallbacks()
 			// special customer selector, either select or deselect customer
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
+				for (auto tex : textures)
+				{
+					if (tex->alignment == MiddlePane ||
+						tex->alignment == MiddlePaneBG ||
+						tex->alignment == MiddlePaneSelected	
+						)
+					{
+						tex->visible = false;
+						tex_minipuzzle_ptr->visible = false;
+					}
+				}
+
 				// We are now detecting for the substring "selected" rather than
 				// the path length, because we want to accommodate more than 9
 				// potential customers and also 'cause I wanna use customer
@@ -804,6 +816,15 @@ void PlayMode::initializeCallbacks()
 					tex_minipuzzle_ptr->visible = false;
 					display_state.solved_puzzle = true;
 					advance_state(0);
+
+					for (auto tex : textures)
+					{
+						if (tex->path == "cipher_panel_full.png" && !tex->visible)
+						{
+							togglePanel(textures, RightPane);
+							tex_rev_ptr->visible = true;
+						}
+					}
 
 					// Propagate the cipher text. This is going to get unwieldy eventually.
 					// First change the necessary features.
