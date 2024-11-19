@@ -586,6 +586,7 @@ void PlayMode::initializeCallbacks()
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				togglePanel(textures, RightPane);
+				std::cout << display_state.puzzle_cipher->name << std::endl;
 				if (display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
@@ -975,7 +976,7 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
-				g.species = new ReverseCipher(parsed[4]);
+				g.species = new SubstitutionCipher("Shaper");
 			}
 			else {
 
@@ -1635,7 +1636,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		GL_ERRORS();
 
 
-		if (tex_cs.visible)
+		if (cs_open)
 		{
 			glBindVertexArray(tex_cs.tristrip_for_texture_program);
 			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);

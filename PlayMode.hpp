@@ -7,6 +7,7 @@
 #include "string_parsing.hpp"
 #include "ToggleCipher.hpp"
 #include "ReverseCipher.hpp"
+#include "SubstitutionCipher.hpp"
 
 #include <glm/glm.hpp>
 
@@ -196,7 +197,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "tutorial.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "puzzle1.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
