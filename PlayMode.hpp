@@ -96,11 +96,11 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {false, true, 
-									false, false, 
-									true, 
-									true, false,
-									true, false,
+	std::vector<bool> visibilities = {false, true, // request(collapsed), cipher
+									false, false,  // request, cipher(full)
+									true,          // bg_customer
+									false, true,   // customer: subeelb
+									false, false,  // customer: gremlin
 									false, false, false, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
@@ -113,19 +113,24 @@ struct PlayMode : Mode {
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
 									"bg_customer.png", 
-									"customer1.png", "customer1_selected.png",
-									"customer2.png", "customer2_selected.png", 
+									"customer_subeelb.png", "customer_subeelb_selected.png",
+									"customer_gremlin.png", "customer_gremlin_selected.png",
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
 
 	//stuff in the scene
-	Scene::Transform *swap_creature = nullptr;
-	float x_by_counter = 2.9f;
-	float creature_speed = 3.0f;
-	std::vector<Scene::Transform *> creature_xforms = {swap_creature};
-
+	Scene::Transform *shaper = nullptr;
+	Scene::Transform *bleebus = nullptr;
+	Scene::Transform *cs_major = nullptr;
+	const float x_by_counter = 2.9f;
+	// float x_next_in_line = x_by_counter;
+	const float x_entering_store = -14.f;
+	const float y_exited_store = 14.f;
+	const float creature_speed = 5.0f;
+	std::vector<Scene::Transform *> creature_xforms;
+	
 	// coloring
 	std::vector<float> colorscheme = {
 		0.0f, 0.0f, 0.0f,
@@ -135,7 +140,6 @@ struct PlayMode : Mode {
         167.0f / 255.0f, 194.0f / 255.0f, 150.0f / 255.0f,
         231.0f / 255.0f, 235.0f / 255.0f, 144.0f / 255.0f,
     	};
-	// for (uint8_t i = 0; i < colorscheme.size(); i++) colorscheme[i] /= 255.0f;
 
 	//camera:
 	Scene::Camera *camera = nullptr;
@@ -149,9 +153,20 @@ struct PlayMode : Mode {
 		std::string name;
 		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
-		uint8_t asset_idx;
+		// bool selected = false;
+		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
+		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
+		int8_t asset_idx = -1;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
+
+	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
+	GameCharacter *selected_character = nullptr;
+
+	// uint8_t customers_in_line = 0;
+	// glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
+	void join_line(GameCharacter *g);
+	void leave_line(GameCharacter *g);
 
 	struct Image {
 		std::string id;

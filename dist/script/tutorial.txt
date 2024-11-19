@@ -19,4 +19,6 @@
 19 Text d "Looks like the customer didn't get it. Let's try this again."
 20 Jump 12
 21 Text d "Great! You've served your first customer."
-22 Jump 21
+22 Exit subeelb
+23 Character gremlin Gremlin CSMajor
+24 Jump 21
