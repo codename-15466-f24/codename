@@ -249,7 +249,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		pen_y = tex_in->margin.y + font_size;
 
 		double line_height = font_size;
-		bool lastWasSpace = true;
+		// bool lastWasSpace = true;
 		bool lastWasNewLine = true;
 		std::string glyphname = "";
 		double final_y = 0.;
@@ -401,11 +401,11 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			pen_x += pos[n].x_advance / 64; 
 			pen_y += pos[n].y_advance / 64; 
 
-			if (glyphname == "space"){
-				lastWasSpace = true;
-			} else {
-				lastWasSpace = false;
-			}
+			// if (glyphname == "space"){
+			// 	lastWasSpace = true;
+			// } else {
+			// 	lastWasSpace = false;
+			// }
 		}
 		if (final_y + line_height > tex_in->size.y - tex_in->margin.y){
 			if (font_size == tex_in->f_size){
@@ -554,7 +554,7 @@ void PlayMode::initializeCallbacks()
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 					cs_open = true;
-					editingBox = &tex_cs;
+					editingBox = tex_cs_ptr;
 					editStr = "";
 					cursor_pos = 0;
 					for (int i = 0; i < 26; i++){
@@ -562,9 +562,10 @@ void PlayMode::initializeCallbacks()
 					}
 					editMode = true;
 					display_state.status = INPUT;
-					clear_png(&tex_cs);
-					render_text(&tex_cs, editStr, green, 'd', 75);
-					update_texture(&tex_cs);
+					clear_png(tex_cs_ptr);
+					render_text(tex_cs_ptr, editStr, green, 'd', 75);
+					update_texture(tex_cs_ptr);
+					cs_open = true;
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
@@ -598,6 +599,7 @@ void PlayMode::initializeCallbacks()
 					editMode = false;
 					editStr = "";
 					cursor_pos = 0;
+					
 					display_state.status = CHANGING;
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
@@ -633,6 +635,22 @@ void PlayMode::initializeCallbacks()
 					
 				} else {
 					std::cout << "selecting customer: " << path << std::endl;
+					for (auto tex : textures)
+					{
+						if (tex->path.substr(0,8) == "customer")
+						 {
+							if (tex->path.length() > 13)
+							{
+								tex->visible = false;
+
+								// need to actually do some deselection stuff here
+							} else {
+								tex->visible = true;
+							}
+						 }
+						
+
+					}
 
 				}
 
@@ -831,6 +849,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_special_ptr = &tex_special;
 	tex_minipuzzle_ptr = &tex_minipuzzle;
 	tex_rev_ptr = &tex_rev;
+	tex_cs_ptr = &tex_cs;
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
@@ -1135,7 +1154,7 @@ void PlayMode::draw_state_text() {
 	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
   	set_size(&tex_special);
-	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
+	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 48);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
@@ -1320,7 +1339,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		if (cs_open){
 			clear_png(&tex_cs);
-			render_text(&tex_cs, editStr, green, 'd', 75);
+			render_text(&tex_cs, editStr, green, 'd', 36);
 			update_texture(&tex_cs);
 			clear_png(&tex_box_text);
 			render_text(&tex_box_text, current_line, white, display_state.cipher);

@@ -248,12 +248,6 @@ void updateTextures(std::vector<TexStruct *> textures)
 			} else if (tex->alignment == LeftPaneReversed) {
 				texUpdate(tex, left_rev_offset);
 				left_rev_offset++;
-			} else if (tex->alignment == TopMiddlePane) {
-				texUpdate(tex, top_middle_offset);
-				top_middle_offset++;
-			} else if (tex->alignment == TopMiddlePaneSelected) {
-				texUpdate(tex, top_middle_selected_offset);
-				top_middle_selected_offset++;
 			}
 		} 
 
@@ -265,7 +259,17 @@ void updateTextures(std::vector<TexStruct *> textures)
 		} else {
 			texUpdate(tex, 0.0f);
 		}
+
+		if (tex->alignment == TopMiddlePane) {
+				texUpdate(tex, top_middle_offset);
+				top_middle_offset++;
+	} else if (tex->alignment == TopMiddlePaneSelected) {
+				texUpdate(tex, top_middle_selected_offset);
+				top_middle_selected_offset++;
+			}
 	}
+
+	
 
 }
 

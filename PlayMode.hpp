@@ -56,6 +56,7 @@ struct PlayMode : Mode {
 	TextureItem *tex_special_ptr;
 	TextureItem *tex_minipuzzle_ptr;
 	TextureItem *tex_rev_ptr;
+	TextureItem *tex_cs_ptr;
 
 	enum Cipher {
 		Reverse,
@@ -97,17 +98,23 @@ struct PlayMode : Mode {
 	// right is true, left is false
 	std::vector<bool> visibilities = {false, true, 
 									false, false, 
-									true, true, false,
+									true, 
+									true, false,
+									true, false,
 									false, false, false, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
-											TopMiddlePaneBG, TopMiddlePane, TopMiddlePaneSelected,
+											TopMiddlePaneBG, 
+											TopMiddlePane, TopMiddlePaneSelected,
+											TopMiddlePane, TopMiddlePaneSelected,
 											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
-									"bg_customer.png", "customer1.png", "customer1_selected.png",
+									"bg_customer.png", 
+									"customer1.png", "customer1_selected.png",
+									"customer2.png", "customer2_selected.png", 
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
 									};
 									
