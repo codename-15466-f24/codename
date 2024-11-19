@@ -100,7 +100,7 @@ struct PlayMode : Mode {
 									false, false,  // request, cipher(full)
 									true,          // bg_customer
 									false, true,   // customer: subeelb
-									false, false,  // customer: gremlin
+									true, false,  // customer: gremlin
 									false, false, false, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,

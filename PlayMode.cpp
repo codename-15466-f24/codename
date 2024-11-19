@@ -630,9 +630,10 @@ void PlayMode::initializeCallbacks()
 				
 				std::string isitselected = path.substr(path.length() - 12, 8);
 				printf("'selected' or something else?: %s\n", isitselected.c_str());
+				std::string cname;
 				if (isitselected == "selected")
 				{
-					std::string cname = path.substr(9, path.length() - 13 - 9);
+					cname = path.substr(9, path.length() - 13 - 9);
 					std::cout << "deselecting customer: " << cname << std::endl;
 					///@todo for sasha
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
@@ -646,7 +647,7 @@ void PlayMode::initializeCallbacks()
 					
 				} else {
 					// get customer name
-					std::string cname = path.substr(9, path.length() - 13);
+					cname = path.substr(9, path.length() - 13);
 					std::cout << "selecting customer: " << cname << std::endl;
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 					if (g_pair == characters.end()) {
@@ -664,12 +665,27 @@ void PlayMode::initializeCallbacks()
 				// toggle selected/deselected button look
 				for (auto tex : textures)
 				{
+					std::string istexselected = tex->path.substr(tex->path.length() - 12, 8);
+					std::string texname = istexselected == "selected" ? tex->path.substr(9, tex->path.length() - 13 - 9) : tex->path.substr(9, tex->path.length() - 13); 
 
 					if (tex->path != path && 
-					    tex->path.substr(0, 8) == "customer" && 
-						tex->path.substr(tex->path.length() - 12, 8) != isitselected)
+						tex->path.substr(0,8) == "customer")
+
 					{
-						tex->visible = true;
+						if (texname != cname && 
+							istexselected == "selected" &&
+							isitselected == "selected")
+						{
+							tex->visible = false;
+						}
+
+						if (texname == cname && 
+							istexselected != isitselected)
+						{
+							tex->visible = true;
+						}
+
+
 					} if (tex->path == path)
 					{
 						tex->visible = false;
