@@ -620,36 +620,60 @@ void PlayMode::initializeCallbacks()
 			// special customer selector, either select or deselect customer
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				// if the name is longer than customerN.png, we know the 
-				// selected version image was clicked (so we're deselecting)
-				// otherwise, the deselected image was clicked so we're
-				// selecting
-
-				if (path.length() > 13)
+				// We are now detecting for the substring "selected" rather than
+				// the path length, because we want to accommodate more than 9
+				// potential customers and also 'cause I wanna use customer
+				// names rather than numbers and then have to map numbers to names
+				// to GameCharacter structs to asset indices.
+				
+				std::string isitselected = path.substr(path.length() - 12, 8);
+				printf("'selected' or something else?: %s\n", isitselected.c_str());
+				if (isitselected == "selected")
 				{
-					std::cout << "deselecting customer: " << path << std::endl;
-					
+					std::string cname = path.substr(9, path.length() - 13 - 9);
+					std::cout << "deselecting customer: " << cname << std::endl;
+					///@todo for sasha
+					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
+					if (g_pair == characters.end()) {
+						std::cout << "Deselected character has not been introduced yet: " << cname << std::endl;
+						return;
+					}
+					GameCharacter g = g_pair->second;
+					// if (selected_character == &g) 
+					leave_line(&g);
 					
 				} else {
-					std::cout << "selecting customer: " << path << std::endl;
+					// get customer name
+					std::string cname = path.substr(9, path.length() - 13);
+					std::cout << "selecting customer: " << cname << std::endl;
+					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
+					if (g_pair == characters.end()) {
+						std::cout << "Selected character has not been introduced yet: " << cname << std::endl;
+						return;
+					}
+					GameCharacter g = g_pair->second;
+					// have customer be "selected"
+					// have customer join line
+					if (selected_character != &g) join_line(&g);
 
+					// currently selected customer gets deselected
 				}
 
 				// toggle selected/deselected button look
 				for (auto tex : textures)
 				{
 
-					if (tex->path != path && tex->path.substr(0,9) == path.substr(0,9))
+					if (tex->path != path && 
+					    tex->path.substr(0, 8) == "customer" && 
+						tex->path.substr(tex->path.length() - 12, 8) != isitselected)
 					{
 						tex->visible = true;
-					} else if (tex->path == path)
+					} if (tex->path == path)
 					{
 						tex->visible = false;
 					}
 
-
 				}
-
 
 			};
 
@@ -666,7 +690,6 @@ void PlayMode::initializeCallbacks()
 					if (tex->path == "reverse_button.png")
 					{
 						tex->visible = false;
-
 					}
 
 					if (tex->path == "reverse_button_selected.png")
@@ -694,7 +717,6 @@ void PlayMode::initializeCallbacks()
 					if (tex->path == "reverse_button_selected.png")
 					{
 						tex->visible = false;
-
 					}
 
 					if (tex->path == "reverse_button.png")
@@ -740,7 +762,6 @@ void PlayMode::initializeCallbacks()
 					
 					}
 						
-
 				}
 
 				// keep the window up if reverse isn't enabled yet
@@ -754,12 +775,10 @@ void PlayMode::initializeCallbacks()
 						{
 							tex->visible = true;
 						}
-							
 
 					}
 
 					std::cout << "Cipher incorrect" << std::endl;
-
 
 				} else {
 					std::cout << "Submitted" << std::endl;
@@ -796,9 +815,7 @@ void PlayMode::initializeCallbacks()
 			// default case, do nothing for the callback
 			callbacks.emplace_back([&](std::vector<TexStruct *> textures, std::string path){});
 		}
-		
 	}
-
 }
 
 // //Using filestreams - maybe don't use this in final
@@ -825,6 +842,20 @@ void PlayMode::initializeCallbacks()
 // void reverse_step (uint32_t x, uint32_t y){
 // 	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
 // }
+
+void PlayMode::join_line(PlayMode::GameCharacter *g) {
+	selected_character = g;
+	g->joining_line = g->leaving_line ? 2 : 1;
+	if (g->asset_idx >= 0) {
+		creature_xforms[g->asset_idx]->position.x = x_entering_store;
+	}
+}
+
+void PlayMode::leave_line(PlayMode::GameCharacter *g) {
+	printf("calling leave_line\n");
+	selected_character = nullptr;
+	g->leaving_line = g->joining_line == 1 ? 2 : 1;
+}
 
 PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_special_ptr = &tex_special;
@@ -909,15 +940,11 @@ void PlayMode::apply_command(std::string line) {
 			else {
 
 			}
-			if (g.name == "Subeelb") g.asset_idx = 0;
-			else if (g.name == "Gremlin") g.asset_idx = 1;
-			if (parsed[4] != "Human") {
-				g.selected = true;
-				g.joining_line = true;
-				if (g.asset_idx >= 0) {
-					creature_xforms[g.asset_idx]->position.x = x_entering_store;
-				}
+			if (g.name == "Subeelb") {
+				g.asset_idx = 0;
+				join_line(&g);
 			}
+			else if (g.name == "Gremlin") g.asset_idx = 1;
 			characters[parsed[2]] = g;
 		}
 		else {
@@ -930,8 +957,10 @@ void PlayMode::apply_command(std::string line) {
 			printf("Error in 'Exit' script command: Character %s not found\n", parsed[2].c_str());
 			return;
 		}
-		characters.find(parsed[2])->second.selected = false;
-		characters.find(parsed[2])->second.leaving_line = true;
+		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
+		if (g_pair != characters.end()) {
+			leave_line(&(g_pair->second));
+		}
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1047,7 +1076,6 @@ void PlayMode::apply_command(std::string line) {
 				{
 					tex->visible = true;
 				}
-
 			}
 		}
 		display_state.status = CHANGING;
@@ -1147,7 +1175,6 @@ void PlayMode::draw_state_text() {
 	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
 	update_texture(&tex_box_text);
 
-
 	tex_textbg.path = textbg_path;
 	tex_textbg.loadme = true;
 	tex_textbg.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.00001f};
@@ -1204,7 +1231,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	{
 		rescaleTextures(textures, window_size);
 		hasRescaled = true;
-
 	}
 
 	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_F3) {
@@ -1432,7 +1458,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		
 	}
 
-
 	return false;
 }
 
@@ -1443,14 +1468,16 @@ void PlayMode::update(float elapsed) {
 		GameCharacter gc = c->second;
 		
 		if (!gc.joining_line && !gc.leaving_line) continue;
+
 		Scene::Transform *xform = creature_xforms[gc.asset_idx];
 
-		if (gc.joining_line) {
+		if (gc.joining_line == 1) {
 			if (xform->position.x < x_by_counter) {
 				xform->position.x += creature_speed * elapsed;
 			} 
 			else {
 				c->second.joining_line = false;
+				if (c->second.leaving_line == 2) c->second.leaving_line = 1;
 			}
 		}
 		else { // gc.leaving_line == true
@@ -1462,6 +1489,7 @@ void PlayMode::update(float elapsed) {
 				xform->position.x = x_entering_store;
 				xform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(0., 0., 1.));
 				c->second.leaving_line = false;
+				if (c->second.joining_line == 2) c->second.joining_line = 1;
 			}
 		}
 	}
@@ -1581,9 +1609,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glUseProgram(0);
 		glDisable(GL_BLEND);
 	}
-
-
-
 
 	GL_ERRORS();
 }

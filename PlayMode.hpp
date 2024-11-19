@@ -95,19 +95,25 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {false, true, 
-									false, false, 
-									true, true, false,
+	std::vector<bool> visibilities = {false, true, // request(collapsed), cipher
+									false, false,  // request, cipher(full)
+									true,          // bg_customer
+									false, true,   // customer: subeelb
+									false, false,  // customer: gremlin
 									false, false, false, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
-											TopMiddlePaneBG, TopMiddlePane, TopMiddlePaneSelected,
+											TopMiddlePaneBG, 
+											TopMiddlePane, TopMiddlePaneSelected,
+											TopMiddlePane, TopMiddlePaneSelected,
 											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
-									"bg_customer.png", "customer1.png", "customer1_selected.png",
+									"bg_customer.png", 
+									"customer_subeelb.png", "customer_subeelb_selected.png",
+									"customer_gremlin.png", "customer_gremlin_selected.png",
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
 									};
 									
@@ -123,11 +129,6 @@ struct PlayMode : Mode {
 	const float y_exited_store = 14.f;
 	const float creature_speed = 5.0f;
 	std::vector<Scene::Transform *> creature_xforms;
-	
-	// uint8_t customers_in_line = 0;
-	// glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
-	// void join_line(Scene::Transform *xform);
-	// void rotate_line(uint8_t shift);
 	
 	// coloring
 	std::vector<float> colorscheme = {
@@ -151,12 +152,20 @@ struct PlayMode : Mode {
 		std::string name;
 		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
-		bool selected = false;
-		bool joining_line = false;
-		bool leaving_line = false;
+		// bool selected = false;
+		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
+		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
 	};
 	std::unordered_map<std::string, GameCharacter> characters;
+
+	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
+	GameCharacter *selected_character = nullptr;
+
+	// uint8_t customers_in_line = 0;
+	// glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
+	void join_line(GameCharacter *g);
+	void leave_line(GameCharacter *g);
 
 	struct Image {
 		std::string id;
