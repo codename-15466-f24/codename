@@ -858,31 +858,6 @@ void PlayMode::initializeCallbacks()
 	}
 }
 
-// //Using filestreams - maybe don't use this in final
-// void loadScript (std::string path_in){
-// 	// following partially adopted from example in https://cplusplus.com/doc/tutorial/files/
-// 	std::string line;
-// 	std::ifstream thisScript (data_path("script/" + path_in));
-// 	activeScript.clear();
-// 	activeIndex = 0;
-// 	if (thisScript.is_open()) {
-// 		while ( getline (thisScript,line, '\r') ){
-// 			activeScript.emplace_back(line);
-// 		}
-// 		thisScript.close();
-// 	}
-// 	else { //script failed to load
-// 		std::cout << "not sure how to handle this lol" << std::endl; 
-// 	}
-// }
-
-// void advance_step (uint32_t x, uint32_t y){
-// 	if (activeScript[activeIndex] != activeScript.back()) activeIndex += 1;
-// }
-// void reverse_step (uint32_t x, uint32_t y){
-// 	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
-// }
-
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
 	selected_character = g;
 	g->joining_line = g->leaving_line ? 2 : 1;
@@ -976,16 +951,24 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
-				g.species = new SubstitutionCipher("Shaper");
+				// USE THIS ONE
+				// g.species = new ReverseCipher("Bleebus");
+				// testing protocols for other ciphers so far:
+				// g.species = new CaesarCipher("CSMajor", 5);
+				g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
 			}
 			else {
 
 			}
-			if (g.name == "Subeelb") {
+			if (g.species->name == "Bleebus") {
 				g.asset_idx = 0;
 				join_line(&g);
 			}
-			else if (g.name == "Gremlin") g.asset_idx = 1;
+			else if (g.species->name == "CSMajor") g.asset_idx = 1;
+			else {
+				g.asset_idx = 0;
+				join_line(&g);
+			}
 			characters[parsed[2]] = g;
 		}
 		else {
@@ -1046,6 +1029,7 @@ void PlayMode::apply_command(std::string line) {
 			if (characters.find(parsed[2]) != characters.end()) {
 				found_character = true;
 				speaker = characters[parsed[2]];
+				std::cout << speaker.species->name << std::endl;
 				std::string res = speaker.species->encode(parsed[3]);
 				std::cout << res << std::endl;
 				speech_text = res;

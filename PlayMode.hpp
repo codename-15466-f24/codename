@@ -7,6 +7,7 @@
 #include "string_parsing.hpp"
 #include "ToggleCipher.hpp"
 #include "ReverseCipher.hpp"
+#include "CaesarCipher.hpp"
 #include "SubstitutionCipher.hpp"
 
 #include <glm/glm.hpp>
