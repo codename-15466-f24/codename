@@ -960,11 +960,11 @@ void PlayMode::apply_command(std::string line) {
 			else {
 
 			}
-			if (g.species->name == "Bleebus") {
+			if (g.name == "Blub") {
 				g.asset_idx = 0;
 				join_line(&g);
 			}
-			else if (g.species->name == "CSMajor") g.asset_idx = 1;
+			else if (g.name == "CSMajor") g.asset_idx = 1;
 			else {
 				g.asset_idx = 0;
 				join_line(&g);
