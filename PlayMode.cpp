@@ -253,7 +253,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		pen_y = tex_in->margin.y + font_size;
 
 		double line_height = font_size;
-		bool lastWasSpace = true; (void) lastWasSpace;
+		// bool lastWasSpace = true;
 		bool lastWasNewLine = true;
 		std::string glyphname = "";
 		double final_y = 0.;
@@ -405,11 +405,11 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			pen_x += pos[n].x_advance / 64; 
 			pen_y += pos[n].y_advance / 64; 
 
-			if (glyphname == "space"){
-				lastWasSpace = true;
-			} else {
-				lastWasSpace = false;
-			}
+			// if (glyphname == "space"){
+			// 	lastWasSpace = true;
+			// } else {
+			// 	lastWasSpace = false;
+			// }
 		}
 		if (final_y + line_height > tex_in->size.y - tex_in->margin.y){
 			if (font_size == tex_in->f_size){
@@ -558,18 +558,11 @@ void PlayMode::initializeCallbacks()
 				if (display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
-					cs_open = true;
-					editingBox = &tex_cs;
-					editStr = "";
-					cursor_pos = 0;
-					for (int i = 0; i < 26; i++){
-						editStr = editStr + substitution[i];
+					if (display_state.solved_puzzle)
+					{
+						tex_rev_ptr->visible = true;
 					}
-					editMode = true;
-					display_state.status = INPUT;
-					clear_png(&tex_cs);
-					render_text(&tex_cs, editStr, green, 'd', 75);
-					update_texture(&tex_cs);
+
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
@@ -590,20 +583,13 @@ void PlayMode::initializeCallbacks()
 		{
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				
 				togglePanel(textures, RightPane);
 				if (display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
-					if (cs_open) {
-						clear_png(&tex_box_text);
-						render_text(&tex_box_text, current_line, white, display_state.cipher);
-						update_texture(&tex_box_text);
-						cs_open = false;
-					}
-					editMode = false;
-					editStr = "";
-					cursor_pos = 0;
-					display_state.status = CHANGING;
+
+					tex_rev_ptr->visible = false;
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
@@ -626,6 +612,18 @@ void PlayMode::initializeCallbacks()
 			// special customer selector, either select or deselect customer
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
+				for (auto tex : textures)
+				{
+					if (tex->alignment == MiddlePane ||
+						tex->alignment == MiddlePaneBG ||
+						tex->alignment == MiddlePaneSelected	
+						)
+					{
+						tex->visible = false;
+						tex_minipuzzle_ptr->visible = false;
+					}
+				}
+
 				// We are now detecting for the substring "selected" rather than
 				// the path length, because we want to accommodate more than 9
 				// potential customers and also 'cause I wanna use customer
@@ -634,9 +632,10 @@ void PlayMode::initializeCallbacks()
 				
 				std::string isitselected = path.substr(path.length() - 12, 8);
 				printf("'selected' or something else?: %s\n", isitselected.c_str());
+				std::string cname;
 				if (isitselected == "selected")
 				{
-					std::string cname = path.substr(9, path.length() - 13 - 9);
+					cname = path.substr(9, path.length() - 13 - 9);
 					std::cout << "deselecting customer: " << cname << std::endl;
 					///@todo for sasha
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
@@ -651,7 +650,7 @@ void PlayMode::initializeCallbacks()
 					
 				} else {
 					// get customer name
-					std::string cname = path.substr(9, path.length() - 13);
+					cname = path.substr(9, path.length() - 13);
 					std::cout << "selecting customer: " << cname << std::endl;
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 					if (g_pair == characters.end()) {
@@ -670,11 +669,27 @@ void PlayMode::initializeCallbacks()
 				// toggle selected/deselected button look
 				for (auto tex : textures)
 				{
+					std::string istexselected = tex->path.substr(tex->path.length() - 12, 8);
+					std::string texname = istexselected == "selected" ? tex->path.substr(9, tex->path.length() - 13 - 9) : tex->path.substr(9, tex->path.length() - 13); 
+
 					if (tex->path != path && 
-					    tex->path.substr(0, 8) == "customer" && 
-						tex->path.substr(tex->path.length() - 12, 8) != isitselected)
+						tex->path.substr(0,8) == "customer")
+
 					{
-						tex->visible = true;
+						if (texname != cname && 
+							istexselected == "selected" &&
+							isitselected == "selected")
+						{
+							tex->visible = false;
+						}
+
+						if (texname == cname && 
+							istexselected != isitselected)
+						{
+							tex->visible = true;
+						}
+
+
 					} if (tex->path == path)
 					{
 						tex->visible = false;
@@ -743,74 +758,149 @@ void PlayMode::initializeCallbacks()
 		{
 			// submit button for mini puzzle window
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
-				// example: check if reverse button is enabled
-				bool reverseEnabled = true;
+				bool solved = false;
 
-				for (auto tex : textures)
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
 				{
-					// only member of middlepaneselected is the reverse button
-					// for the submit button for other mini puzzles, can check
-					// other things before submitting
-					if (tex->alignment == MiddlePaneSelected &&
-						!tex->visible)
-					{
-						reverseEnabled = false;
-						break;
-					}
 
-					if (tex->alignment == MiddlePane || 
-						tex->alignment == MiddlePaneBG || 
-						tex->alignment == MiddlePaneSelected || 
-						tex->alignment == MiddlePaneBGSelected)
-					{
-						tex->visible = false;
-					}
-						
-				}
+					// TODO: Actually add-in solve checking
+					solved = display_state.solution_text == editStr;
 
-				// keep the window up if reverse isn't enabled yet
-				if (!reverseEnabled)
-				{
-					for (auto tex : textures)
+					if (solved)
 					{
-
-						if (tex->alignment == MiddlePane || 
-							tex->alignment == MiddlePaneBG)
+						// propogate the answer from the minipuzzle to the key
+						for (size_t i = 0; i < display_state.solution_text.length(); i++)
 						{
-							tex->visible = true;
+							size_t index = display_state.solution_text[i] - 'a';
+							substitution[index] = editStr[i];
 						}
 
+						tex_minipuzzle_ptr->visible = false;
+						display_state.solved_puzzle = true;
+						advance_state(0);
+
+						display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+						draw_state_text();
+
+						if (cs_open) {
+							cs_open = false;
+						}
+						editMode = false;
+
+
+						editStr = "";
+						cursor_pos = 0;
+						display_state.status = CHANGING;
+
+						togglePanel(textures, RightPane);
+						tex_rev_ptr->visible = true;
+
+						for (auto tex : textures)
+						{
+							if (tex->alignment == MiddlePane || 
+								tex->alignment == MiddlePaneBG || 
+								tex->alignment == MiddlePaneSelected)
+							{
+								tex->visible = false;
+							
+							}
+								
+						}
+
+						
+
+					}
+					
+				} else if (display_state.puzzle_cipher->name == "Bleebus"
+					|| display_state.puzzle_cipher->name == "Reverse")
+				{
+				
+					// example: check if reverse button is enabled
+					bool reverseEnabled = true;
+
+					for (auto tex : textures)
+					{
+						// only member of middlepaneselected is the reverse button
+						// for the submit button for other mini puzzles, can check
+						// other things before submitting
+						if (tex->alignment == MiddlePaneSelected &&
+							!tex->visible)
+						{
+							reverseEnabled = false;
+							break;
+						}
+
+						if (tex->alignment == MiddlePane || 
+							tex->alignment == MiddlePaneBG || 
+							tex->alignment == MiddlePaneSelected)
+						{
+							tex->visible = false;
+						
+						}
+							
 					}
 
-					std::cout << "Cipher incorrect" << std::endl;
+					solved = reverseEnabled;
 
-				} else {
-					std::cout << "Submitted" << std::endl;
-					hasReversed = true;
-					tex_minipuzzle_ptr->visible = false;
-					display_state.solved_puzzle = true;
-					advance_state(0);
+					// keep the window up if reverse isn't enabled yet
+					if (!reverseEnabled)
+					{
+						for (auto tex : textures)
+						{
 
-					// Propagate the cipher text. This is going to get unwieldy eventually.
-					// First change the necessary features.
-					if (display_state.special_cipher->name == "Bleebus"
-						|| display_state.special_cipher->name == "Reverse") {
+							if (tex->alignment == MiddlePane || 
+								tex->alignment == MiddlePaneBG)
+							{
+								tex->visible = true;
+							}
+
+						}
+
+						std::cout << "Cipher incorrect" << std::endl;
+
+					} else {
+						std::cout << "Submitted" << std::endl;
+						hasReversed = true;
+						tex_minipuzzle_ptr->visible = false;
+						display_state.solved_puzzle = true;
+						advance_state(0);
+
+						for (auto tex : textures)
+						{
+							if (tex->path == "cipher_panel_full.png" && !tex->visible)
+							{
+								togglePanel(textures, RightPane);
+								tex_rev_ptr->visible = true;
+							}
+						}
+
+						// Propagate the cipher text. This is going to get unwieldy eventually.
+						// First change the necessary features.
+						
 						// do not flip anymore
 						CipherFeature cf;
 						cf.b = false;
 						display_state.special_cipher->set_feature("flip", cf);
-					}
-					else if (display_state.special_cipher->name == "Shaper"
-						|| display_state.special_cipher->name == "Substitution") {
-						// tbd source the minipuzzle cipher
-					}
-					// Actually propagate the special request text
-					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
-					draw_state_text();
-					// tex_special_ptr->visible = false;
-				}
 
-			};
+						
+						// Actually propagate the special request text
+						display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+						draw_state_text();
+						// tex_special_ptr->visible = false;
+				}
+			}
+
+			if (!solved)
+			{
+				counter = counter > 0 ? 0 : counter + 1;
+				std::vector<std::string> responses = {"That doesn't seem right...", "The customer seems unsatisfied by that."};
+				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
+				update_texture(&tex_box_text);
+
+			}
+
+		};
 
 			callbacks.emplace_back(callback);
 		}
@@ -821,31 +911,6 @@ void PlayMode::initializeCallbacks()
 		}
 	}
 }
-
-// //Using filestreams - maybe don't use this in final
-// void loadScript (std::string path_in){
-// 	// following partially adopted from example in https://cplusplus.com/doc/tutorial/files/
-// 	std::string line;
-// 	std::ifstream thisScript (data_path("script/" + path_in));
-// 	activeScript.clear();
-// 	activeIndex = 0;
-// 	if (thisScript.is_open()) {
-// 		while ( getline (thisScript,line, '\r') ){
-// 			activeScript.emplace_back(line);
-// 		}
-// 		thisScript.close();
-// 	}
-// 	else { //script failed to load
-// 		std::cout << "not sure how to handle this lol" << std::endl; 
-// 	}
-// }
-
-// void advance_step (uint32_t x, uint32_t y){
-// 	if (activeScript[activeIndex] != activeScript.back()) activeIndex += 1;
-// }
-// void reverse_step (uint32_t x, uint32_t y){
-// 	if (activeScript[activeIndex] != activeScript.front()) activeIndex -= 1;
-// }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
 	selected_character = g;
@@ -865,6 +930,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_special_ptr = &tex_special;
 	tex_minipuzzle_ptr = &tex_minipuzzle;
 	tex_rev_ptr = &tex_rev;
+	tex_cs_ptr = &tex_cs;
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
@@ -939,16 +1005,26 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
-				g.species = new ReverseCipher(parsed[4]);
+				// USE THIS ONE
+				g.species = new ReverseCipher("Bleebus");
+				// testing protocols for other ciphers so far:
+				// g.species = new CaesarCipher("CSMajor", 5);
+				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
+				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
+				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
 			else {
 
 			}
-			if (g.name == "Subeelb") {
+			if (g.name == "Blub") {
 				g.asset_idx = 0;
 				join_line(&g);
 			}
-			else if (g.name == "Gremlin") g.asset_idx = 1;
+			else if (g.name == "CSMajor") g.asset_idx = 1;
+			else {
+				g.asset_idx = 0;
+				join_line(&g);
+			}
 			characters[parsed[2]] = g;
 		}
 		else {
@@ -1009,6 +1085,7 @@ void PlayMode::apply_command(std::string line) {
 			if (characters.find(parsed[2]) != characters.end()) {
 				found_character = true;
 				speaker = characters[parsed[2]];
+				std::cout << speaker.species->name << std::endl;
 				std::string res = speaker.species->encode(parsed[3]);
 				std::cout << res << std::endl;
 				speech_text = res;
@@ -1052,6 +1129,22 @@ void PlayMode::apply_command(std::string line) {
 			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
 			display_state.puzzle_cipher->reset_features();
 			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
+			if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper")
+			{
+		
+				cs_open = true;
+				editingBox = tex_cs_ptr;
+				editStr = display_state.puzzle_text;
+				cursor_pos = 0;				
+				editMode = true;
+				display_state.status = INPUT;
+				clear_png(tex_cs_ptr);
+				render_text(tex_cs_ptr, editStr, green, 'd');
+				update_texture(tex_cs_ptr);
+
+				
+			}
 			for (auto tex : textures)
 			{
 				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
@@ -1064,7 +1157,8 @@ void PlayMode::apply_command(std::string line) {
 					tex->visible = false;
 				}
 			}
-
+			
+		
 			tex_minipuzzle_ptr->visible = true;
 			display_state.status = WAIT_FOR_SOLVE;
 
@@ -1188,7 +1282,7 @@ void PlayMode::draw_state_text() {
 	//tex_special.size = glm::uvec2(800, 400);
 	tex_special.bounds = {-0.95f, -0.6f, 0.03f, 0.7f};
   	set_size(&tex_special);
-	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 72);
+	render_text(&tex_special, display_state.special_request_text, white, display_state.cipher, 48);
 	update_texture(&tex_special);
 
 	tex_minipuzzle.size = glm::uvec2(400, 100);
@@ -1200,13 +1294,17 @@ void PlayMode::draw_state_text() {
 
 	//tex_cs.size = glm::uvec2(render_width, render_height);
 	//tex_cs.size = glm::uvec2(800, 200);
-	tex_cs.bounds = {-0.17f, 1.0f, 0.18f, 0.48f, -0.00001f};
+	tex_cs.bounds = {-0.15f, 0.15f, 0.08f, 0.20f, -0.00001f};
+	tex_cs.align = MIDDLE;
 	set_size(&tex_cs);
 	update_texture(&tex_cs);
 
-	tex_rev.bounds = {0.4f, 0.95f, 0.0f, 0.6f, -0.00001f};
+	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
-	render_text(&tex_rev, "DROW <———> WORD", white, display_state.cipher);
+	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper" ? 
+					std::string(substitution) : "DROW <———> WORD";
+	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
 
 }
@@ -1266,18 +1364,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-			if (cs_open) {
-				togglePanel(textures, RightPane);
-				clear_png(&tex_box_text);
-				render_text(&tex_box_text, current_line, white, display_state.cipher);
-				update_texture(&tex_box_text);
-				cs_open = false;
-			}
-			editMode = false;
-			editStr = "";
-			cursor_pos = 0;
-			display_state.status = CHANGING;
-			return true;
+			
 		}
 		else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
@@ -1352,9 +1439,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (success) {
 				if (cs_open){
 					editStr[cursor_pos] = in[0] - 'A' + 'a';
-					substitution[cursor_pos] = in[0] - 'A' + 'a';
 					//std::cout << editStr << std::endl;
-					if (cursor_pos < 25){
+					if (cursor_pos < editStr.length()-1){
 						cursor_pos+=1;
 					} else {
 						cursor_pos = 0;
@@ -1372,7 +1458,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		if (cs_open){
 			clear_png(&tex_cs);
-			render_text(&tex_cs, editStr, green, 'd', 75);
+			render_text(&tex_cs, editStr, green, 'd');
 			update_texture(&tex_cs);
 			clear_png(&tex_box_text);
 			render_text(&tex_box_text, current_line, white, display_state.cipher);
@@ -1599,7 +1685,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		GL_ERRORS();
 
 
-		if (tex_cs.visible)
+		if (cs_open)
 		{
 			glBindVertexArray(tex_cs.tristrip_for_texture_program);
 			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);

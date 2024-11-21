@@ -22,7 +22,7 @@ enum PanePosition {
 	MiddlePane,
 	MiddlePaneSelected,
 	MiddlePaneBG,
-	MiddlePaneBGSelected
+	MiddlePaneHidden
 };
 
 struct TexStruct {
@@ -77,4 +77,4 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size);
 
 bool checkForClick(std::vector<TexStruct *> textures, float x, float y);
 
-
+TexStruct* getTexture(std::vector<TexStruct *> textures, std::string path);

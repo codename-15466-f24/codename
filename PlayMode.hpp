@@ -7,6 +7,8 @@
 #include "string_parsing.hpp"
 #include "ToggleCipher.hpp"
 #include "ReverseCipher.hpp"
+#include "CaesarCipher.hpp"
+#include "SubstitutionCipher.hpp"
 
 #include <glm/glm.hpp>
 
@@ -56,6 +58,7 @@ struct PlayMode : Mode {
 	TextureItem *tex_special_ptr;
 	TextureItem *tex_minipuzzle_ptr;
 	TextureItem *tex_rev_ptr;
+	TextureItem *tex_cs_ptr;
 
 	enum Cipher {
 		Reverse,
@@ -99,7 +102,7 @@ struct PlayMode : Mode {
 									false, false,  // request, cipher(full)
 									true,          // bg_customer
 									false, true,   // customer: subeelb
-									false, false,  // customer: gremlin
+									true, false,  // customer: gremlin
 									false, false, false, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
@@ -114,7 +117,8 @@ struct PlayMode : Mode {
 									"bg_customer.png", 
 									"customer_subeelb.png", "customer_subeelb_selected.png",
 									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
+									
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
@@ -195,7 +199,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "tutorial.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "puzzle1.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -225,6 +229,8 @@ struct PlayMode : Mode {
 
 	std::string player_id = "player";
 	std::string cursor_str = "|";
+
+	size_t counter = 0;
 
 	void refresh_display();
 
