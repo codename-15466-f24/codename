@@ -21,3 +21,4 @@
 21 Text d "Great! You've served your first customer."
 22 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
 23 Text d "Make sure to use receipts as hints for future customers!"
+24 Jump 23

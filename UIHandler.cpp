@@ -41,6 +41,21 @@ void togglePanel(std::vector<TexStruct *> textures, PanePosition alignment)
 
 }
 
+TexStruct* getTexture(std::vector<TexStruct *> textures, std::string path)
+{
+	for (auto tex : textures)
+	{
+		if (tex->path == path)
+		{
+			return tex;
+
+		}
+	}
+
+	throw std::runtime_error("getTexture called with invalid path");
+	return nullptr;
+}
+
 void addTextures(std::vector<TexStruct *> textures, std::vector<std::string> paths, const TextureProgram *ui_texture_program)
 {
 	size_t path_index = 0;
@@ -175,7 +190,7 @@ void updateTextures(std::vector<TexStruct *> textures)
 				tex->relativeSizeX/2.0f,
 				-tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY),
 				3*tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY)};
-		} else if (tex->alignment == MiddlePaneBG || tex->alignment == MiddlePaneBGSelected)
+		} else if (tex->alignment == MiddlePaneBG)
 		{
 			tex->bounds = { -tex->relativeSizeX/2.0f,
 				tex->relativeSizeX/2.0f,

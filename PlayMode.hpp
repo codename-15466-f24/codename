@@ -117,7 +117,8 @@ struct PlayMode : Mode {
 									"bg_customer.png", 
 									"customer_subeelb.png", "customer_subeelb_selected.png",
 									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
+									
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
