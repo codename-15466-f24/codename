@@ -758,9 +758,17 @@ void PlayMode::initializeCallbacks()
 				{
 
 					// TODO: Actually add-in solve checking
-					bool solved = true;
+					bool solved = display_state.solution_text == editStr;
+
 					if (solved)
 					{
+						// propogate the answer from the minipuzzle to the key
+						for (size_t i = 0; i < display_state.solution_text.length(); i++)
+						{
+							size_t index = display_state.solution_text[i] - 'a';
+							substitution[index] = editStr[i];
+						}
+
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
 						advance_state(0);
@@ -772,6 +780,8 @@ void PlayMode::initializeCallbacks()
 							cs_open = false;
 						}
 						editMode = false;
+
+
 						editStr = "";
 						cursor_pos = 0;
 						display_state.status = CHANGING;
@@ -1411,9 +1421,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (success) {
 				if (cs_open){
 					editStr[cursor_pos] = in[0] - 'A' + 'a';
-					substitution[cursor_pos] = in[0] - 'A' + 'a';
 					//std::cout << editStr << std::endl;
-					if (cursor_pos < 25){
+					if (cursor_pos < editStr.length()-1){
 						cursor_pos+=1;
 					} else {
 						cursor_pos = 0;
