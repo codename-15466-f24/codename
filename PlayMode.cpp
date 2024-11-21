@@ -752,13 +752,14 @@ void PlayMode::initializeCallbacks()
 		{
 			// submit button for mini puzzle window
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				bool solved = false;
 
 				if (display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
 
 					// TODO: Actually add-in solve checking
-					bool solved = display_state.solution_text == editStr;
+					solved = display_state.solution_text == editStr;
 
 					if (solved)
 					{
@@ -834,6 +835,8 @@ void PlayMode::initializeCallbacks()
 							
 					}
 
+					solved = reverseEnabled;
+
 					// keep the window up if reverse isn't enabled yet
 					if (!reverseEnabled)
 					{
@@ -882,7 +885,16 @@ void PlayMode::initializeCallbacks()
 				}
 			}
 
-			};
+			if (!solved)
+			{
+				counter = counter > 0 ? 0 : counter + 1;
+				std::vector<std::string> responses = {"That doesn't seem right...", "The customer seems unsatisfied by that."};
+				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
+				update_texture(&tex_box_text);
+
+			}
+
+		};
 
 			callbacks.emplace_back(callback);
 		}

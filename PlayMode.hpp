@@ -230,6 +230,8 @@ struct PlayMode : Mode {
 	std::string player_id = "player";
 	std::string cursor_str = "|";
 
+	size_t counter = 0;
+
 	void refresh_display();
 
 	void advance_one_line(uint32_t jump_choice);
