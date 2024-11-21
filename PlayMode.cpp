@@ -1000,12 +1000,12 @@ void PlayMode::apply_command(std::string line) {
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
-				// g.species = new ReverseCipher("Bleebus");
+				g.species = new ReverseCipher("Bleebus");
 				// testing protocols for other ciphers so far:
 				// g.species = new CaesarCipher("CSMajor", 5);
-				g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
-				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
-				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
+				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
+				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
+				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
 			else {
 
@@ -1293,7 +1293,7 @@ void PlayMode::draw_state_text() {
 	set_size(&tex_cs);
 	update_texture(&tex_cs);
 
-	tex_rev.bounds = {0.4f, 0.95f, 0.0f, 0.6f, -0.00001f};
+	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
 	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper" ? 
