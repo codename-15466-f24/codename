@@ -258,14 +258,14 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			memset(gn, 0, sizeof(gn));
 			hb_codepoint_t gid   = info[n].codepoint;
 			hb_font_get_glyph_name (hb_font, gid, gn, sizeof(gn)/sizeof(char));
-			glyphname.assign(gn, sizeof(gn)/sizeof(char));
+			glyphname.assign(gn, strlen(gn));
 			// std::cout << gn << std::endl;
 			// std::cout << glyphname;
 			// unsigned int cluster = info[n].cluster;
 			double x_position = pen_x + pos[n].x_offset / 64.;
 			double y_position = pen_y + pos[n].y_offset / 64.;
-			
-			if (glyphname == "uni20BF") {
+
+			if (glyphname == "franc") {
 				//New Line
 				pen_x = tex_in->margin.x; 
 				pen_y += static_cast<int>(line_height + LINE_SPACING); 
@@ -304,7 +304,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 					//std::string thisWord = "";
 					loop_line_glyphname = "";
 					//Compute next word
-					while (loop_line_glyphname != "space" && loop_line_glyphname != "uni20BF" && m < len) {
+					while (loop_line_glyphname != "space" && loop_line_glyphname != "franc" && m < len) {
 						hb_codepoint_t loop_gid  = info[m].codepoint;
 						char llgn_array[32] = "";
 						memset(llgn_array, 0, sizeof(llgn_array));
@@ -325,7 +325,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 						keepLooping = false;
 					}
 					//EOL
-					if (loop_line_glyphname == "uni20BF" ){
+					if (loop_line_glyphname == "franc" ){
 						keepLooping = false;
 						break;
 					}
@@ -390,15 +390,23 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			}
 			
 			// bitmap drawing function
-			if (colorOut == green && n == cursor_pos){
-				draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
-			} else {
-				draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
-			}
+			if (glyphname != "franc") 
+			{
+				if (colorOut == green && n == cursor_pos){
+					draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
+				}
+				else {
+					draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
+				}
+			
 
-			// Move the "pen" based on x and y advance given by glyphs
-			pen_x += pos[n].x_advance / 64; 
-			pen_y += pos[n].y_advance / 64; 
+				// Move the "pen" based on x and y advance given by glyphs
+				pen_x += pos[n].x_advance / 64; 
+				pen_y += pos[n].y_advance / 64; 
+
+			} else {
+				// std::cout << glyphname << std::endl;
+			}
 
 			// if (glyphname == "space"){
 			// 	lastWasSpace = true;
@@ -766,8 +774,8 @@ void PlayMode::initializeCallbacks()
 						// propogate the answer from the minipuzzle to the key
 						for (size_t i = 0; i < display_state.solution_text.length(); i++)
 						{
-							size_t index = display_state.solution_text[i] - 'a';
-							substitution[index] = editStr[i];
+							size_t index = editStr[i] - 'a';
+							substitution[index] = display_state.solution_text[i];
 						}
 
 						tex_minipuzzle_ptr->visible = false;
@@ -1000,12 +1008,12 @@ void PlayMode::apply_command(std::string line) {
 			g.name = parsed[3];
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
-				g.species = new ReverseCipher("Bleebus");
+				// g.species = new ReverseCipher("Bleebus");
 				// testing protocols for other ciphers so far:
 				// g.species = new CaesarCipher("CSMajor", 5);
-				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
-				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
-				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
+				g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
+				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
+				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
 			else {
 
@@ -1297,7 +1305,7 @@ void PlayMode::draw_state_text() {
 	set_size(&tex_rev);
 	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper" ? 
-					std::string(substitution) : "DROW <———> WORD";
+					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution)  : "DROW <———> WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
 
