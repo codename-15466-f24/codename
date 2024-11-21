@@ -62,14 +62,19 @@ bool hasReversed = false;
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
-Load< MeshBuffer > codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
+Load<MeshBuffer> codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	MeshBuffer const *ret = new MeshBuffer(data_path("codename.pnct"));
-	codename_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
+	codename_meshes_for_lit_color_texture_program = 
+		ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
-Load< Scene > codename_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("codename.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
+	return new Scene(data_path("codename.scene"), [&](
+		    Scene &scene, 
+		    Scene::Transform *transform, 
+			std::string const &mesh_name
+	){
 		Mesh const &mesh = codename_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
@@ -115,8 +120,8 @@ void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t 
 				// According to freetype.org,  buffer bytes per row is saved as bitmap->pitch
                 uint8_t alpha = bitmap->buffer[i * bitmap->pitch + j];
 				// Calculate the index in the RGBA buffer
-                int index = (png_out->size.y-out_y-1) * png_out->size.x + out_x;
-				png_out->data[index] = glm::u8vec4(color.r, color.g, color.b, alpha);
+                int index = (png_out->size.y-out_y-1)*png_out->size.x + out_x;
+				png_out->data[index] = glm::u8vec4(color.r,color.g,color.b,alpha);
             }
         }
     }
@@ -497,7 +502,8 @@ int update_texture(PlayMode::TextureItem *tex_in){
 		std::cout << glm::to_string(verts[i].TexCoord) << std::endl;
 	}*/
 	glBindBuffer(GL_ARRAY_BUFFER, tex_in->tristrip);
-	glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(verts[0]), verts.data(), GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(verts[0]), 
+	             verts.data(), GL_STREAM_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	tex_in->count = GLsizei(verts.size());
 	GL_ERRORS();
@@ -635,7 +641,8 @@ void PlayMode::initializeCallbacks()
 					///@todo for sasha
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 					if (g_pair == characters.end()) {
-						std::cout << "Deselected character has not been introduced yet: " << cname << std::endl;
+						std::cout << "Deselected character has not been introduced yet: " 
+						          << cname << std::endl;
 						return;
 					}
 					GameCharacter g = g_pair->second;
@@ -648,7 +655,8 @@ void PlayMode::initializeCallbacks()
 					std::cout << "selecting customer: " << cname << std::endl;
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 					if (g_pair == characters.end()) {
-						std::cout << "Selected character has not been introduced yet: " << cname << std::endl;
+						std::cout << "Selected character has not been introduced yet: " 
+						          << cname << std::endl;
 						return;
 					}
 					GameCharacter g = g_pair->second;
@@ -662,7 +670,6 @@ void PlayMode::initializeCallbacks()
 				// toggle selected/deselected button look
 				for (auto tex : textures)
 				{
-
 					if (tex->path != path && 
 					    tex->path.substr(0, 8) == "customer" && 
 						tex->path.substr(tex->path.length() - 12, 8) != isitselected)
@@ -672,9 +679,7 @@ void PlayMode::initializeCallbacks()
 					{
 						tex->visible = false;
 					}
-
 				}
-
 			};
 
 			callbacks.emplace_back(callback);
@@ -759,7 +764,6 @@ void PlayMode::initializeCallbacks()
 						tex->alignment == MiddlePaneBGSelected)
 					{
 						tex->visible = false;
-					
 					}
 						
 				}
