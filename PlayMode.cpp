@@ -60,6 +60,7 @@ static uint32_t ij = 0;
 // Leaving the cipher up here for now because the substitution is here
 bool hasReversed = false;
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+static char substitution_display[26] = {'.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
 Load< MeshBuffer > codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -765,17 +766,21 @@ void PlayMode::initializeCallbacks()
 				if (display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper")
 				{
+					std::cout << substitution << std::endl;
+
 
 					// TODO: Actually add-in solve checking
 					solved = display_state.solution_text == editStr;
+					solved = true;
 
 					if (solved)
 					{
 						// propogate the answer from the minipuzzle to the key
-						for (size_t i = 0; i < display_state.solution_text.length(); i++)
+						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
-							size_t index = editStr[i] - 'a';
-							substitution[index] = display_state.solution_text[i];
+							size_t index = display_state.puzzle_text[i] - 'a';
+							substitution[index] = editStr[i];
+							substitution_display[index] = editStr[i];
 						}
 
 						tex_minipuzzle_ptr->visible = false;
@@ -1305,7 +1310,7 @@ void PlayMode::draw_state_text() {
 	set_size(&tex_rev);
 	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper" ? 
-					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution)  : "DROW <———> WORD";
+					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
 
