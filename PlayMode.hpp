@@ -232,6 +232,10 @@ struct PlayMode : Mode {
 
 	size_t counter = 0;
 
+	// sound
+	std::shared_ptr< Sound::PlayingSample > curr_sound = nullptr;
+	std::deque<std::shared_ptr< Sound::PlayingSample >> next_sound;
+
 	void refresh_display();
 
 	void advance_one_line(uint32_t jump_choice);

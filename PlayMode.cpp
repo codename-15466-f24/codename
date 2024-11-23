@@ -93,6 +93,16 @@ Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample c
 	return new Sound::Sample(data_path("dusty-floor.opus"));
 });
 
+Load< Sound::Sample > keyclick1(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("keyclick1.opus"));
+	return s;
+});
+
+Load< Sound::Sample > keyclick2(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("keyclick2.opus"));
+	return s;
+});
+
 //Reset the current text (or other) png
 void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t width = 0) {
     /*for (uint32_t y = 0; y < height; y++) {
@@ -1444,6 +1454,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				default: break;
 			}
 			if (success) {
+
+				// play key click sound
+				{
+					if (curr_sound != nullptr && !curr_sound->stopping)
+					{
+						curr_sound->stop(1.0f);
+
+					} 
+
+					if (curr_sound == nullptr || curr_sound->stopped) {
+						float rand_vol = 1.0f -  (rand()%30)/100.0f;
+						curr_sound = Sound::play(*keyclick1, rand_vol, 0.0f); 
+					}
+
+				}
 				if (cs_open){
 					editStr[cursor_pos] = in[0] - 'A' + 'a';
 					//std::cout << editStr << std::endl;
@@ -1544,6 +1569,18 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			clear_png(&tex_box_text);
 			advance_state(0);
+
+			// play advance sound
+			if (curr_sound != nullptr && !curr_sound->stopping)
+			{
+				curr_sound->stop(1.0f);
+
+			} 
+
+			if (curr_sound == nullptr || curr_sound->stopped)
+			{
+				curr_sound = Sound::play(*keyclick2, 0.3, 0.0f);
+			}
 			
 		}
 
