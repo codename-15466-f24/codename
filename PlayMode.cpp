@@ -632,29 +632,30 @@ void PlayMode::initializeCallbacks()
 					}
 				}
 
-				// We are now detecting for the substring "selected" rather than
-				// the path length, because we want to accommodate more than 9
+				// We detect the substring "selected" rather than
+				// the path length, to accommodate more than 9
 				// potential customers and also 'cause I wanna use customer
-				// names rather than numbers and then have to map numbers to names
-				// to GameCharacter structs to asset indices.
+				// names rather than numbers. I don't want to map numbers to 
+				// names to GameCharacter structs to asset indices.
 				
 				std::string isitselected = path.substr(path.length() - 12, 8);
-				printf("'selected' or something else?: %s\n", isitselected.c_str());
 				std::string cname;
 				if (isitselected == "selected")
 				{
 					cname = path.substr(9, path.length() - 13 - 9);
 					std::cout << "deselecting customer: " << cname << std::endl;
-					///@todo for sasha
 					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 					if (g_pair == characters.end()) {
 						std::cout << "Deselected character has not been introduced yet: " 
 						          << cname << std::endl;
 						return;
 					}
-					GameCharacter g = g_pair->second;
+					GameCharacter *g = &(g_pair->second);
+					printf("selected_character variable: %s\n", 
+					       selected_character->id.c_str());
 					// if (selected_character == &g) 
-					leave_line(&g);
+					leave_line(g);
+					printf("g.leaving_line = %d\n", g->leaving_line);
 					
 				} else {
 					// get customer name
@@ -666,10 +667,18 @@ void PlayMode::initializeCallbacks()
 						          << cname << std::endl;
 						return;
 					}
-					GameCharacter g = g_pair->second;
+					GameCharacter *g = &(g_pair->second);
+					if (selected_character) {
+						printf("selected_character variable: %s\n", 
+					            selected_character->id.c_str());
+					} else printf("selected_character is null\n");
 					// have customer be "selected"
 					// have customer join line
-					if (selected_character != &g) join_line(&g);
+					if (selected_character != g) {
+						join_line(g);
+						printf("g.joining_line = %d\n", g->joining_line);
+						printf("hmm: %d\n", characters.find(cname)->second.joining_line);
+					}
 
 					// currently selected customer gets deselected
 				}
@@ -682,7 +691,6 @@ void PlayMode::initializeCallbacks()
 
 					if (tex->path != path && 
 						tex->path.substr(0,8) == "customer")
-
 					{
 						if (texname != cname && 
 							istexselected == "selected" &&
@@ -921,11 +929,12 @@ void PlayMode::initializeCallbacks()
 }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
+	printf("calling join_line\n");
 	selected_character = g;
-	g->joining_line = g->leaving_line ? 2 : 1;
-	if (g->asset_idx >= 0) {
-		creature_xforms[g->asset_idx]->position.x = x_entering_store;
-	}
+	g->joining_line = g->leaving_line == 1 ? 2 : 1;
+	// if (g->asset_idx >= 0) {
+	// 	creature_xforms[g->asset_idx]->position.x = x_entering_store;
+	// }
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
@@ -942,14 +951,18 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
-		if (transform.name == "swap_creature") shaper   = &transform;
-		if (transform.name == "Bleebus_Head")  bleebus  = &transform;
-		if (transform.name == "CSMajor_Body")  cs_major = &transform;
+		if (transform.name == "swap_creature") shaper1   = &transform;
+		if (transform.name == "Bleebus_Head")  bleebus1  = &transform;
+		if (transform.name == "Bleebus2")      bleebus2  = &transform;
+		if (transform.name == "CSMajor_Body")  cs_major1 = &transform;
+		if (transform.name == "CSMajor2")      cs_major2 = &transform;
 	}
-	if (shaper == nullptr) throw std::runtime_error("Shaper not found.");
-	if (bleebus == nullptr) throw std::runtime_error("Bleebus not found.");
-	if (cs_major == nullptr) throw std::runtime_error("CS Major not found.");
-	creature_xforms = {bleebus, cs_major, shaper};
+	if (shaper1 == nullptr) throw std::runtime_error("Shaper not found.");
+	if (bleebus1 == nullptr) throw std::runtime_error("Bleebus 1 not found.");
+	if (bleebus2 == nullptr) throw std::runtime_error("Bleebus 2 not found.");
+	if (cs_major1 == nullptr) throw std::runtime_error("CS Major 1 not found.");
+	if (cs_major2 == nullptr) throw std::runtime_error("CS Major 2 not found.");
+	creature_xforms = {bleebus1, bleebus2, cs_major1, cs_major2, shaper1};
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -964,7 +977,6 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	textures = initializeTextures(alignments, visibilities, callbacks);
 	addTextures(textures, paths, texture_program);
 
-	printf("modified colorscheme: \n");
 	for (uint8_t i = 0; i < colorscheme.size() - 2; i+=3) {
 		glm::vec3 new_col = glm::convertSRGBToLinear(glm::vec3(colorscheme[i], colorscheme[i+1], colorscheme[i+2]));
 		colorscheme[i] = new_col.x;
@@ -1021,19 +1033,20 @@ void PlayMode::apply_command(std::string line) {
 				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
-			else {
 
-			}
 			if (g.name == "Blub") {
 				g.asset_idx = 0;
 				join_line(&g);
+			} else if (g.name == "Subeelb") {
+				g.asset_idx = 1;
 			}
-			else if (g.name == "CSMajor") g.asset_idx = 1;
+			else if (g.name == "Gremlin") g.asset_idx = 2;
+			else if (g.name == "Gamer") g.asset_idx = 3;
 			else {
-				g.asset_idx = 0;
-				join_line(&g);
+				g.asset_idx = -1;
+				// join_line(&g);
 			}
-			characters[parsed[2]] = g;
+			characters[g.id] = g;
 		}
 		else {
 			std::cerr << display_state.file + " " + parsed[0] + ": Found a character with this ID already. No action taken" << std::endl;
@@ -1252,7 +1265,8 @@ void set_size(PlayMode::TextureItem *in){
 	in->size = glm::uvec2(window_width * (in->bounds[1] - in->bounds[0]), window_height * (in->bounds[3] - in->bounds[2]));
 }
 
-// This is the main implementation. This should advance the game's script until the player needs to advance the display again.
+// This is the main implementation. This should advance the game's script 
+// until the player needs to advance the display again.
 // In other words, things like character displays should run automatically.
 void PlayMode::advance_state(uint32_t jump_choice) {
 	if (display_state.line_number > 0) display_state.history.push_back(std::pair(display_state.file, display_state.line_number));
@@ -1311,7 +1325,7 @@ void PlayMode::draw_state_text() {
 	set_size(&tex_rev);
 	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
 					|| display_state.puzzle_cipher->name == "Shaper" ? 
-					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution)  : "DROW <———> WORD";
+					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution) : "DROW <———> WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
 
@@ -1349,22 +1363,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_KEYDOWN && !editMode) {
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_a) {
-			left.downs += 1;
-			left.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_d) {
-			right.downs += 1;
-			right.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_w) {
-			up.downs += 1;
-			up.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_s) {
-			down.downs += 1;
-			down.pressed = true;
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			
@@ -1478,29 +1476,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 
 	} else if (evt.type == SDL_KEYUP && !editMode) {
-		
-		if (evt.key.keysym.sym == SDLK_a) {
-			left.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_d) {
-			right.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_w) {
-			up.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_s) {
-			down.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_F1) {
-
+		if (evt.key.keysym.sym == SDLK_F1) {
 			// toggle the left (inventory) pane
-			
 			return true;
-
 		} else if (evt.key.keysym.sym == SDLK_F2) {
-
 			return true;
-
 		} else if (evt.key.keysym.sym == SDLK_DOWN) {
 			downArrow.pressed = false;
 			size_t choices = display_state.jumps.size();
@@ -1565,40 +1545,42 @@ void PlayMode::update(float elapsed) {
 	for (std::unordered_map<std::string, GameCharacter>::iterator c = characters.begin(); c != characters.end(); c++) {
 		GameCharacter gc = c->second;
 		
-		if (!gc.joining_line && !gc.leaving_line) continue;
+		if (!gc.joining_line && !gc.leaving_line) {
+			// printf("update: neither joining nor leaving\n");
+			continue;
+		}
 
 		Scene::Transform *xform = creature_xforms[gc.asset_idx];
 
 		if (gc.joining_line == 1) {
+			// printf("update: joining\n");
 			if (xform->position.x < x_by_counter) {
 				xform->position.x += creature_speed * elapsed;
 			} 
 			else {
-				c->second.joining_line = false;
+				c->second.joining_line = 0;
 				if (c->second.leaving_line == 2) c->second.leaving_line = 1;
 			}
 		}
-		else { // gc.leaving_line == true
+		else if (gc.leaving_line == 1) { // gc.leaving_line == true
+			printf("update: leaving. pos: (%f, %f)\n", xform->position.x, xform->position.y);
 			xform->rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(0., 0., 1.));
 			if (xform->position.y < y_exited_store) {
 				xform->position.y += creature_speed * elapsed;
 			}
 			else {
 				xform->position.x = x_entering_store;
-				xform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(0., 0., 1.));
-				c->second.leaving_line = false;
+				xform->position.y = 0.;
+				xform->rotation = glm::angleAxis(0.f, glm::vec3(0., 0., 1.));
+				c->second.leaving_line = 0;
 				if (c->second.joining_line == 2) c->second.joining_line = 1;
 			}
+		} else {
+			printf("funny situation. joining = %d, leaving = %d\n", gc.joining_line, gc.leaving_line);
 		}
 	}
 
 	updateTextures(textures);
-
-	//reset button press counters:
-	left.downs = 0;
-	right.downs = 0;
-	up.downs = 0;
-	down.downs = 0;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -1631,8 +1613,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//apply a bloom effect:
-	// framebuffers.add_bloom();
 	//copy scene to main window framebuffer:
 	// framebuffers.tone_map();
 
@@ -1685,13 +1665,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_rev.count);
 		}
 
-
 		glBindVertexArray(tex_box_text.tristrip_for_texture_program);
 		glBindTexture(GL_TEXTURE_2D, tex_box_text.tex);
 		glUniformMatrix4fv( texture_program->CLIP_FROM_LOCAL_mat4, 1, GL_FALSE, glm::value_ptr(tex_box_text.CLIP_FROM_LOCAL) );
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_box_text.count);
 		GL_ERRORS();
-
 
 		if (cs_open)
 		{

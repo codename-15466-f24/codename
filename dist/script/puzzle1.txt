@@ -21,4 +21,10 @@
 21 Text d "Great! You've served your first customer."
 22 Text d "After serving a customer, you'll receive a receipt of the transaction. The receipt shows the price, what they bought, and what they said."
 23 Text d "Make sure to use receipts as hints for future customers!"
-24 Jump 23
+24 Character subeelb Subeelb Bleebus
+25 Text d "Another bleebus! waow"
+26 Character gremlin Gremlin CSMajor
+27 Text d "Here's a CS major"
+26 Character gamer Gamer CSMajor
+27 Text d "Here's another CS major"
+28 Jump 27
