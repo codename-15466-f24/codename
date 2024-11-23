@@ -1,0 +1,13 @@
+1 Character player You Human
+2 Speech player "That darned Grandpa and his scheming, you never know what he's gonna do next. Taking off though, didn't know that was in his playbook."
+3 Speech player "Never thought I'd get stuck with his dirty old rest stop. What am I gonna do with this?"
+4 Speech player "*sigh*..."
+5 Speech player "24/7 stop too. Not sure how he ever ran this place on his own. Maybe I should just close it while he's away..."
+6 Speech player "Oh who am I kidding, Ma didn't raise a quitter, and I don't wanna be the one to tell Grandpa I lost his baby while he was away. No such thing as a free lunch."
+7 Speech player "Guess I'll need to figure out how he ran this place the old fashioned way, trial and error!"
+8 Text d "Welcome to Grandpa's Intergalactic Rest Stop! You'll be playing as the shopkeeper here."
+9 Text d "The galaxy is home to thousands of species of aliens, each with their own language and culture."
+10 Text d "Luckily, a few eras ago the intergalactic language council standardized a lot of things, so these languages can be easily translated back into your home language with a few steps."
+11 Text d "Unluckily, those steps aren't always simple or straightforward. With some experience and smart problem-solving skills though, you'll be able to communicate with anyone who walks through these doors."
+12 Text d "Speaking of which, it looks like you'll have to deal with one of those in a moment..."
+13 Change_File "special_bleeb1.txt"
