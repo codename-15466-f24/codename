@@ -121,7 +121,7 @@ struct PlayMode : Mode {
 									"customer_blub.png", "customer_blub_selected.png",
 									"customer_subeelb.png", "customer_subeelb_selected.png",
 									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"customer_gremlin.png", "customer_gremlin_selected.png",
+									"customer_gamer.png", "customer_gamer_selected.png",
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
 									
 									};

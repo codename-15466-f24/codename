@@ -676,8 +676,6 @@ void PlayMode::initializeCallbacks()
 					// have customer join line
 					if (selected_character != g) {
 						join_line(g);
-						printf("g.joining_line = %d\n", g->joining_line);
-						printf("hmm: %d\n", characters.find(cname)->second.joining_line);
 					}
 
 					// currently selected customer gets deselected
@@ -689,26 +687,37 @@ void PlayMode::initializeCallbacks()
 					std::string istexselected = tex->path.substr(tex->path.length() - 12, 8);
 					std::string texname = istexselected == "selected" ? tex->path.substr(9, tex->path.length() - 13 - 9) : tex->path.substr(9, tex->path.length() - 13); 
 
-					if (tex->path != path && 
-						tex->path.substr(0,8) == "customer")
+					if (tex->path == path)
 					{
-						if (texname != cname && 
-							istexselected == "selected" &&
-							isitselected == "selected")
-						{
-							tex->visible = false;
-						}
+						tex->visible = false;
+					}
 
-						if (texname == cname && 
-							istexselected != isitselected)
+					else if ( tex->path.substr(0,8) == "customer")
+					{
+						if (texname == cname) // isitselected != istexselected
 						{
 							tex->visible = true;
 						}
+						else if (istexselected == "selected" &&
+							     isitselected  != "selected")
+						{
+							tex->visible = false;
+						}
+						else if (istexselected != "selected" &&
+						         isitselected  != "selected") {
+							tex->visible = true;
 
-
-					} if (tex->path == path)
-					{
-						tex->visible = false;
+							// make formerly selected character leave
+							std::cout << "replacing customer: " << texname << std::endl;
+							std::unordered_map<std::string, GameCharacter>::iterator tex_pair = characters.find(texname);
+							if (tex_pair == characters.end()) {
+								std::cout << "Replaced character has not been introduced yet: " 
+										  << cname << std::endl;
+								return;
+							}
+							GameCharacter *g = &(tex_pair->second);
+							leave_line(g);
+						}
 					}
 				}
 			};
@@ -929,7 +938,6 @@ void PlayMode::initializeCallbacks()
 }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
-	printf("calling join_line\n");
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
 	// if (g->asset_idx >= 0) {
@@ -938,8 +946,7 @@ void PlayMode::join_line(PlayMode::GameCharacter *g) {
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
-	printf("calling leave_line\n");
-	selected_character = nullptr;
+	if (selected_character == g) selected_character = nullptr;
 	g->leaving_line = g->joining_line == 1 ? 2 : 1;
 }
 
@@ -1563,7 +1570,7 @@ void PlayMode::update(float elapsed) {
 			}
 		}
 		else if (gc.leaving_line == 1) { // gc.leaving_line == true
-			printf("update: leaving. pos: (%f, %f)\n", xform->position.x, xform->position.y);
+			// printf("update: leaving. pos: (%f, %f)\n", xform->position.x, xform->position.y);
 			xform->rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(0., 0., 1.));
 			if (xform->position.y < y_exited_store) {
 				xform->position.y += creature_speed * elapsed;
@@ -1576,7 +1583,7 @@ void PlayMode::update(float elapsed) {
 				if (c->second.joining_line == 2) c->second.joining_line = 1;
 			}
 		} else {
-			printf("funny situation. joining = %d, leaving = %d\n", gc.joining_line, gc.leaving_line);
+			printf("funny situation. hopefully shouldn't happen. joining = %d, leaving = %d\n", gc.joining_line, gc.leaving_line);
 		}
 	}
 
