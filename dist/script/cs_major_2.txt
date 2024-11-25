@@ -1,0 +1,8 @@
+1 Character csm2 Zazmadew CSMajor
+2 Sound "ding.opus"
+3 Text d "You make eye contact with the one in the (whatever distinguishing feature), signaling her to visit the counter"
+4 Speech csm2 "squeaky toy"
+5 Show mini_puzzle csm2 "SQUEAKY TOY"
+6 Speech csm2 "Finally something I can chew on"
+7 Exit csm2
+8 Change_File "idle.txt"
