@@ -955,9 +955,6 @@ void PlayMode::initializeCallbacks()
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
-	// if (g->asset_idx >= 0) {
-	// 	creature_xforms[g->asset_idx]->position.x = x_entering_store;
-	// }
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
@@ -1004,8 +1001,9 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		colorscheme[i] = new_col.x;
 		colorscheme[i+1] = new_col.y;
 		colorscheme[i+2] = new_col.z;
-		printf("%f, %f, %f\n", new_col.x, new_col.y, new_col.z);
 	}
+
+	// entrance_filenames["blub"] = 
 
 	advance_state(0);
 }
@@ -1046,6 +1044,8 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
+			g.entrance_line = atoi(parsed[0].c_str());
+			// g.entrance_file = 
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
 				// g.species = new ReverseCipher("Bleebus");
