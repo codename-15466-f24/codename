@@ -1055,6 +1055,9 @@ void PlayMode::apply_command(std::string line) {
 				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
+			else {
+				g.species = new ToggleCipher();
+			}
 
 			if (g.name == "Blub") {
 				g.asset_idx = 0;
@@ -1568,7 +1571,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			if (curr_sound == nullptr || curr_sound->stopped)
 			{
-				curr_sound = Sound::play(*keyclick2, 0.3, 0.0f);
+				curr_sound = Sound::play(*keyclick2, 0.3f, 0.0f);
 			}
 			
 		}
