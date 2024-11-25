@@ -100,29 +100,33 @@ struct PlayMode : Mode {
 	std::vector<bool> visibilities = {false, true, // request(collapsed), cipher
 									false, false,  // request, cipher(full)
 									true,          // bg_customer
-									false, true,   // customer: blub
+									true, false,   // customer: blub
 									true, false,  // customer: subeelb
-									true, false,  // customer: gremlin
-									true, false,  // customer: gamer
-									false, false, false, false};
+									// false, false,  // customer: gremlin
+									// false, false,  // customer: gamer
+									false, false, false, false, // mini puzzle
+									true, false};
 
 	std::vector<PanePosition> alignments = {LeftPane, RightPane,
 											LeftPane, RightPane,
 											TopMiddlePaneBG, 
 											TopMiddlePane, TopMiddlePaneSelected,
-											TopMiddlePane, TopMiddlePaneSelected,
-											TopMiddlePane, TopMiddlePaneSelected,
-											TopMiddlePane, TopMiddlePaneSelected,
-											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											// TopMiddlePaneHidden, TopMiddlePaneHidden,
+											// TopMiddlePaneHidden, TopMiddlePaneHidden,
+											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane,
+											LeftPaneMiddle, LeftPaneMiddle
 											};
 	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
 									"bg_customer.png", 
-									"customer_blub.png", "customer_blub_selected.png",
+									"customer_basicbleeb.png", "customer_basicbleeb_selected.png",
 									"customer_subeelb.png", "customer_subeelb_selected.png",
-									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"customer_gamer.png", "customer_gamer_selected.png",
+									// "customer_gremlin.png", "customer_gremlin_selected.png",
+									// "customer_gamer.png", "customer_gamer_selected.png",
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
+									"inventory_collapsed.png", "inventory.png"
+			
 									
 									};
 									
@@ -165,7 +169,7 @@ struct PlayMode : Mode {
 		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
 		bool unlocked = false;
-		bool character_completed = false;
+		bool character_completed  = false;
 		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
 		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
@@ -240,6 +244,8 @@ struct PlayMode : Mode {
 	std::string cursor_str = "|";
 
 	size_t counter = 0;
+
+	GameCharacter *prev_character = nullptr;
 
 	// sound
 	std::shared_ptr< Sound::PlayingSample > curr_sound = nullptr;

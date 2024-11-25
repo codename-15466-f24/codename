@@ -23,7 +23,8 @@ enum PanePosition {
 	MiddlePane,
 	MiddlePaneSelected,
 	MiddlePaneBG,
-	MiddlePaneHidden
+	MiddlePaneHidden,
+	LeftPaneMiddle
 };
 
 struct TexStruct {

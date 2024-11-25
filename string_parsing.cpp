@@ -42,6 +42,10 @@ std::vector<std::string> parse_script_line(std::string &s, std::string delim) {
         s.erase(len - 1);
     }
 
+    if (s[len - 1] == '\r') {
+        s.erase(len - 1);
+    }
+
     size_t prev = 0, pos = 0;
     while (pos < len && prev < s.length()) {
         if (s[prev] == '"') {

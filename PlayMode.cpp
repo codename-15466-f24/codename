@@ -568,6 +568,23 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
+		} else if (path == "inventory_collapsed.png")
+		{
+			// icon that opens special request menu
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				togglePanel(textures, LeftPaneMiddle);
+			};
+
+			callbacks.emplace_back(callback);
+		}
+		else if (path == "inventory.png")
+		{
+			// special request menu
+			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
+				togglePanel(textures, LeftPaneMiddle);
+			};
+
+			callbacks.emplace_back(callback);
 		} 
 		else if (path == "cipher_panel.png")
 		{
@@ -955,9 +972,9 @@ void PlayMode::initializeCallbacks()
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
-	// if (g->asset_idx >= 0) {
-	// 	creature_xforms[g->asset_idx]->position.x = x_entering_store;
-	// }
+	if (g->asset_idx >= 0) {
+		creature_xforms[g->asset_idx]->position.x = x_entering_store;
+	}
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
@@ -1046,31 +1063,41 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-			if (parsed[4] == "Bleebus") {
+
+
+
+			if (parsed[4].compare("Bleebus") == 0) {
+				std::cout << "here" << std::endl;
 				// USE THIS ONE
-				// g.species = new ReverseCipher("Bleebus");
+				g.species = new ReverseCipher("Bleebus");
 				// testing protocols for other ciphers so far:
 				// g.species = new CaesarCipher("CSMajor", 5);
-				g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
-				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
-				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
+				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
+				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
+				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
 			else {
 				g.species = new ToggleCipher();
 			}
 
-			if (g.name == "Blub") {
+			if (g.id == "basicbleeb") {
 				g.asset_idx = 0;
-				join_line(&g);
-			} else if (g.name == "Subeelb") {
+			} else if (g.id == "subeelb") {
 				g.asset_idx = 1;
 			}
-			else if (g.name == "Gremlin") g.asset_idx = 2;
-			else if (g.name == "Gamer") g.asset_idx = 3;
-			else {
-				g.asset_idx = -1;
-				// join_line(&g);
+			// else if (g.name == "Gremlin") g.asset_idx = 2;
+			// else if (g.name == "Gamer") g.asset_idx = 3;
+			// else {
+			// 	g.asset_idx = -1;
+			// 	// join_line(&g);
+			// }
+
+
+			if (g.id != "player")
+			{
+				join_line(&g);
 			}
+
 			characters[g.id] = g;
 		}
 		else {
@@ -1603,18 +1630,37 @@ void PlayMode::update(float elapsed) {
 		}
 
 
-		if (gc.character_completed)
-		{
-			getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePaneHidden;
-			getTexture(textures, "customer_" + gc.name + + "_selected"+ ".png")->alignment = TopMiddlePaneHidden;
-		} else {
+		// if (gc.character_completed)
+		// {
+		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePaneHidden;
+		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->alignment = TopMiddlePaneHidden;
 
-			if(getTexture(textures, "customer_" + gc.name + ".png")->alignment == TopMiddlePaneHidden)
-							getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePane;
-			if(getTexture(textures, "customer_" + gc.name + + "_selected"+ ".png")->alignment)
-				getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePaneSelected;
+		// 	getTexture(textures, "customer_" + gc.id + ".png")->visible = false;
+		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible = false;
+		// }
 
-		}
+		// if(getTexture(textures, "customer_" + gc.id + ".png")->alignment == TopMiddlePaneHidden && getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->alignment)
+		// {
+		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePane;
+		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePaneSelected;
+		// 	if(!getTexture(textures, "customer_" + gc.id + ".png")->visible && !getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible)
+		// 	{
+		// 		getTexture(textures, "customer_" + gc.id + + "_selected.png")->visible = true;
+
+		// 		if (prev_character != nullptr)
+		// 		{
+		// 			getTexture(textures, "customer_" + prev_character->id + + "_selected.png")->visible = false;
+		// 			getTexture(textures, "customer_" + prev_character->id + + ".png")->visible = true;
+		// 		}
+		// 		prev_character = &gc;
+		// 	}
+
+		// }
+			
+
+		
+
+
 
 		Scene::Transform *xform = creature_xforms[gc.asset_idx];
 
