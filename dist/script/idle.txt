@@ -1,0 +1,4 @@
+1 Character player You Human
+2 Speech player "Alright, better get cracking."
+3 Text d "You have customers waiting. Maybe try calling someone up to the counter."
+4 Jump 3 
