@@ -1055,6 +1055,9 @@ void PlayMode::apply_command(std::string line) {
 				getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
+			else {
+				g.species = new ToggleCipher();
+			}
 
 			if (g.name == "Blub") {
 				g.asset_idx = 0;
