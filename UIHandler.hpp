@@ -19,6 +19,7 @@ enum PanePosition {
 	TopMiddlePaneSelected,
 	TopMiddlePane,
 	TopMiddlePaneBG,
+	TopMiddlePaneHidden,
 	MiddlePane,
 	MiddlePaneSelected,
 	MiddlePaneBG,

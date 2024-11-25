@@ -1599,6 +1599,20 @@ void PlayMode::update(float elapsed) {
 			continue;
 		}
 
+
+		if (gc.character_completed)
+		{
+			getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePaneHidden;
+			getTexture(textures, "customer_" + gc.name + + "_selected"+ ".png")->alignment = TopMiddlePaneHidden;
+		} else {
+
+			if(getTexture(textures, "customer_" + gc.name + ".png")->alignment == TopMiddlePaneHidden)
+							getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePane;
+			if(getTexture(textures, "customer_" + gc.name + + "_selected"+ ".png")->alignment)
+				getTexture(textures, "customer_" + gc.name + ".png")->alignment = TopMiddlePaneSelected;
+
+		}
+
 		Scene::Transform *xform = creature_xforms[gc.asset_idx];
 
 		if (gc.joining_line == 1) {
