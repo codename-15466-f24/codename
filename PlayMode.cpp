@@ -1393,8 +1393,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			
-		}
-		else if (evt.key.keysym.sym == SDLK_RETURN) {
+		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			//std::cout << "editmode" << std::endl;
 			if (editStr != "") {
@@ -1423,10 +1422,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if(cursor_pos != editStr.length()){
 				cursor_pos += 1;
-			} else {
-				if (cs_open){
+			} else if (cs_open){
 					cursor_pos = 0;
-				}
 			}
 		}
 		else {
@@ -1542,7 +1539,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				}
 			}
 			return true;
-		} 
+		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 
 		// convert motion to texture coordinate system
@@ -1567,7 +1564,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (curr_sound != nullptr && !curr_sound->stopping)
 			{
 				curr_sound->stop(1.0f);
-
 			} 
 
 			if (curr_sound == nullptr || curr_sound->stopped)

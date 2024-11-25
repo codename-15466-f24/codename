@@ -163,11 +163,15 @@ struct PlayMode : Mode {
 		std::string id;
 		std::string name;
 		ToggleCipher *species; // can change this type later
-		// any other data here. maybe assets?
-		bool unlocked = false;
+
 		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
 		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
+
+		std::string entrance_file = "";
+		std::string puzzle_file = "";
+		uint entrance_line;
+		uint puzzle_line;
 	};
 	std::unordered_map<std::string,GameCharacter> characters;
 
