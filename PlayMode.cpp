@@ -968,7 +968,8 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		colorscheme[i+2] = new_col.z;
 	}
 
-	// entrance_filenames["blub"] = 
+	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
+	entrance_filenames["subeelb"] = "special_bleeb1";
 
 	advance_state(0);
 }
@@ -978,7 +979,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
  * Could also be useful if something goes wrong.
  */
 void PlayMode::refresh_display() {
-	// draw bottom_text
+	// draw bottom_text 🥺
 	// draw the characters and images displayed
 	// these are all comments because I'm not sure what exactly this should look like yet
 }
@@ -1035,7 +1036,6 @@ void PlayMode::apply_command(std::string line) {
 			// 	g.asset_idx = -1;
 			// 	// join_line(&g);
 			// }
-
 
 			if (g.id != "player")
 			{
@@ -1552,7 +1552,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		// std::cout << tex_x << ", " << tex_y << std::endl;
-		
 	}
 
 	return false;
@@ -1568,7 +1567,6 @@ void PlayMode::update(float elapsed) {
 			// printf("update: neither joining nor leaving\n");
 			continue;
 		}
-
 
 		// if (gc.character_completed)
 		// {
@@ -1606,13 +1604,7 @@ void PlayMode::update(float elapsed) {
 
 				prev_character = gc->id;
 			}
-
 		}
-			
-
-		
-
-
 
 		Scene::Transform *xform = creature_xforms[gc->asset_idx];
 
