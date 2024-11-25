@@ -405,6 +405,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				pen_y += pos[n].y_advance / 64; 
 
 			} else {
+				continue;
 				// std::cout << glyphname << std::endl;
 			}
 
