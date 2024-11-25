@@ -8,10 +8,11 @@
 8 Speech gremlin "But anyways, without my intergalactinet connection I can't work anymore. What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
 9 Text d "Um..."
 10 Speech player "I'm saying this because you don't know what I'm saying, but please breathe when you're talking."
-11 Character csm1 Sippy CSMajor
-12 Sound "door.opus"
-13 Text d "At least someone else is here!"
-14 Character csm2 Zazmadew CSMajor
-15 Sound "door.opus"
-16 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
-17 Change_File "idle.txt"
+11 Show special "What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
+12 Character csm1 Sippy CSMajor
+13 Sound "door.opus"
+14 Text d "At least someone else is here!"
+15 Character csm2 Zazmadew CSMajor
+16 Sound "door.opus"
+17 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
+18 Change_File "idle.txt"

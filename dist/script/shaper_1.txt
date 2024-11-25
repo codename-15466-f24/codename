@@ -1,0 +1,8 @@
+1 Character g1_shaper Woluk Shaper
+2 Sound "ding.opus"
+3 Text d "You begin to gesture towards the creature with the (DISTINGUISHING FEATURE), but you find it's already begun floating over towards you."
+4 Speech g1_shaper "...stands chips"
+5 Show mini_puzzle g1_shaper "STANDS CHIPS"
+6 Speech g1_shaper "What did mother want these for? Fixing her sink?"
+7 Exit g1_shaper
+8 Change_File "idle.txt"

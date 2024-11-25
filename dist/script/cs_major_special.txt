@@ -21,3 +21,4 @@
 22 Text d "Looks like that's the last CS major left. Just like that, your shop has qu-"
 23 Sound "chaotic_noise.opus"
 24 Text d "... quieted down."
+25 Change_File "shaper_introduction.txt"
