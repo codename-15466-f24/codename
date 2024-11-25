@@ -96,6 +96,7 @@
         "numeric": "cpp",
         "stack": "cpp",
         "string_view": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "__verbose_abort": "cpp"
     }
 }

@@ -1,0 +1,14 @@
+1 Character player You Human
+2 Text d "You are [insert name] and you run the [whatever the name of this shop is]."
+3 Speech player "Sigh... . . ."
+4 Text e "This is the third line of text."
+5 Text e "And this is the fourth line."
+6 Choice_Text 2 d "Start Game" "Quit" 7 13
+7 Text e "Okay hi"
+8 Input d "hehe type here"
+9 Jump 11
+10 Text e "Are you for real?"
+11 Text e "One more time"
+12 Input_Puzzle d "Type the following: TEST" "TEST" 13 10
+13 Text e "Finished" 
+14 Change_File "test.txt"

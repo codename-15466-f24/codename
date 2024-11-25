@@ -67,20 +67,19 @@ struct PlayMode : Mode {
 
 	//input tracking:
 	struct Button {
-		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up, downArrow, upArrow, mouse;
+	} downArrow, upArrow, mouse;
 
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 	
 
 	
-	//Color constants because why not
+	// //Color constants because why not
 	glm::u8vec4 white = glm::u8vec4(255,255,255,1);
-	glm::u8vec4 red = glm::u8vec4(255,0,0,1);
+	// glm::u8vec4 red = glm::u8vec4(255,0,0,1);
 	glm::u8vec4 green = glm::u8vec4(0,255,0,1);
-	glm::u8vec4 blue = glm::u8vec4(0,0,255,1);
+	// glm::u8vec4 blue = glm::u8vec4(0,0,255,1);
 
 	//These are here 
 	//void render_text(std::string line_in);
@@ -98,35 +97,49 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {false, true, // request(collapsed), cipher
+	std::vector<bool> visibilities = {
+									true, false, // inventory
+									false, true, // request(collapsed), cipher
 									false, false,  // request, cipher(full)
 									true,          // bg_customer
-									false, true,   // customer: subeelb
-									true, false,  // customer: gremlin
-									false, false, false, false};
+									false, false,   // customer: blub
+									false, false,  // customer: subeelb
+									false, false,  // customer: gremlin
+									false, false,  // customer: gamer
+									false, false, false, false, // mini puzzle
+									};
 
-	std::vector<PanePosition> alignments = {LeftPane, RightPane,
+	std::vector<PanePosition> alignments = {LeftPaneMiddle, LeftPaneMiddle,
+											LeftPane, RightPane,
 											LeftPane, RightPane,
 											TopMiddlePaneBG, 
-											TopMiddlePane, TopMiddlePaneSelected,
-											TopMiddlePane, TopMiddlePaneSelected,
-											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane,
 											};
-	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
+	std::vector<std::string> paths = {"inventory_collapsed.png", "inventory.png",
+									"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
 									"bg_customer.png", 
+									"customer_basicbleeb.png", "customer_basicbleeb_selected.png",
 									"customer_subeelb.png", "customer_subeelb_selected.png",
 									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
+									"customer_gamer.png", "customer_gamer_selected.png",
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
+			
 									
 									};
 									
-	std::vector<std::function<void(std::vector<TexStruct *>, std::string)>> callbacks;
+	std::vector<std::function<void(std::vector<TexStruct *>,std::string)>> callbacks;
 
 	//stuff in the scene
-	Scene::Transform *shaper = nullptr;
-	Scene::Transform *bleebus = nullptr;
-	Scene::Transform *cs_major = nullptr;
+	Scene::Transform *shaper1 = nullptr;
+	Scene::Transform *bleebus1 = nullptr;
+	Scene::Transform *bleebus2 = nullptr;
+	Scene::Transform *cs_major1 = nullptr;
+	Scene::Transform *cs_major2 = nullptr;
 	const float x_by_counter = 2.9f;
 	// float x_next_in_line = x_by_counter;
 	const float x_entering_store = -14.f;
@@ -148,7 +161,8 @@ struct PlayMode : Mode {
 	Scene::Camera *camera = nullptr;
 
 	// toss in the nightmare loop for now..
-	void render_text(TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher, int font_size);
+	void render_text(TextureItem *tex_in, std::string line_in, 
+	                 glm::u8vec4 color, char cipher, int font_size);
 
 	// game character
 	struct GameCharacter {
@@ -156,12 +170,13 @@ struct PlayMode : Mode {
 		std::string name;
 		ToggleCipher *species; // can change this type later
 		// any other data here. maybe assets?
-		// bool selected = false;
+		bool unlocked = false;
+		bool character_completed  = false;
 		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
 		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
 	};
-	std::unordered_map<std::string, GameCharacter> characters;
+	std::unordered_map<std::string,GameCharacter> characters;
 
 	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
 	GameCharacter *selected_character = nullptr;
@@ -199,7 +214,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "puzzle1.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "introduction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -231,6 +246,12 @@ struct PlayMode : Mode {
 	std::string cursor_str = "|";
 
 	size_t counter = 0;
+
+	std::string prev_character = "";
+
+	// sound
+	std::shared_ptr< Sound::PlayingSample > curr_sound = nullptr;
+	std::deque<std::shared_ptr< Sound::PlayingSample >> next_sound;
 
 	void refresh_display();
 

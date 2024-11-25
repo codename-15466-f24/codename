@@ -1,0 +1,21 @@
+1 Text d "Some time later, you recognize the sound of a ship docking once more."
+2 Sound "docking.opus"
+3 Speech player "Didnt' think I'd ever get used to that"
+4 Sound "door.opus"
+5 Character sp_shaper Shifix Shaper
+6 Speech player "Alright, let's get ourselves some more positive Squawk reviews."
+7 Sound "ding.opus"
+8 Speech sp_shaper "The, uh, the hive mother... (yawns)... we need a new energy cell for mother. Mother wants... wait a moment; I hear she wants a... what? A size... she's particular about the size. What size do you have? Thanks for the... help."
+9 Speech player "Another one of these..."
+10 Sound "door.opus"
+11 Character g1_shaper Woluk Shaper
+12 Speech player "Well at least I hope I'll be able to get a hint from this fella."
+13 Sound "door.opus"
+14 Character g2_shaper Kutom Shaper
+15 Speech player "These two fellas."
+16 Sound "door.opus"
+17 Character g3_shaper Charkutim Shaper
+18 Speech player "These... th-... fellas."
+19 Speech player "Looks like I got lots of work all of a sudden."
+20 Speech player "Well, no choice but to start from the start."
+21 Change_File "idle.txt"

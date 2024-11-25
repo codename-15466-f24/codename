@@ -52,7 +52,7 @@ TexStruct* getTexture(std::vector<TexStruct *> textures, std::string path)
 		}
 	}
 
-	throw std::runtime_error("getTexture called with invalid path");
+	throw std::runtime_error("getTexture called with invalid path: " + path);
 	return nullptr;
 }
 
@@ -196,7 +196,14 @@ void updateTextures(std::vector<TexStruct *> textures)
 				tex->relativeSizeX/2.0f,
 				-tex->relativeSizeY/4.0f,
 				3*tex->relativeSizeY/4.0f};
-		} 
+		} else if (tex->alignment == LeftPaneMiddle)
+		{
+			tex->bounds = {
+				 -1.0f,
+				 -1.0f+tex->relativeSizeX,
+				0.7f-tex->relativeSizeY,
+				0.7f};
+		}
 		else
 		{
 

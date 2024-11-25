@@ -1,0 +1,27 @@
+1 Speech player "Guess it's time to cook."
+2 Character sp_shaper Shifix Shaper
+3 Sound "ding.opus"
+4 Text d "The first one that arrived comes back to the counter."
+5 Jump 7
+6 Speech sp_shaper "huh?"
+7 Speech sp_shaper "The, uh, the hive mother... (yawns)... we need a new energy cell for mother. Mother wants... wait a moment; I hear she wants a... what? A size... she's particular about the size. What size do you have? Thanks for the... help."
+8 Input_Puzzle d "[type your reply here]" "HUGE" 9 6
+9 Speech sp_shaper "Oh... great. That's what mother said she...zzz she wanted?"
+10 Speech sp_shaper "Then, I'll just..."
+11 Sound "chomp.opus"
+12 Text d "The shaper opens wide before ingesting the energy cell in one swift chomp"
+13 Text d "Suddenly it starts glowing, as if hosting a sun in its belly"
+14 Speech sp_shaper "Oh. my. dog. This is like, so huge for us! A moment of silence for thanks!"
+15 Speech player "...ef pb wfxo."
+16 Speech sp_shaper "We're like, totally stoked you had that energy cell for us or we'd have been like, totally lame on our first date."
+17 Speech player "Eak?"
+18 Speech sp_shaper "Yass, mother is going on a date with our neighbor mother the next star system over."
+19 Speech sp_shaper "We're like, so excited for her!! Hold for applause."
+20 Speech sp_shaper "I mean, we're like, part of her too so it's our first date! Hold for applesauce."
+21 Speech player "Af, ieev qaur?"
+22 Speech sp_shaper "Thankies! If mother gets stood up we're blaming you! If you get a dozen negative Squawk reviews just know your good vibes were bad luck! But if it goes well we'll be nice and give good ones!
+23 Speech player "jssq jkss..."
+24 Speech sp_shaper "We will! Toodles!"
+25 Exit sp_shaper
+26 Speech player "What was that??"
+27 Change_File "epilogue.txt"
