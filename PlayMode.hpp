@@ -97,35 +97,37 @@ struct PlayMode : Mode {
 	// have to be first in the vector for the visibility to work properly
 
 	// right is true, left is false
-	std::vector<bool> visibilities = {false, true, // request(collapsed), cipher
+	std::vector<bool> visibilities = {
+									true, false, // inventory
+									false, true, // request(collapsed), cipher
 									false, false,  // request, cipher(full)
 									true,          // bg_customer
-									true, false,   // customer: blub
-									true, false,  // customer: subeelb
-									// false, false,  // customer: gremlin
-									// false, false,  // customer: gamer
+									false, false,   // customer: blub
+									false, false,  // customer: subeelb
+									false, false,  // customer: gremlin
+									false, false,  // customer: gamer
 									false, false, false, false, // mini puzzle
-									true, false};
+									};
 
-	std::vector<PanePosition> alignments = {LeftPane, RightPane,
+	std::vector<PanePosition> alignments = {LeftPaneMiddle, LeftPaneMiddle,
+											LeftPane, RightPane,
 											LeftPane, RightPane,
 											TopMiddlePaneBG, 
-											TopMiddlePane, TopMiddlePaneSelected,
 											TopMiddlePaneHidden, TopMiddlePaneHidden,
-											// TopMiddlePaneHidden, TopMiddlePaneHidden,
-											// TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
 											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane,
-											LeftPaneMiddle, LeftPaneMiddle
 											};
-	std::vector<std::string> paths = {"special_request_collapsed.png", "cipher_panel.png",
+	std::vector<std::string> paths = {"inventory_collapsed.png", "inventory.png",
+									"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
 									"bg_customer.png", 
 									"customer_basicbleeb.png", "customer_basicbleeb_selected.png",
 									"customer_subeelb.png", "customer_subeelb_selected.png",
-									// "customer_gremlin.png", "customer_gremlin_selected.png",
-									// "customer_gamer.png", "customer_gamer_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
-									"inventory_collapsed.png", "inventory.png"
+									"customer_gremlin.png", "customer_gremlin_selected.png",
+									"customer_gamer.png", "customer_gamer_selected.png",
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
 			
 									
 									};
@@ -245,7 +247,7 @@ struct PlayMode : Mode {
 
 	size_t counter = 0;
 
-	GameCharacter *prev_character = nullptr;
+	std::string prev_character = "";
 
 	// sound
 	std::shared_ptr< Sound::PlayingSample > curr_sound = nullptr;

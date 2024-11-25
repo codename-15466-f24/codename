@@ -201,8 +201,8 @@ void updateTextures(std::vector<TexStruct *> textures)
 			tex->bounds = {
 				 -1.0f,
 				 -1.0f+tex->relativeSizeX,
-				0.75f-tex->relativeSizeY,
-				0.75f};
+				0.7f-tex->relativeSizeY,
+				0.7f};
 		}
 		else
 		{

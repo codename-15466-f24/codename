@@ -666,88 +666,36 @@ void PlayMode::initializeCallbacks()
 				// names rather than numbers. I don't want to map numbers to 
 				// names to GameCharacter structs to asset indices.
 				
-				std::string isitselected = path.substr(path.length() - 12, 8);
 				std::string cname;
-				if (isitselected == "selected")
-				{
-					cname = path.substr(9, path.length() - 13 - 9);
-					std::cout << "deselecting customer: " << cname << std::endl;
-					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
-					if (g_pair == characters.end()) {
-						std::cout << "Deselected character has not been introduced yet: " 
-						          << cname << std::endl;
-						return;
-					}
-					GameCharacter *g = &(g_pair->second);
+				
+				// get customer name
+				cname = path.substr(9, path.length() - 13);
+				std::cout << "selecting customer: " << cname << std::endl;
+				std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
+				if (g_pair == characters.end()) {
+					std::cout << "Selected character has not been introduced yet: " 
+								<< cname << std::endl;
+					return;
+				}
+
+				// deselect currently selected customer			
+
+				GameCharacter *g = &(g_pair->second);
+				if (selected_character) {
 					printf("selected_character variable: %s\n", 
-					       selected_character->id.c_str());
-					// if (selected_character == &g) 
-					leave_line(g);
-					printf("g.leaving_line = %d\n", g->leaving_line);
-					
-				} else {
-					// get customer name
-					cname = path.substr(9, path.length() - 13);
-					std::cout << "selecting customer: " << cname << std::endl;
-					std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
-					if (g_pair == characters.end()) {
-						std::cout << "Selected character has not been introduced yet: " 
-						          << cname << std::endl;
-						return;
-					}
-					GameCharacter *g = &(g_pair->second);
-					if (selected_character) {
-						printf("selected_character variable: %s\n", 
-					            selected_character->id.c_str());
-					} else printf("selected_character is null\n");
-					// have customer be "selected"
-					// have customer join line
-					if (selected_character != g) {
-						join_line(g);
-					}
-
-					// currently selected customer gets deselected
-				}
-
-				// toggle selected/deselected button look
-				for (auto tex : textures)
-				{
-					std::string istexselected = tex->path.substr(tex->path.length() - 12, 8);
-					std::string texname = istexselected == "selected" ? tex->path.substr(9, tex->path.length() - 13 - 9) : tex->path.substr(9, tex->path.length() - 13); 
-
-					if (tex->path == path)
-					{
-						tex->visible = false;
-					}
-
-					else if ( tex->path.substr(0,8) == "customer")
-					{
-						if (texname == cname) // isitselected != istexselected
-						{
-							tex->visible = true;
-						}
-						else if (istexselected == "selected" &&
-							     isitselected  != "selected")
-						{
-							tex->visible = false;
-						}
-						else if (istexselected != "selected" &&
-						         isitselected  != "selected") {
-							tex->visible = true;
-
-							// make formerly selected character leave
-							std::cout << "replacing customer: " << texname << std::endl;
-							std::unordered_map<std::string, GameCharacter>::iterator tex_pair = characters.find(texname);
-							if (tex_pair == characters.end()) {
-								std::cout << "Replaced character has not been introduced yet: " 
-										  << cname << std::endl;
-								return;
-							}
-							GameCharacter *g = &(tex_pair->second);
-							leave_line(g);
-						}
-					}
-				}
+							selected_character->id.c_str());
+					getTexture(textures, "customer_" + selected_character->id  + "_selected.png")->visible = false;
+					getTexture(textures, "customer_" + selected_character->id  + ".png")->visible = true;
+					leave_line(selected_character);
+				} else{
+					printf("selected_character is null\n");
+				} 
+			
+				if (selected_character != g) {
+					getTexture(textures, "customer_" + cname + "_selected.png")->visible = true;
+					getTexture(textures, "customer_" + cname + ".png")->visible = false;
+					join_line(g);
+				}	
 			};
 
 			callbacks.emplace_back(callback);
@@ -1622,9 +1570,9 @@ void PlayMode::update(float elapsed) {
 
 	// move creechurs
 	for (std::unordered_map<std::string, GameCharacter>::iterator c = characters.begin(); c != characters.end(); c++) {
-		GameCharacter gc = c->second;
+		GameCharacter *gc = &(c->second);
 		
-		if (!gc.joining_line && !gc.leaving_line) {
+		if (!gc->joining_line && !gc->leaving_line) {
 			// printf("update: neither joining nor leaving\n");
 			continue;
 		}
@@ -1639,32 +1587,44 @@ void PlayMode::update(float elapsed) {
 		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible = false;
 		// }
 
-		// if(getTexture(textures, "customer_" + gc.id + ".png")->alignment == TopMiddlePaneHidden && getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->alignment)
+		// if (gc.id == "basicbleeb")
 		// {
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePane;
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePaneSelected;
-		// 	if(!getTexture(textures, "customer_" + gc.id + ".png")->visible && !getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible)
-		// 	{
-		// 		getTexture(textures, "customer_" + gc.id + + "_selected.png")->visible = true;
-
-		// 		if (prev_character != nullptr)
-		// 		{
-		// 			getTexture(textures, "customer_" + prev_character->id + + "_selected.png")->visible = false;
-		// 			getTexture(textures, "customer_" + prev_character->id + + ".png")->visible = true;
-		// 		}
-		// 		prev_character = &gc;
-		// 	}
+		// 	std::cout << "ALIGNMENT 1: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ", ALIGNMENT 2: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ". IDEAL ALIGNMENT: " << int(TopMiddlePaneHidden) << std::endl;
 
 		// }
+		
+		if(getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden 
+			&& getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
+		{
+
+
+			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
+			getTexture(textures, "customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
+			if(!getTexture(textures, "customer_" + gc->id + ".png")->visible && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
+			{
+				getTexture(textures, "customer_" + gc->id + + "_selected.png")->visible = true;
+
+				if (prev_character != "")
+				{
+					getTexture(textures, "customer_" + prev_character + "_selected.png")->visible = false;
+					getTexture(textures, "customer_" + prev_character + ".png")->visible = true;
+				} 
+
+				selected_character = gc;
+
+				prev_character = gc->id;
+			}
+
+		}
 			
 
 		
 
 
 
-		Scene::Transform *xform = creature_xforms[gc.asset_idx];
+		Scene::Transform *xform = creature_xforms[gc->asset_idx];
 
-		if (gc.joining_line == 1) {
+		if (gc->joining_line == 1) {
 			// printf("update: joining\n");
 			if (xform->position.x < x_by_counter) {
 				xform->position.x += creature_speed * elapsed;
@@ -1674,7 +1634,7 @@ void PlayMode::update(float elapsed) {
 				if (c->second.leaving_line == 2) c->second.leaving_line = 1;
 			}
 		}
-		else if (gc.leaving_line == 1) { // gc.leaving_line == true
+		else if (gc->leaving_line == 1) { // gc.leaving_line == true
 			// printf("update: leaving. pos: (%f, %f)\n", xform->position.x, xform->position.y);
 			xform->rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(0., 0., 1.));
 			if (xform->position.y < y_exited_store) {
@@ -1688,7 +1648,7 @@ void PlayMode::update(float elapsed) {
 				if (c->second.joining_line == 2) c->second.joining_line = 1;
 			}
 		} else {
-			printf("funny situation. hopefully shouldn't happen. joining = %d, leaving = %d\n", gc.joining_line, gc.leaving_line);
+			printf("funny situation. hopefully shouldn't happen. joining = %d, leaving = %d\n", gc->joining_line, gc->leaving_line);
 		}
 	}
 
