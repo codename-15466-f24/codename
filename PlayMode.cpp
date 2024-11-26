@@ -108,6 +108,31 @@ Load< Sound::Sample > keyclick2(LoadTagDefault, []() -> Sound::Sample const * {
 	return s;
 });
 
+Load< Sound::Sample > door(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("door.opus"));
+	return s;
+});
+
+Load< Sound::Sample > ding(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("ding.opus"));
+	return s;
+});
+
+Load< Sound::Sample > chaos(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("chaos.opus"));
+	return s;
+});
+
+Load< Sound::Sample > docking(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("docking.opus"));
+	return s;
+});
+
+Load< Sound::Sample > chomp(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("chomp.opus"));
+	return s;
+});
+
 //Reset the current text (or other) png
 void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t width = 0) {
     /*for (uint32_t y = 0; y < height; y++) {
@@ -421,6 +446,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				pen_y += pos[n].y_advance / 64; 
 
 			} else {
+				continue;
 				// std::cout << glyphname << std::endl;
 			}
 
@@ -1224,6 +1250,30 @@ void PlayMode::apply_command(std::string line) {
 	else if (keyword == "Choice_Image") {
 		// TODO
 		display_state.status = CHOICE_IMAGE;
+	}
+	else if (keyword == "Sound") {
+		if (curr_sound != nullptr && !curr_sound->stopping)
+		{
+			curr_sound->stop(1.0f);
+
+		} 
+
+		if (curr_sound == nullptr || curr_sound->stopped) {
+			std::string comp = parsed[2].c_str();
+			if (comp == "door.opus"){
+				curr_sound = Sound::play(*door, 0.3f, 0.0f);
+			} else if (comp == "ding.opus") {
+				curr_sound = Sound::play(*ding, 0.3f, 0.0f);
+			} else if (comp == "chaos.opus") {
+				curr_sound = Sound::play(*chaos, 0.3f, 0.0f);
+			} else if (comp == "docking.opus") {
+				curr_sound = Sound::play(*docking, 0.3f, 0.0f);
+			} else if (comp == "chomp.opus"){
+				curr_sound = Sound::play(*chomp, 0.3f, 0.0f);
+			}
+		} 
+		display_state.jumps = {display_state.line_number + 1};
+		display_state.status = CHANGING;
 	}
 	else if (keyword == "Jump") {
 		display_state.jumps = {(uint32_t)atoi(parsed[2].c_str())};

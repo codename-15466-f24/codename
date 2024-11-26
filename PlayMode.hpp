@@ -226,6 +226,7 @@ struct PlayMode : Mode {
 		enum Status status = CHANGING;
 		std::string bottom_text = "";
 		char cipher = 'd';
+		
 		std::vector<DisplayCharacter> chars;
 		std::vector<DisplayImage> images; // extra images to be displayed on screen
 
