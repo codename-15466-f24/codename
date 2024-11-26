@@ -143,7 +143,7 @@ std::string decode(std::string str_in, char key){
 	std::string out = "";
 	switch (key){
 		case 'e':
-			for (int i = 0; i < str_in.length(); i++){
+			for (size_t i = 0; i < str_in.length(); i++){
 				if (str_in[i] >= 'a' && str_in[i] <= 'z') {
 					out = out + substitution[str_in[i] - 'a'];
 				} else if (str_in[i] >= 'A' && str_in[i] <= 'Z') {
