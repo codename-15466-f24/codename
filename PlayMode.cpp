@@ -1548,7 +1548,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		bool isLocked = checkForClick(textures, tex_x, tex_y);
 
 		// only advance if click inside of dialogue
-		if (!(selected_character->joining_line) &&
+		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
 			!isLocked && display_state.status != INPUT &&
 			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
