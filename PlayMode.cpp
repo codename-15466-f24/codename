@@ -53,6 +53,7 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
+static bool cheatsheet_open = false;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
@@ -618,10 +619,20 @@ void PlayMode::initializeCallbacks()
 						tex_rev_ptr->visible = true;
 					}
 
-					if (!editMode)
+					if (!cs_open)
 					{
-						
+						cs_open = true;
+						editingBox = tex_rev_ptr;
+						editStr = substitution_display;
+						cursor_pos = 0;				
+						editMode = true;
+						display_state.status = INPUT;
+						clear_png(tex_rev_ptr);
+						render_text(tex_rev_ptr, editStr, green, 'd');
+						update_texture(tex_rev_ptr);
 					}
+
+					
 
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
@@ -648,6 +659,15 @@ void PlayMode::initializeCallbacks()
 				if (display_state.puzzle_cipher->name != "Bleebus"
 					|| display_state.puzzle_cipher->name != "Reverse")
 				{
+
+					for (size_t i = 0; i < 26; i++)
+						{
+							if (substitution_display[i] != '.')
+							{
+								substitution[i] = substitution_display[i];
+							}
+						
+						}
 
 					tex_rev_ptr->visible = false;
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
@@ -1512,7 +1532,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if (cursor_pos != editStr.length()){
 				cursor_pos += 1;
-			} else if (cs_open){
+			} else if (cs_open || tex_rev_ptr->visible){
 					cursor_pos = 0;
 			}
 		}
@@ -1548,7 +1568,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				case SDLK_z: in = "Z"; success = true; break;
 				case SDLK_COMMA: in = ","; success = !cs_open; break;
 				case SDLK_SPACE: in = " "; success = !cs_open; 
-					if (cs_open){
+					if (cs_open || tex_rev_ptr->visible){
 						editStr[cursor_pos] = in[0];
 						//std::cout << editStr << std::endl;
 						if (cursor_pos < editStr.length()-1){
@@ -1601,13 +1621,25 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 		} 
 
-		if (cs_open){
-			clear_png(&tex_cs);
-			render_text(&tex_cs, editStr, green, 'd');
-			update_texture(&tex_cs);
-			clear_png(&tex_box_text);
-			render_text(&tex_box_text, current_line, white, display_state.cipher);
-			update_texture(&tex_box_text);
+		if (cs_open) {
+
+			if (!tex_rev_ptr->visible)
+			{
+				clear_png(&tex_cs);
+				render_text(&tex_cs, editStr, green, 'd');
+				update_texture(&tex_cs);
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, current_line, white, display_state.cipher);
+				update_texture(&tex_box_text);
+			} else {
+				clear_png(tex_rev_ptr);
+				render_text(tex_rev_ptr, editStr, green, 'd');
+				update_texture(tex_rev_ptr);
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, current_line, white, display_state.cipher);
+				update_texture(&tex_box_text);
+
+			}
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
 			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
@@ -1841,7 +1873,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_box_text.count);
 		GL_ERRORS();
 
-		if (cs_open)
+		if (cs_open && !tex_rev_ptr->visible)
 		{
 			glBindVertexArray(tex_cs.tristrip_for_texture_program);
 			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
