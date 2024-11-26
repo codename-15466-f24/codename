@@ -5,4 +5,4 @@
 5 Show mini_puzzle csm1 "ENERGY DRINK"
 6 Speech csm "Thankya boss, this stuff is my blood"
 7 Exit csm1
-8 Change_File ”idle.txt”
+8 Change_File "idle.txt"

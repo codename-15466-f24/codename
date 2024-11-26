@@ -611,8 +611,8 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
 				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper"
-					|| display_state.puzzle_cipher->name == "CSMajor")
+				 || display_state.puzzle_cipher->name == "Shaper"
+				 || display_state.puzzle_cipher->name == "CSMajor")
 				{
 					if (display_state.solved_puzzle)
 					{
@@ -620,7 +620,7 @@ void PlayMode::initializeCallbacks()
 					}
 
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+					    || display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 					if (display_state.solved_puzzle)
@@ -832,9 +832,8 @@ void PlayMode::initializeCallbacks()
 					}
 					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+					    || display_state.puzzle_cipher->name == "Reverse")
 				{
-				
 					// example: check if reverse button is enabled
 					bool reverseEnabled = true;
 
