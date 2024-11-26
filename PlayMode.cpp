@@ -611,11 +611,12 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
 				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 				{
 					if (display_state.solved_puzzle)
 					{
-						tex_rev_ptr->visible = true;
+						tex_rev_ptr->visible = false;
 					}
 
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
@@ -641,7 +642,8 @@ void PlayMode::initializeCallbacks()
 				
 				togglePanel(textures, RightPane);
 				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 				{
 
 					tex_rev_ptr->visible = false;
@@ -780,7 +782,8 @@ void PlayMode::initializeCallbacks()
 				bool solved = false;
 
 				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 				{
 					std::cout << substitution << std::endl;
 
@@ -1209,7 +1212,8 @@ void PlayMode::apply_command(std::string line) {
 			display_state.puzzle_cipher->reset_features();
 			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
 			if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 			{
 				cs_open = true;
 				editingBox = tex_cs_ptr;
@@ -1410,7 +1414,8 @@ void PlayMode::draw_state_text() {
 	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
 	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper" ? 
+					|| display_state.puzzle_cipher->name == "Shaper" 
+					|| display_state.puzzle_cipher->name == "CSMajor" ?
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
