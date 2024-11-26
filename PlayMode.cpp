@@ -1015,7 +1015,7 @@ void PlayMode::apply_command(std::string line) {
 
 
 
-			if (parsed[4].compare("Bleebus") == 0) {
+			if (parsed[4] == "Bleebus") {
 				std::cout << "here" << std::endl;
 				// USE THIS ONE
 				g.species = new ReverseCipher("Bleebus");
@@ -1024,6 +1024,14 @@ void PlayMode::apply_command(std::string line) {
 				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
 				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
+			}
+			else if (parsed[4] == "CSMajor") {
+				// since we're doing this as a substitution cipher
+				g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
+			}
+			else if (parsed[4] == "Shaper") {
+				// probably change this to something more elaborate
+				g.species = new SubstitutionCipher("Shaper", "xyuvsjifghrqpnelmktoacwdbz");
 			}
 			else {
 				g.species = new ToggleCipher();
