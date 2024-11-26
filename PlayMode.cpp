@@ -1156,7 +1156,7 @@ void PlayMode::apply_command(std::string line) {
 		display_state.bottom_text = "";
 		display_state.line_number = 0;
 		display_state.jumps.clear();
-		display_state.jumps.push_back(0);
+		display_state.jumps.push_back(1);
 		display_state.status = CHANGING;
 	} else if (keyword == "Show")
 	{

@@ -6,7 +6,7 @@
 6 Text d "Hope you enjoyed!"
 7 Text d "[Credits]"
 8 Text d "Project Manager: eamspoker"
-9 Text d "Code Architect: symbolic233 (Yoseph Mak)"
+9 Text d "Code Architect: symbolic23 (Yoseph Mak)"
 10 Text d "Art Lead: sasha-of-the-pixels"
 11 Text d "Design Lead: RafaelTheRivera"
 12 Text d "Big thanks to Jim and Matei!"
