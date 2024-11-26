@@ -175,8 +175,8 @@ struct PlayMode : Mode {
 
 		std::string entrance_file = "";
 		std::string puzzle_file = "";
-		uint entrance_line;
-		uint puzzle_line;
+		uint entrance_line = 0;
+		uint puzzle_line = 0;
 	};
 	// keys are character id's
 	std::unordered_map<std::string,GameCharacter> characters;

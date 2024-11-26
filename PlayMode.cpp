@@ -695,7 +695,12 @@ void PlayMode::initializeCallbacks()
 					getTexture(textures, "customer_" + cname + "_selected.png")->visible = true;
 					getTexture(textures, "customer_" + cname + ".png")->visible = false;
 					join_line(g);
-				}	
+					std::string chfilecommand = "-1 Change_File ";
+					// std::cout << "changing file to: " << chfilecommand.append(g->entrance_file);
+					apply_command(chfilecommand.append(g->entrance_file));
+					// std::string jumpcommand = "-1 Jump ";
+					// apply_command(jumpcommand.append(std::string((char) g->entrance_line + '0', 1)));
+				}
 			};
 
 			callbacks.emplace_back(callback);
@@ -841,9 +846,7 @@ void PlayMode::initializeCallbacks()
 							tex->alignment == MiddlePaneSelected)
 						{
 							tex->visible = false;
-						
 						}
-							
 					}
 
 					solved = reverseEnabled;
@@ -902,7 +905,6 @@ void PlayMode::initializeCallbacks()
 				std::vector<std::string> responses = {"That doesn't seem right...", "The customer seems unsatisfied by that."};
 				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
 				update_texture(&tex_box_text);
-
 			}
 
 		};
@@ -969,7 +971,12 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	}
 
 	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
-	entrance_filenames["subeelb"] = "special_bleeb1";
+	entrance_filenames["subeelb"] = "special_bleeb_call.txt";
+	entrance_filenames["csm1"] = "cs_major1.txt";
+	entrance_filenames["csm2"] = "cs_major1.txt";
+	entrance_filenames["gremlin"] = "cs_major_special.txt";
+	// puzzle_filenames["basicbleeb"] = "basic_bleeb1.txt";
+	// puzzle_filenames["subeelb"] = "special_bleeb_call.txt";
 
 	advance_state(0);
 }
@@ -1011,7 +1018,7 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			g.entrance_line = atoi(parsed[0].c_str());
-			// g.entrance_file = 
+			g.entrance_file = entrance_filenames[g.id];
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
 				g.species = new ReverseCipher("Bleebus");
@@ -1332,7 +1339,6 @@ void PlayMode::draw_state_text() {
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
-
 }
 
 PlayMode::~PlayMode() {
