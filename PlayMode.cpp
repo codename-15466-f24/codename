@@ -1067,9 +1067,19 @@ void PlayMode::apply_command(std::string line) {
 			return;
 		}
 		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
+		
+
 		if (g_pair != characters.end()) {
 			leave_line(&(g_pair->second));
 		}
+
+		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
+
+		(g_pair->second).character_completed = true;
+		
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1586,23 +1596,9 @@ void PlayMode::update(float elapsed) {
 		}
 
 
-		// if (gc.character_completed)
-		// {
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePaneHidden;
-		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->alignment = TopMiddlePaneHidden;
-
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->visible = false;
-		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible = false;
-		// }
-
-		// if (gc.id == "basicbleeb")
-		// {
-		// 	std::cout << "ALIGNMENT 1: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ", ALIGNMENT 2: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ". IDEAL ALIGNMENT: " << int(TopMiddlePaneHidden) << std::endl;
-
-		// }
-		
-		if(getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden 
-			&& getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
+		if (!(gc->character_completed) && 
+			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
+			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
 
 
