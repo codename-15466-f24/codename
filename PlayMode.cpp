@@ -899,13 +899,19 @@ void PlayMode::initializeCallbacks()
 }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
+
+	if (selected_character != nullptr)
+	{
+		leave_line(selected_character);
+	}
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
-	if (selected_character == g) selected_character = nullptr;
 	g->leaving_line = g->joining_line == 1 ? 2 : 1;
+	if (selected_character == g) selected_character = nullptr;
+
 }
 
 PlayMode::PlayMode() : scene(*codename_scene) {
