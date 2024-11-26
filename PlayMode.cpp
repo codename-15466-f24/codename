@@ -1068,9 +1068,19 @@ void PlayMode::apply_command(std::string line) {
 			return;
 		}
 		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
+		
+
 		if (g_pair != characters.end()) {
 			leave_line(&(g_pair->second));
 		}
+
+		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
+
+		(g_pair->second).character_completed = true;
+		
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1539,7 +1549,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		bool isLocked = checkForClick(textures, tex_x, tex_y);
 
 		// only advance if click inside of dialogue
-		if (!isLocked && display_state.status != INPUT &&
+		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
+			!isLocked && display_state.status != INPUT &&
 			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
@@ -1587,23 +1598,9 @@ void PlayMode::update(float elapsed) {
 		}
 
 
-		// if (gc.character_completed)
-		// {
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->alignment = TopMiddlePaneHidden;
-		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->alignment = TopMiddlePaneHidden;
-
-		// 	getTexture(textures, "customer_" + gc.id + ".png")->visible = false;
-		// 	getTexture(textures, "customer_" + gc.id + + "_selected"+ ".png")->visible = false;
-		// }
-
-		// if (gc.id == "basicbleeb")
-		// {
-		// 	std::cout << "ALIGNMENT 1: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ", ALIGNMENT 2: " << int(getTexture(textures, "customer_" + gc.id + ".png")->alignment) << ". IDEAL ALIGNMENT: " << int(TopMiddlePaneHidden) << std::endl;
-
-		// }
-		
-		if(getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden 
-			&& getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
+		if (!(gc->character_completed) && 
+			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
+			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
 
 

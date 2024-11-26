@@ -11,4 +11,5 @@
 11 Text d "Looks like these ones are Bleebuses. They're in close proximity to humans, so their language is just ours in reverse. Now that we know how the language works, let's check back in on that special request!"
 12 Unlock
 13 Text d "You can call a customer back by clicking on their icon at the top."
-14 Jump 13
+14 Exit basicbleeb
+15 Jump 13
