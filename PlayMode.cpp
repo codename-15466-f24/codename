@@ -32,7 +32,8 @@
 #define LEFTMARGIN (FONT_SIZE * 2)
 #define LINE_SPACING (FONT_SIZE * 0.25)
 
-// Storing font here, we can also refactor the text storage to load a font path as the first line per script or have a font buffer.
+// Storing font here, we can also refactor the text storage to load a font path
+// as the first line per script or have a font buffer.
 
 static std::string tex_path = "out.png";
 static std::string textbg_path = "textbg.png";
@@ -59,8 +60,11 @@ static uint32_t ij = 0;
 
 // Leaving the cipher up here for now because the substitution is here
 bool hasReversed = false;
-static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
-static char substitution_display[26] = {'.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'};
+static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m',
+                                'n','o','p','q','r','s','t','u','v','w','x','y','z'};
+static char substitution_display[26] = {'.','.','.','.','.','.','.','.','.','.','.',
+                                        '.','.','.','.','.','.','.','.','.','.','.',
+										'.','.', '.','.'};
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
 Load<MeshBuffer> codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -146,7 +150,8 @@ void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t widt
 }
 
 //Draw text in png format from bitmap into out. Takes a color to draw into. 
-void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, uint32_t x, uint32_t y, glm::u8vec4 color) {
+void draw_glyph_png(FT_Bitmap *bitmap, PlayMode::TextureItem *png_out, 
+                    uint32_t x, uint32_t y, glm::u8vec4 color) {
 	//auto it = png_out->data.begin();
 	for (uint32_t i = 0; i < bitmap->rows; i++) {
         for (uint32_t j = 0; j < bitmap->width; j++) {
@@ -189,7 +194,8 @@ std::string decode(std::string str_in, char key){
 }
 
 // Isn't this slightly less of a nightmare loop now?
-void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, glm::u8vec4 color, char cipher = 'e', int font_size = 591283) {
+void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, 
+                           glm::u8vec4 color, char cipher = 'e', int font_size = 591283) {
 	size_t choices = display_state.jumps.size();
 	// links; //idk why I did this
 
@@ -218,13 +224,13 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 	
 	// line = decode(line, cipher); // not ciphering for now
 
-	
 	bool checkSize = false;
 	while (checkSize == false){
 
-		// Based on Harfbuzz example at: https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
-		// since the below code follows the code from the example basically exactly, I'm also including some annotations
-		// of my understanding of what's going on
+		// Based on Harfbuzz example at: 
+		// https://github.com/harfbuzz/harfbuzz-tutorial/blob/master/hello-harfbuzz-freetype.c
+		// since the below code follows the code from the example basically 
+		// exactly, I'm also including some annotation of my understanding of what's going on
 		FT_Library ft_library;
 		FT_Face ft_face;
 		FT_Error ft_error;
@@ -271,7 +277,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		hb_glyph_position_t *pos = hb_buffer_get_glyph_positions (hb_buffer, NULL);
 		
 
-		// Following is derived from the Freetype example at https://freetype.org/freetype2/docs/tutorial/step1.html
+		// Following is derived from the Freetype example at: 
+		// https://freetype.org/freetype2/docs/tutorial/step1.html
 		FT_GlyphSlot  slot = ft_face->glyph; // 
 		int           pen_x, pen_y;
 		// static uint32_t h = window_height/3;
@@ -339,7 +346,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				//std::cout << "checking line" << std::endl;
 				uint32_t m = n;
 				uint32_t lastGoodM = 0;
-				// Had to make the condition a bool here; originally cased on lineWidth but I want to store the maximum lineWidth below the threshold
+				// Had to make the condition a bool here; originally cased on 
+				// lineWidth but I want to store the maximum lineWidth below the threshold
 				while (keepLooping == true && m < len){
 					wordWidth = 0.0f;
 					//std::string thisWord = "";
@@ -419,8 +427,6 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			// I've adjusted my text asset pipeline to account for this.
 			// NOTE: This is probably why Matias/Jim told me to process it before glyphifying, lol
 			
-
-			
 			// load glyph image into the slot (erase previous one) 
 			FT_Error error = FT_Load_Glyph(ft_face, gid, FT_LOAD_RENDER); // Glyphs instead of Chars
 			if (error) continue; 
@@ -439,15 +445,12 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 				else {
 					draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), colorOut);
 				}
-			
-
 				// Move the "pen" based on x and y advance given by glyphs
 				pen_x += pos[n].x_advance / 64; 
 				pen_y += pos[n].y_advance / 64; 
 
 			} else {
 				continue;
-				// std::cout << glyphname << std::endl;
 			}
 
 			// if (glyphname == "space"){
@@ -470,7 +473,6 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 		FT_Done_Face (ft_face);
 		FT_Done_FreeType (ft_library);
 	}
-
 }
 
 //x0,x1,y0,y1,z encode the coords for where on the screen the texture is.
@@ -687,7 +689,6 @@ void PlayMode::initializeCallbacks()
 				// names to GameCharacter structs to asset indices.
 				
 				std::string cname;
-				
 				// get customer name
 				cname = path.substr(9, path.length() - 13);
 				std::cout << "selecting customer: " << cname << std::endl;
@@ -699,7 +700,6 @@ void PlayMode::initializeCallbacks()
 				}
 
 				// deselect currently selected customer			
-
 				GameCharacter *g = &(g_pair->second);
 				if (selected_character && !(selected_character->character_completed)) {
 					printf("selected_character variable: %s\n", 
@@ -707,7 +707,7 @@ void PlayMode::initializeCallbacks()
 					getTexture(textures, "customer_" + selected_character->id  + "_selected.png")->visible = false;
 					getTexture(textures, "customer_" + selected_character->id  + ".png")->visible = true;
 					leave_line(selected_character);
-				} else{
+				} else {
 					printf("selected_character is null\n");
 				} 
 			
@@ -883,13 +883,11 @@ void PlayMode::initializeCallbacks()
 					{
 						for (auto tex : textures)
 						{
-
 							if (tex->alignment == MiddlePane || 
 								tex->alignment == MiddlePaneBG)
 							{
 								tex->visible = true;
 							}
-
 						}
 
 						std::cout << "Cipher incorrect" << std::endl;
@@ -918,7 +916,6 @@ void PlayMode::initializeCallbacks()
 						cf.b = false;
 						display_state.special_cipher->set_feature("flip", cf);
 
-						
 						// Actually propagate the special request text
 						display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 						draw_state_text();
@@ -946,7 +943,6 @@ void PlayMode::initializeCallbacks()
 }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
-
 	if (selected_character != nullptr)
 	{
 		leave_line(selected_character);
@@ -958,7 +954,6 @@ void PlayMode::join_line(PlayMode::GameCharacter *g) {
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
 	g->leaving_line = g->joining_line == 1 ? 2 : 1;
 	if (selected_character == g) selected_character = nullptr;
-
 }
 
 void PlayMode::clean_curr(){
@@ -980,18 +975,28 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
-		if (transform.name == "swap_creature") shaper1   = &transform;
-		if (transform.name == "Bleebus_Head")  bleebus1  = &transform;
-		if (transform.name == "Bleebus2")      bleebus2  = &transform;
-		if (transform.name == "CSMajor_Body")  cs_major1 = &transform;
-		if (transform.name == "CSMajor2")      cs_major2 = &transform;
+		if (transform.name == "swap_creature") sp_shaper  = &transform;
+		if (transform.name == "Bleebus_Head")  basicbleeb = &transform;
+		if (transform.name == "Bleebus2")      subeelb    = &transform;
+		if (transform.name == "CSMajor_Body")  gremlin    = &transform;
+		if (transform.name == "CSMajor2")      csm1       = &transform;
+		if (transform.name == "CSMajor3")      csm2       = &transform;
+		if (transform.name == "shaper2")       g1_shaper  = &transform;
+		if (transform.name == "shaper3")       g2_shaper  = &transform;
+		if (transform.name == "shaper4")       g3_shaper  = &transform;
 	}
-	if (shaper1 == nullptr) throw std::runtime_error("Shaper not found.");
-	if (bleebus1 == nullptr) throw std::runtime_error("Bleebus 1 not found.");
-	if (bleebus2 == nullptr) throw std::runtime_error("Bleebus 2 not found.");
-	if (cs_major1 == nullptr) throw std::runtime_error("CS Major 1 not found.");
-	if (cs_major2 == nullptr) throw std::runtime_error("CS Major 2 not found.");
-	creature_xforms = {bleebus1, bleebus2, cs_major1, cs_major2, shaper1};
+	if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
+	if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
+	if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
+	if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
+	if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
+	if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
+	if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
+	if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
+	if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	creature_xforms = {basicbleeb, subeelb, 
+	                   gremlin, csm1, csm2, 
+	                   sp_shaper, g1_shaper, g2_shaper, g3_shaper};
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -1018,9 +1023,13 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 
 	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
 	entrance_filenames["subeelb"] = "special_bleeb_call1.txt";
-	entrance_filenames["csm1"] = "cs_major1.txt";
-	entrance_filenames["csm2"] = "cs_major1.txt";
+	entrance_filenames["csm1"] = "cs_major_1.txt";
+	entrance_filenames["csm2"] = "cs_major_2.txt";
 	entrance_filenames["gremlin"] = "cs_major_special.txt";
+	entrance_filenames["sp_shaper"] = "shaper_special.txt";
+	entrance_filenames["g1_shaper"] = "shaper_1.txt";
+	entrance_filenames["g2_shaper"] = "shaper_2.txt";
+	entrance_filenames["g3_shaper"] = "shaper_3.txt";
 
 	advance_state(0);
 }
@@ -1062,6 +1071,7 @@ void PlayMode::apply_command(std::string line) {
 			g.id = parsed[2];
 			g.name = parsed[3];
 			g.entrance_file = entrance_filenames[g.id];
+
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
 				g.species = new ReverseCipher("Bleebus");
@@ -1083,19 +1093,18 @@ void PlayMode::apply_command(std::string line) {
 				g.species = new ToggleCipher();
 			}
 
-			if (g.id == "basicbleeb") {
-				g.asset_idx = 0;
-			} else if (g.id == "subeelb") {
-				g.asset_idx = 1;
-			}
+			if (g.id == "basicbleeb") g.asset_idx = 0;
+			else if (g.id == "subeelb") g.asset_idx = 1;
 			else if (g.id == "gremlin") g.asset_idx = 2;
 			else if (g.id == "csm1") g.asset_idx = 3;
 			else if (g.id == "csm2") g.asset_idx = 4;
-			// else if (g.name == "Gamer") g.asset_idx = 3;
-			// else {
-			// 	g.asset_idx = -1;
-			// 	// join_line(&g);
-			// }
+			else if (g.id == "sp_shaper") g.asset_idx = 5;
+			else if (g.id == "g1_shaper") g.asset_idx = 6;
+			else if (g.id == "g2_shaper") g.asset_idx = 7;
+			else if (g.id == "g3_shaper") g.asset_idx = 8;
+			else { // we wanna assign the player this index probably
+				g.asset_idx = -1;
+			}
 
 			if (g.id != "player")
 			{
@@ -1174,15 +1183,13 @@ void PlayMode::apply_command(std::string line) {
 			found_character = true;
 			speaker = characters[parsed[2]];
 		}
-		else {
-			if (characters.find(parsed[2]) != characters.end()) {
-				found_character = true;
-				speaker = characters[parsed[2]];
-				std::cout << speaker.species->name << std::endl;
-				std::string res = speaker.species->encode(parsed[3]);
-				std::cout << res << std::endl;
-				speech_text = res;
-			}
+		else if (characters.find(parsed[2]) != characters.end()) {
+			found_character = true;
+			speaker = characters[parsed[2]];
+			std::cout << speaker.species->name << std::endl;
+			std::string res = speaker.species->encode(parsed[3]);
+			std::cout << res << std::endl;
+			speech_text = res;
 		}
 		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
 		display_state.status = TEXT;
@@ -1212,8 +1219,8 @@ void PlayMode::apply_command(std::string line) {
 		display_state.jumps.clear();
 		display_state.jumps.push_back(1);
 		display_state.status = CHANGING;
-	} else if (keyword == "Show")
-	{
+	} 
+	else if (keyword == "Show") {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
@@ -1226,7 +1233,6 @@ void PlayMode::apply_command(std::string line) {
 			if (display_state.puzzle_cipher->name != "Reverse"
 					|| display_state.puzzle_cipher->name != "Bleebus")
 			{
-		
 				cs_open = true;
 				editingBox = tex_cs_ptr;
 				editStr = display_state.puzzle_text;
@@ -1371,7 +1377,8 @@ void PlayMode::retreat_state() {
 }
 
 void set_size(PlayMode::TextureItem *in){
-	in->size = glm::uvec2(window_width * (in->bounds[1] - in->bounds[0]), window_height * (in->bounds[3] - in->bounds[2]));
+	in->size = glm::uvec2(window_width  * (in->bounds[1] - in->bounds[0]), 
+	                      window_height * (in->bounds[3] - in->bounds[2]));
 }
 
 // This is the main implementation. This should advance the game's script 
@@ -1459,8 +1466,7 @@ void PlayMode::check_jump(std::string input, std::string correct, uint32_t corre
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 
 	// perform the initial scaling of UI textures because we only have the window_size here 
-	if (!hasRescaled)
-	{
+	if (!hasRescaled) {
 		rescaleTextures(textures, window_size);
 		hasRescaled = true;
 	}
@@ -1477,9 +1483,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
-		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-			
-		} else if (evt.key.keysym.sym == SDLK_RETURN) {
+		if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			//std::cout << "editmode" << std::endl;
 			// if (editStr != "") {
@@ -1506,7 +1510,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				cursor_pos -= 1;
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			if(cursor_pos != editStr.length()){
+			if (cursor_pos != editStr.length()){
 				cursor_pos += 1;
 			} else if (cs_open){
 					cursor_pos = 0;
@@ -1543,7 +1547,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				case SDLK_y: in = "Y"; success = true; break;
 				case SDLK_z: in = "Z"; success = true; break;
 				case SDLK_COMMA: in = ","; success = !cs_open; break;
-				case SDLK_SPACE: in = " "; success = !cs_open; break;
+				case SDLK_SPACE: in = " "; success = !cs_open; 
+					if (cs_open){
+						editStr[cursor_pos] = in[0];
+						//std::cout << editStr << std::endl;
+						if (cursor_pos < editStr.length()-1){
+							cursor_pos+=1;
+						}
+					}
+					break;
 				case SDLK_PERIOD: in = "."; success = !cs_open; break;
 				default: break;
 			}
@@ -1694,10 +1706,6 @@ void PlayMode::update(float elapsed) {
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
 			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
-
-			
-
-
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
 			getTexture(textures, "customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
 			if(!getTexture(textures, "customer_" + gc->id + ".png")->visible && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
@@ -1709,9 +1717,7 @@ void PlayMode::update(float elapsed) {
 					getTexture(textures, "customer_" + prev_character + "_selected.png")->visible = false;
 					getTexture(textures, "customer_" + prev_character + ".png")->visible = true;
 				} 
-
 				selected_character = gc;
-
 				prev_character = gc->id;
 			}
 		}
@@ -1722,8 +1728,7 @@ void PlayMode::update(float elapsed) {
 			// printf("update: joining\n");
 			if (xform->position.x < x_by_counter) {
 				xform->position.x += creature_speed * elapsed;
-			} 
-			else {
+			} else {
 				c->second.joining_line = 0;
 				if (c->second.leaving_line == 2) c->second.leaving_line = 1;
 			}
@@ -1733,8 +1738,7 @@ void PlayMode::update(float elapsed) {
 			xform->rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(0., 0., 1.));
 			if (xform->position.y < y_exited_store) {
 				xform->position.y += creature_speed * elapsed;
-			}
-			else {
+			} else {
 				xform->position.x = x_entering_store;
 				xform->position.y = 0.;
 				xform->rotation = glm::angleAxis(0.f, glm::vec3(0., 0., 1.));
