@@ -696,7 +696,7 @@ void PlayMode::initializeCallbacks()
 
 				// deselect currently selected customer			
 				GameCharacter *g = &(g_pair->second);
-				if (selected_character) {
+				if (selected_character && !(selected_character->character_completed)) {
 					printf("selected_character variable: %s\n", 
 							selected_character->id.c_str());
 					getTexture(textures, "customer_" + selected_character->id  + "_selected.png")->visible = false;
@@ -922,13 +922,19 @@ void PlayMode::initializeCallbacks()
 }
 
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
+
+	if (selected_character != nullptr)
+	{
+		leave_line(selected_character);
+	}
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
-	if (selected_character == g) selected_character = nullptr;
 	g->leaving_line = g->joining_line == 1 ? 2 : 1;
+	if (selected_character == g) selected_character = nullptr;
+
 }
 
 void PlayMode::clean_curr(){
@@ -1052,7 +1058,7 @@ void PlayMode::apply_command(std::string line) {
 				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
-			else if (parsed[4] == "CSMajor") {
+			else if (parsed[4] == "CSMajor" || parsed[4] == "CS-Major") {
 				// since we're doing this as a substitution cipher
 				g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
 			}
@@ -1095,7 +1101,12 @@ void PlayMode::apply_command(std::string line) {
 			return;
 		}
 		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
-		
+
+		if (selected_character != nullptr && selected_character->id == (g_pair->second).id)
+		{
+			prev_character = "";
+		}
+
 		if (g_pair != characters.end()) {
 			leave_line(&(g_pair->second));
 		}
@@ -1106,6 +1117,8 @@ void PlayMode::apply_command(std::string line) {
 		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
+
+		
 		
 	}
 	else if (keyword == "Display") {
