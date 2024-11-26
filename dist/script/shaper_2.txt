@@ -1,6 +1,6 @@
 1 Character g2_shaper Kutom Shaper
 2 Sound "ding.opus"
-3 Text d "Hitting the bell, the one you wanted to come over just, does."
+3 Text d "Hitting the bell, the one you wanted to come over just, does. It places a pyl- a prismatic box on the counter."
 4 Speech g2_shaper "Protoss Bars"
 5 Show mini_puzzle g2_shaper "PROTOSS BARS"
 6 Text d "Solve the Puzzle!"
