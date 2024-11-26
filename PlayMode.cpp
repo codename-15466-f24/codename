@@ -53,7 +53,7 @@ static std::string editStr = "";
 static uint32_t cursor_pos = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
-static bool cheatsheet_open = false;
+// static bool cheatsheet_open = false;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
@@ -612,7 +612,7 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
 				if (display_state.puzzle_cipher->name != "Bleebus"
-					|| display_state.puzzle_cipher->name != "Reverse")
+					&& display_state.puzzle_cipher->name != "Reverse")
 				{
 					if (display_state.solved_puzzle)
 					{
@@ -628,7 +628,7 @@ void PlayMode::initializeCallbacks()
 						editMode = true;
 						display_state.status = INPUT;
 						clear_png(tex_rev_ptr);
-						render_text(tex_rev_ptr, editStr, green, 'd');
+						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr, green, 'd');
 						update_texture(tex_rev_ptr);
 					}
 
@@ -660,16 +660,26 @@ void PlayMode::initializeCallbacks()
 					|| display_state.puzzle_cipher->name != "Reverse")
 				{
 
-					for (size_t i = 0; i < 26; i++)
-						{
-							if (substitution_display[i] != '.')
+					if (cs_open && tex_rev_ptr->visible)
+					{
+						for (size_t i = 0; i < 26; i++)
 							{
-								substitution[i] = substitution_display[i];
+								
+								if (substitution_display[i] != '.')
+								{
+									substitution[i] = editStr[i];
+									substitution_display[i] = editStr[i];
+								}
+							
 							}
-						
-						}
+
+					}
+
+					if (tex_rev_ptr->visible)
+						cs_open = false;
 
 					tex_rev_ptr->visible = false;
+					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
 					|| display_state.puzzle_cipher->name == "Reverse")
 				{
@@ -805,7 +815,7 @@ void PlayMode::initializeCallbacks()
 				bool solved = false;
 
 				if (display_state.puzzle_cipher->name != "Bleebus"
-					|| display_state.puzzle_cipher->name != "Reverse")
+					&& display_state.puzzle_cipher->name != "Reverse")
 				{
 
 
@@ -1459,10 +1469,16 @@ void PlayMode::draw_state_text() {
 
 	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
-	std::string cipher_string = display_state.puzzle_cipher->name != "Reverse"
-					|| display_state.puzzle_cipher->name != "Bleebus" ? 
+	if (display_state.puzzle_cipher->name != "Reverse"
+					|| display_state.puzzle_cipher->name != "Bleebus" )
+	{
+			std::string cipher_string =  display_state.puzzle_cipher->name != "Bleebus" ? 
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
+
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
+
+	}
+
 	update_texture(&tex_rev);
 }
 
@@ -1633,7 +1649,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				update_texture(&tex_box_text);
 			} else {
 				clear_png(tex_rev_ptr);
-				render_text(tex_rev_ptr, editStr, green, 'd');
+				render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr, green, 'd', 48);
 				update_texture(tex_rev_ptr);
 				clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white, display_state.cipher);
