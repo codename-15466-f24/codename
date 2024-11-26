@@ -696,7 +696,7 @@ void PlayMode::initializeCallbacks()
 				// deselect currently selected customer			
 
 				GameCharacter *g = &(g_pair->second);
-				if (selected_character) {
+				if (selected_character && !(selected_character->character_completed)) {
 					printf("selected_character variable: %s\n", 
 							selected_character->id.c_str());
 					getTexture(textures, "customer_" + selected_character->id  + "_selected.png")->visible = false;
@@ -1093,7 +1093,11 @@ void PlayMode::apply_command(std::string line) {
 			return;
 		}
 		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
-		
+
+		if (selected_character != nullptr && selected_character->id == (g_pair->second).id)
+		{
+			prev_character = "";
+		}
 
 		if (g_pair != characters.end()) {
 			leave_line(&(g_pair->second));
@@ -1105,6 +1109,8 @@ void PlayMode::apply_command(std::string line) {
 		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
+
+		
 		
 	}
 	else if (keyword == "Display") {
@@ -1660,6 +1666,8 @@ void PlayMode::update(float elapsed) {
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
 			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
+
+			
 
 
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
