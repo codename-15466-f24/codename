@@ -2,7 +2,7 @@
 2 Sound "ding.opus"
 3 Text d "You gesture for the one in the (whatever distinguishing feature) to come ring up her purchase"
 4 Speech csm1 "energy drink"
-5 Show mini_puzzle csm1 "ENERGY DRINK"
+5 Show mini_puzzle csm1 "ENERGY"
 6 Speech csm "Thankya boss, this stuff is my blood"
 7 Exit csm1
 8 Change_File ”idle.txt”

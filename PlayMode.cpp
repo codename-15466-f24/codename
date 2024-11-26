@@ -608,12 +608,17 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+				if (display_state.puzzle_cipher->name != "Bleebus"
+					|| display_state.puzzle_cipher->name != "Reverse")
 				{
 					if (display_state.solved_puzzle)
 					{
 						tex_rev_ptr->visible = true;
+					}
+
+					if (!editMode)
+					{
+						
 					}
 
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
@@ -638,8 +643,8 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				
 				togglePanel(textures, RightPane);
-				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+				if (display_state.puzzle_cipher->name != "Bleebus"
+					|| display_state.puzzle_cipher->name != "Reverse")
 				{
 
 					tex_rev_ptr->visible = false;
@@ -779,25 +784,40 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				bool solved = false;
 
-				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+				if (display_state.puzzle_cipher->name != "Bleebus"
+					|| display_state.puzzle_cipher->name != "Reverse")
 				{
-					std::cout << substitution << std::endl;
 
 
 					// TODO: Actually add-in solve checking
-					solved = display_state.solution_text == editStr;
-					solved = true;
 
+					std::string lowercase_soln = "";
+					std::string lowercase_puzzle = "";
+
+					for (auto c :  display_state.solution_text)
+					{
+						lowercase_soln += tolower(c);
+					}
+
+					for (auto c :  display_state.puzzle_text)
+					{
+						lowercase_puzzle += tolower(c);
+					}
+
+					solved = lowercase_soln == editStr;
+					
 					if (solved)
 					{
 						// propogate the answer from the minipuzzle to the key
-						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
+						for (size_t i = 0; i < lowercase_puzzle.length(); i++)
 						{
-							size_t index = display_state.puzzle_text[i] - 'a';
+							size_t index = lowercase_puzzle[i] - 'a';
 							substitution[index] = editStr[i];
 							substitution_display[index] = editStr[i];
+							
+							std::cout << "Index: " << index << ", Letter: " << substitution_display[index] << std::endl;
 						}
+						std::cout << substitution_display << std::endl;
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
@@ -1069,6 +1089,8 @@ void PlayMode::apply_command(std::string line) {
 				g.asset_idx = 1;
 			}
 			else if (g.id == "gremlin") g.asset_idx = 2;
+			else if (g.id == "csm1") g.asset_idx = 3;
+			else if (g.id == "csm2") g.asset_idx = 4;
 			// else if (g.name == "Gamer") g.asset_idx = 3;
 			// else {
 			// 	g.asset_idx = -1;
@@ -1200,8 +1222,9 @@ void PlayMode::apply_command(std::string line) {
 			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
 			display_state.puzzle_cipher->reset_features();
 			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
-			if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper")
+			std::cout << display_state.puzzle_cipher->name << std::endl;
+			if (display_state.puzzle_cipher->name != "Reverse"
+					|| display_state.puzzle_cipher->name != "Bleebus")
 			{
 		
 				cs_open = true;
@@ -1214,20 +1237,25 @@ void PlayMode::apply_command(std::string line) {
 				render_text(tex_cs_ptr, editStr, green, 'd');
 				update_texture(tex_cs_ptr);
 
+				getTexture(textures, "mini_puzzle_panel.png")->visible = true;
+				getTexture(textures, "submitbutton.png")->visible = true;
 				
-			}
-			for (auto tex : textures)
-			{
-				if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
+			} else {
+				for (auto tex : textures)
 				{
-					tex->visible = true;
+					if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneBG)
+					{
+						tex->visible = true;
+					}
+
+					if (tex->alignment == MiddlePaneSelected)
+					{
+						tex->visible = false;
+					}
 				}
 
-				if (tex->alignment == MiddlePaneSelected)
-				{
-					tex->visible = false;
-				}
 			}
+
 			
 		
 			tex_minipuzzle_ptr->visible = true;
@@ -1404,8 +1432,8 @@ void PlayMode::draw_state_text() {
 
 	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
-	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper" ? 
+	std::string cipher_string = display_state.puzzle_cipher->name != "Reverse"
+					|| display_state.puzzle_cipher->name != "Bleebus" ? 
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
@@ -1454,25 +1482,25 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			//std::cout << "editmode" << std::endl;
-			if (editStr != "") {
-				std::cout << "Sent " << editStr << " as input" << std::endl;
+			// if (editStr != "") {
+			// 	std::cout << "Sent " << editStr << " as input" << std::endl;
 				
-				// checking function
+			// 	// checking function
 
-				if (!cs_open) {	
-					if (correctStr != ""){
-						check_jump(editStr, correctStr, cj, ij);
-					}
-					clear_png(editingBox);
-					advance_state(display_state.current_choice);
-				}
-				editMode = false;
-				editStr = "";
-				cursor_pos = 0;
-				display_state.status = CHANGING;
-				/**/
-				return true;
-			}
+			// 	if (!cs_open) {	
+			// 		if (correctStr != ""){
+			// 			check_jump(editStr, correctStr, cj, ij);
+			// 		}
+			// 		clear_png(editingBox);
+			// 		advance_state(display_state.current_choice);
+			// 	}
+			// 	editMode = false;
+			// 	editStr = "";
+			// 	cursor_pos = 0;
+			// 	display_state.status = CHANGING;
+			// 	/**/
+			// 	return true;
+			// }
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if (cursor_pos != 0) {
 				cursor_pos -= 1;
