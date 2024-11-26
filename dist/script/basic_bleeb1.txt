@@ -1,15 +1,15 @@
 1 Character player You Human
-2 Character basicbleeb Mirg Bleebus
-3 Lock 
-4 Text d "For now, it looks like another customer from this species is entering the store. Lucky!"
-5 Sound "door.opus"
-6 Text d "Most customers are coming to buy something simple. Pay close attention to these, since they'll provide insight into how the customer's language works!"
+2 Text d "For now, it looks like another customer from this species is entering the store. Lucky!"
+3 Character basicbleeb Mirg Bleebus
+4 Sound "door.opus"
+5 Text d "Most customers are coming to buy something simple. Pay close attention to these, since they'll provide insight into how the customer's language works!"
+6 Sound "ding.opus"
 7 Text d "When the customer rings up their purchase, they will often say the name of the item in their language. If we figure out what it is, maybe it'll help us with the special request!"
 8 Speech basicbleeb "water"
 9 Text d "The customer asked for retaw. I wonder what that could be?"
 10 Show mini_puzzle basicbleeb "WATER"
-11 Text d "Looks like these ones are Bleebuses. They're in close proximity to humans, so their language is just ours in reverse. Now that we know how the language works, let's check back in on that special request!"
-12 Unlock
-13 Text d "You can call a customer back by clicking on their icon at the top."
-14 Exit basicbleeb
-15 Jump 13
+11 Text d "Solve the puzzle!"
+12 Text d "Looks like these ones are Bleebuses. They're in close proximity to humans, so their language is just ours in reverse. Now that we know how the language works, let's check back in on that special request!"
+13 Exit basicbleeb
+14 Text d "You can call a customer back by clicking on their icon at the top."
+15 Jump 14
