@@ -1515,7 +1515,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				case SDLK_y: in = "Y"; success = true; break;
 				case SDLK_z: in = "Z"; success = true; break;
 				case SDLK_COMMA: in = ","; success = !cs_open; break;
-				case SDLK_SPACE: in = " "; success = !cs_open; break;
+				case SDLK_SPACE: in = " "; success = !cs_open; 
+					if (cs_open){
+						editStr[cursor_pos] = in[0];
+						//std::cout << editStr << std::endl;
+						if (cursor_pos < editStr.length()-1){
+							cursor_pos+=1;
+						}
+					}
+					break;
 				case SDLK_PERIOD: in = "."; success = !cs_open; break;
 				default: break;
 			}
