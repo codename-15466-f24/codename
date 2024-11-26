@@ -19,6 +19,6 @@
 20 Speech gremlin "Well, better get used to it bud. All types of folks out there. "
 21 Exit gremlin
 22 Text d "Looks like that's the last CS major left. Just like that, your shop has qu-"
-23 Sound "chaotic_noise.opus"
+23 Sound "chaos.opus"
 24 Text d "... quieted down."
 25 Change_File "shaper_introduction.txt"
