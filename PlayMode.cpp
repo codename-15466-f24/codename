@@ -916,18 +916,28 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
-		if (transform.name == "swap_creature") shaper1   = &transform;
-		if (transform.name == "Bleebus_Head")  bleebus1  = &transform;
-		if (transform.name == "Bleebus2")      bleebus2  = &transform;
-		if (transform.name == "CSMajor_Body")  cs_major1 = &transform;
-		if (transform.name == "CSMajor2")      cs_major2 = &transform;
+		if (transform.name == "swap_creature") sp_shaper  = &transform;
+		if (transform.name == "Bleebus_Head")  basicbleeb = &transform;
+		if (transform.name == "Bleebus2")      subeelb    = &transform;
+		if (transform.name == "CSMajor_Body")  gremlin    = &transform;
+		if (transform.name == "CSMajor2")      csm1       = &transform;
+		if (transform.name == "CSMajor3")      csm2       = &transform;
+		if (transform.name == "shaper2")       g1_shaper  = &transform;
+		if (transform.name == "shaper3")       g2_shaper  = &transform;
+		if (transform.name == "shaper4")       g3_shaper  = &transform;
 	}
-	if (shaper1 == nullptr) throw std::runtime_error("Shaper not found.");
-	if (bleebus1 == nullptr) throw std::runtime_error("Bleebus 1 not found.");
-	if (bleebus2 == nullptr) throw std::runtime_error("Bleebus 2 not found.");
-	if (cs_major1 == nullptr) throw std::runtime_error("CS Major 1 not found.");
-	if (cs_major2 == nullptr) throw std::runtime_error("CS Major 2 not found.");
-	creature_xforms = {bleebus1, bleebus2, cs_major1, cs_major2, shaper1};
+	if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
+	if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
+	if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
+	if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
+	if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
+	if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
+	if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
+	if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
+	if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	creature_xforms = {basicbleeb, subeelb, 
+	                   gremlin, csm1, csm2, 
+	                   sp_shaper, g1_shaper, g2_shaper, g3_shaper};
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -1022,11 +1032,15 @@ void PlayMode::apply_command(std::string line) {
 				g.asset_idx = 1;
 			}
 			else if (g.id == "gremlin") g.asset_idx = 2;
-			// else if (g.name == "Gamer") g.asset_idx = 3;
-			// else {
-			// 	g.asset_idx = -1;
-			// 	// join_line(&g);
-			// }
+			else if (g.id == "csm1") g.asset_idx = 3;
+			else if (g.id == "csm2") g.asset_idx = 4;
+			else if (g.id == "sp_shaper") g.asset_idx = 5;
+			else if (g.id == "g1_shaper") g.asset_idx = 6;
+			else if (g.id == "g2_shaper") g.asset_idx = 7;
+			else if (g.id == "g3_shaper") g.asset_idx = 8;
+			else { // we wanna assign the player this index probably
+				g.asset_idx = -1;
+			}
 
 			if (g.id != "player")
 			{

@@ -135,11 +135,15 @@ struct PlayMode : Mode {
 	std::vector<std::function<void(std::vector<TexStruct *>,std::string)>> callbacks;
 
 	//stuff in the scene
-	Scene::Transform *shaper1 = nullptr;
-	Scene::Transform *bleebus1 = nullptr;
-	Scene::Transform *bleebus2 = nullptr;
-	Scene::Transform *cs_major1 = nullptr;
-	Scene::Transform *cs_major2 = nullptr;
+	Scene::Transform *sp_shaper  = nullptr;
+	Scene::Transform *basicbleeb = nullptr;
+	Scene::Transform *subeelb    = nullptr;
+	Scene::Transform *gremlin    = nullptr;
+	Scene::Transform *csm1       = nullptr;
+	Scene::Transform *csm2       = nullptr;
+	Scene::Transform *g1_shaper  = nullptr;
+	Scene::Transform *g2_shaper  = nullptr;
+	Scene::Transform *g3_shaper  = nullptr;
 	const float x_by_counter = 2.9f;
 	// float x_next_in_line = x_by_counter;
 	const float x_entering_store = -14.f;
