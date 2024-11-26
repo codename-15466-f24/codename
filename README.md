@@ -1,6 +1,6 @@
-# (TODO: your game's title)
+# Grandpa's Intergalatic Rest Stop
 
-Author: (TODO: your name)
+<!-- Author: (TODO: your name)
 
 Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
 
@@ -19,4 +19,4 @@ How To Play:
 Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
 
 This game was built with [NEST](NEST.md).
-
+ -->
