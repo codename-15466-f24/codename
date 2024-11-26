@@ -5,7 +5,7 @@
 5 Text d "That's not quite right. Let's try this again. Remember, you can find the answer to this question in your inventory, marked with the ? icon"
 6 Speech subeelb "What typa warp drives you got 'ere? I wanna make darned sure it'll werk with me drive port."
 7 Text d "For special requests, the customer is going to need an answer to a specific question. You'll have to type out a correct response to their question (don't worry about translating it)."
-8 Text d "You can check your store’s inventory by pressing the ? icon. It shows items you have in the store inventory in alphabetical order. Look for ‘Type’ under ‘Warp Drive’, then type the response in the next part."
+8 Text d "You can check your store’s inventory using the inventory pdf. Look for ‘Type’ under ‘Warp Drive’, then type the answer in the next part."
 9 Input_Puzzle d "[type your reply here]" "BANACORP" 10 5
 10 Text d "Great! You've solved your first special request."
 11 Speech subeelb "Oh, Banacorp eh? Those worked with type B ports yea? Anyways, not mucha choice, dry flyin to the next rest stop would take us centuries..."

@@ -1555,7 +1555,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					//I'm testing having infinite sounds
 				}
 				if (cs_open){
-					editStr[cursor_pos] = in[0] - 'A' + 'a';
+					editStr[cursor_pos] = in[0];
 					//std::cout << editStr << std::endl;
 					if (cursor_pos < editStr.length()-1){
 						cursor_pos+=1;
