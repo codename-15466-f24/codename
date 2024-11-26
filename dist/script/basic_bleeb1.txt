@@ -8,8 +8,9 @@
 8 Speech basicbleeb "water"
 9 Text d "The customer asked for retaw. I wonder what that could be?"
 10 Show mini_puzzle basicbleeb "WATER"
-11 Text d "Looks like these ones are Bleebuses. They're in close proximity to humans, so their language is just ours in reverse. Now that we know how the language works, let's check back in on that special request!"
-12 Unlock
-13 Text d "You can call a customer back by clicking on their icon at the top."
-14 Exit basicbleeb
-15 Jump 13
+11 Text d "Solve the puzzle!"
+12 Text d "Looks like these ones are Bleebuses. They're in close proximity to humans, so their language is just ours in reverse. Now that we know how the language works, let's check back in on that special request!"
+13 Unlock
+14 Text d "You can call a customer back by clicking on their icon at the top."
+15 Exit basicbleeb
+16 Jump 14
