@@ -207,6 +207,8 @@ struct PlayMode : Mode {
 	void join_line(GameCharacter *g);
 	void leave_line(GameCharacter *g);
 
+	void clean_curr();
+
 	struct Image {
 		std::string id;
 		std::string path;
@@ -272,7 +274,7 @@ struct PlayMode : Mode {
 	std::string prev_character = "";
 
 	// sound
-	std::shared_ptr< Sound::PlayingSample > curr_sound = nullptr;
+	std::vector<std::shared_ptr< Sound::PlayingSample >> curr_sound;
 	std::deque<std::shared_ptr< Sound::PlayingSample >> next_sound;
 
 	void refresh_display();

@@ -94,8 +94,8 @@ Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
-Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("dusty-floor.opus"));
+Load< Sound::Sample > codename_bgm(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("codename.opus"));
 });
 
 Load< Sound::Sample > keyclick1(LoadTagDefault, []() -> Sound::Sample const * {
@@ -456,7 +456,7 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in, g
 			// 	lastWasSpace = false;
 			// }
 		}
-		if (final_y + line_height > tex_in->size.y - tex_in->margin.y){
+		if (final_y + line_height > tex_in->size.y){
 			if (font_size == tex_in->f_size){
 				tex_in->f_size -= 2;
 				font_size = tex_in->f_size;
@@ -941,6 +941,17 @@ void PlayMode::leave_line(PlayMode::GameCharacter *g) {
 
 }
 
+void PlayMode::clean_curr(){
+	std::vector<std::shared_ptr< Sound::PlayingSample >> copy;
+	for (int i = 0; i < PlayMode::curr_sound.size(); i++){
+		if (!PlayMode::curr_sound[i]->stopped){
+			copy.emplace_back(PlayMode::curr_sound[i]);
+		}
+	}
+	//std::cout << "Cleaned: " << std::to_string(curr_sound.size() - copy.size()) << " sounds" << std::endl;
+	PlayMode::curr_sound = copy;
+}
+
 PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_special_ptr = &tex_special;
 	tex_minipuzzle_ptr = &tex_minipuzzle;
@@ -974,6 +985,9 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	initializeCallbacks();
 	textures = initializeTextures(alignments, visibilities, callbacks);
 	addTextures(textures, paths, texture_program);
+
+	//Add BGM
+	curr_sound.emplace_back(Sound::loop(*codename_bgm, 0.2f, 0.0f));
 
 	for (uint8_t i = 0; i < colorscheme.size() - 2; i+=3) {
 		glm::vec3 new_col = glm::convertSRGBToLinear(glm::vec3(colorscheme[i], colorscheme[i+1], colorscheme[i+2]));
@@ -1258,25 +1272,32 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = CHOICE_IMAGE;
 	}
 	else if (keyword == "Sound") {
-		if (curr_sound != nullptr && !curr_sound->stopping)
+		/*if (curr_sound != nullptr && !curr_sound->stopping)
 		{
 			curr_sound->stop(1.0f);
 
-		} 
+		} */
 
-		if (curr_sound == nullptr || curr_sound->stopped) {
+		//if (curr_sound == nullptr || curr_sound->stopped) 
+		{
 			std::string comp = parsed[2].c_str();
 			if (comp == "door.opus"){
-				curr_sound = Sound::play(*door, 0.3f, 0.0f);
+				//curr_sound->stopping = false;
+				curr_sound.emplace_back(Sound::play(*door, 0.3f, 0.0f));
 			} else if (comp == "ding.opus") {
-				curr_sound = Sound::play(*ding, 0.3f, 0.0f);
+				//curr_sound->stopping = false;
+				curr_sound.emplace_back(Sound::play(*ding, 0.3f, 0.0f));
 			} else if (comp == "chaos.opus") {
-				curr_sound = Sound::play(*chaos, 0.3f, 0.0f);
+				//curr_sound->stopping = false;
+				curr_sound.emplace_back(Sound::play(*chaos, 0.3f, 0.0f));
 			} else if (comp == "docking.opus") {
-				curr_sound = Sound::play(*docking, 0.3f, 0.0f);
+				//curr_sound->stopping = false;
+				curr_sound.emplace_back(Sound::play(*docking, 0.3f, 0.0f));
 			} else if (comp == "chomp.opus"){
-				curr_sound = Sound::play(*chomp, 0.3f, 0.0f);
+				//curr_sound->stopping = false;
+				curr_sound.emplace_back(Sound::play(*chomp, 0.3f, 0.0f));
 			}
+			clean_curr();
 		} 
 		display_state.jumps = {display_state.line_number + 1};
 		display_state.status = CHANGING;
@@ -1346,7 +1367,7 @@ void PlayMode::draw_state_text() {
 	tex_box_text.align = MIDDLE;
 	set_size(&tex_box_text);
 	current_line = text_to_draw;
-	render_text(&tex_box_text, text_to_draw, white, display_state.cipher);
+	render_text(&tex_box_text, text_to_draw, white, display_state.cipher, FONT_SIZE);
 	update_texture(&tex_box_text);
 
 	tex_textbg.path = textbg_path;
@@ -1496,7 +1517,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 				// play key click sound
 				{
-					if (curr_sound != nullptr && !curr_sound->stopping)
+					/*if (curr_sound != nullptr && !curr_sound->stopping)
 					{
 						curr_sound->stop(1.0f);
 
@@ -1505,8 +1526,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					if (curr_sound == nullptr || curr_sound->stopped) {
 						float rand_vol = 1.0f -  (rand()%30)/100.0f;
 						curr_sound = Sound::play(*keyclick1, rand_vol, 0.0f); 
-					}
+					}*/
+					float rand_vol = 1.0f -  (rand()%30)/100.0f;
+					curr_sound.emplace_back(Sound::play(*keyclick1, rand_vol, 0.0f));
+					clean_curr();
 
+					//I'm testing having infinite sounds
 				}
 				if (cs_open){
 					editStr[cursor_pos] = in[0] - 'A' + 'a';
@@ -1523,6 +1548,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
 				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
+				float rand_vol = 1.0f -  (rand()%30)/100.0f;
+				curr_sound.emplace_back(Sound::play(*keyclick1, rand_vol, 0.0f));
+				clean_curr();
 				cursor_pos -= 1;
 			}
 		} 
@@ -1593,7 +1621,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			advance_state(0);
 
 			// play advance sound
-			if (curr_sound != nullptr && !curr_sound->stopping)
+			/*if (curr_sound != nullptr && !curr_sound->stopping)
 			{
 				curr_sound->stop(1.0f);
 			} 
@@ -1601,8 +1629,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (curr_sound == nullptr || curr_sound->stopped)
 			{
 				curr_sound = Sound::play(*keyclick2, 0.3f, 0.0f);
-			}
-			
+			}*/
+			curr_sound.emplace_back(Sound::play(*keyclick2, 0.3f, 0.0f));
+			clean_curr();
 		}
 
 	} else if (evt.type == SDL_MOUSEMOTION) {
