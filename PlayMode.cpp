@@ -530,15 +530,6 @@ int update_texture(PlayMode::TextureItem *tex_in){
 	
 	//identity transform (just drawing "on the screen"):
 	tex_in->CLIP_FROM_LOCAL = glm::mat4(1.0f);
-
-	
-	//camera transform (drawing "in the world"):
-	/*tex_in.CLIP_FROM_LOCAL = camera->make_projection() * glm::mat4(camera->transform->make_world_to_local()) * glm::mat4(
-		5.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 5.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 5.0f, 0.0f,
-		0.0f, 0.0f, 20.0f, 1.0f
-	);*/
 	
 	GL_ERRORS();
 	return 0;
@@ -639,8 +630,6 @@ void PlayMode::initializeCallbacks()
 				}
 			};
 
-			
-
 			callbacks.emplace_back(callback);
 		} else if (path.substr(0,8) == "customer")
 		{
@@ -696,10 +685,8 @@ void PlayMode::initializeCallbacks()
 					getTexture(textures, "customer_" + cname + ".png")->visible = false;
 					join_line(g);
 					std::string chfilecommand = "-1 Change_File ";
-					// std::cout << "changing file to: " << chfilecommand.append(g->entrance_file);
 					apply_command(chfilecommand.append(g->entrance_file));
-					// std::string jumpcommand = "-1 Jump ";
-					// apply_command(jumpcommand.append(std::string((char) g->entrance_line + '0', 1)));
+					/* while (display_state.status == CHANGING) advance_one_line(0); */
 				}
 			};
 
@@ -758,7 +745,6 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-
 		}
 		else if (path == "submitbutton.png")
 		{
@@ -798,7 +784,6 @@ void PlayMode::initializeCallbacks()
 						}
 						editMode = false;
 
-
 						editStr = "";
 						cursor_pos = 0;
 						display_state.status = CHANGING;
@@ -813,13 +798,8 @@ void PlayMode::initializeCallbacks()
 								tex->alignment == MiddlePaneSelected)
 							{
 								tex->visible = false;
-							
 							}
-								
 						}
-
-						
-
 					}
 					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
@@ -908,7 +888,6 @@ void PlayMode::initializeCallbacks()
 			}
 
 		};
-
 			callbacks.emplace_back(callback);
 		}
 		else
@@ -971,12 +950,10 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	}
 
 	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
-	entrance_filenames["subeelb"] = "special_bleeb_call.txt";
+	entrance_filenames["subeelb"] = "special_bleeb_call1.txt";
 	entrance_filenames["csm1"] = "cs_major1.txt";
 	entrance_filenames["csm2"] = "cs_major1.txt";
 	entrance_filenames["gremlin"] = "cs_major_special.txt";
-	// puzzle_filenames["basicbleeb"] = "basic_bleeb1.txt";
-	// puzzle_filenames["subeelb"] = "special_bleeb_call.txt";
 
 	advance_state(0);
 }
@@ -1017,7 +994,6 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-			g.entrance_line = atoi(parsed[0].c_str());
 			g.entrance_file = entrance_filenames[g.id];
 			if (parsed[4] == "Bleebus") {
 				// USE THIS ONE
@@ -1045,7 +1021,7 @@ void PlayMode::apply_command(std::string line) {
 			} else if (g.id == "subeelb") {
 				g.asset_idx = 1;
 			}
-			// else if (g.name == "Gremlin") g.asset_idx = 2;
+			else if (g.id == "gremlin") g.asset_idx = 2;
 			// else if (g.name == "Gamer") g.asset_idx = 3;
 			// else {
 			// 	g.asset_idx = -1;

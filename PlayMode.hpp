@@ -176,14 +176,10 @@ struct PlayMode : Mode {
 		bool character_completed = false;
 
 		std::string entrance_file = "";
-		std::string puzzle_file = "";
-		uint entrance_line = 0;
-		uint puzzle_line = 0;
 	};
 	// keys are character id's
 	std::unordered_map<std::string,GameCharacter> characters;
 	std::unordered_map<std::string,std::string> entrance_filenames;
-	std::unordered_map<std::string,std::string> puzzle_filenames;
 
 	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
 	GameCharacter *selected_character = nullptr;
