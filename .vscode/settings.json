@@ -97,6 +97,7 @@
         "stack": "cpp",
         "string_view": "cpp",
         "variant": "cpp",
-        "__verbose_abort": "cpp"
+        "__verbose_abort": "cpp",
+        "filesystem": "cpp"
     }
 }
