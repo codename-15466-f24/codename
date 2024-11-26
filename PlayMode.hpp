@@ -169,14 +169,17 @@ struct PlayMode : Mode {
 		std::string id;
 		std::string name;
 		ToggleCipher *species; // can change this type later
-		// any other data here. maybe assets?
-		bool unlocked = false;
-		bool character_completed  = false;
 		uint8_t joining_line = 0; // 0 = false, 1 = true, 2 = waiting to join line until leave animation finishes
 		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
+
+		bool character_completed = false;
+
+		std::string entrance_file = "";
 	};
+	// keys are character id's
 	std::unordered_map<std::string,GameCharacter> characters;
+	std::unordered_map<std::string,std::string> entrance_filenames;
 
 	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
 	GameCharacter *selected_character = nullptr;

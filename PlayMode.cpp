@@ -143,7 +143,7 @@ std::string decode(std::string str_in, char key){
 	std::string out = "";
 	switch (key){
 		case 'e':
-			for (int i = 0; i < str_in.length(); i++){
+			for (size_t i = 0; i < str_in.length(); i++){
 				if (str_in[i] >= 'a' && str_in[i] <= 'z') {
 					out = out + substitution[str_in[i] - 'a'];
 				} else if (str_in[i] >= 'A' && str_in[i] <= 'Z') {
@@ -530,15 +530,6 @@ int update_texture(PlayMode::TextureItem *tex_in){
 	
 	//identity transform (just drawing "on the screen"):
 	tex_in->CLIP_FROM_LOCAL = glm::mat4(1.0f);
-
-	
-	//camera transform (drawing "in the world"):
-	/*tex_in.CLIP_FROM_LOCAL = camera->make_projection() * glm::mat4(camera->transform->make_world_to_local()) * glm::mat4(
-		5.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 5.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 5.0f, 0.0f,
-		0.0f, 0.0f, 20.0f, 1.0f
-	);*/
 	
 	GL_ERRORS();
 	return 0;
@@ -639,8 +630,6 @@ void PlayMode::initializeCallbacks()
 				}
 			};
 
-			
-
 			callbacks.emplace_back(callback);
 		} else if (path.substr(0,8) == "customer")
 		{
@@ -695,7 +684,10 @@ void PlayMode::initializeCallbacks()
 					getTexture(textures, "customer_" + cname + "_selected.png")->visible = true;
 					getTexture(textures, "customer_" + cname + ".png")->visible = false;
 					join_line(g);
-				}	
+					std::string chfilecommand = "-1 Change_File ";
+					apply_command(chfilecommand.append(g->entrance_file));
+					/* while (display_state.status == CHANGING) advance_one_line(0); */
+				}
 			};
 
 			callbacks.emplace_back(callback);
@@ -753,7 +745,6 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-
 		}
 		else if (path == "submitbutton.png")
 		{
@@ -793,7 +784,6 @@ void PlayMode::initializeCallbacks()
 						}
 						editMode = false;
 
-
 						editStr = "";
 						cursor_pos = 0;
 						display_state.status = CHANGING;
@@ -808,13 +798,8 @@ void PlayMode::initializeCallbacks()
 								tex->alignment == MiddlePaneSelected)
 							{
 								tex->visible = false;
-							
 							}
-								
 						}
-
-						
-
 					}
 					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
@@ -841,9 +826,7 @@ void PlayMode::initializeCallbacks()
 							tex->alignment == MiddlePaneSelected)
 						{
 							tex->visible = false;
-						
 						}
-							
 					}
 
 					solved = reverseEnabled;
@@ -902,11 +885,9 @@ void PlayMode::initializeCallbacks()
 				std::vector<std::string> responses = {"That doesn't seem right...", "The customer seems unsatisfied by that."};
 				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
 				update_texture(&tex_box_text);
-
 			}
 
 		};
-
 			callbacks.emplace_back(callback);
 		}
 		else
@@ -920,9 +901,6 @@ void PlayMode::initializeCallbacks()
 void PlayMode::join_line(PlayMode::GameCharacter *g) {
 	selected_character = g;
 	g->joining_line = g->leaving_line == 1 ? 2 : 1;
-	if (g->asset_idx >= 0) {
-		creature_xforms[g->asset_idx]->position.x = x_entering_store;
-	}
 }
 
 void PlayMode::leave_line(PlayMode::GameCharacter *g) {
@@ -969,8 +947,13 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		colorscheme[i] = new_col.x;
 		colorscheme[i+1] = new_col.y;
 		colorscheme[i+2] = new_col.z;
-		printf("%f, %f, %f\n", new_col.x, new_col.y, new_col.z);
 	}
+
+	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
+	entrance_filenames["subeelb"] = "special_bleeb_call1.txt";
+	entrance_filenames["csm1"] = "cs_major1.txt";
+	entrance_filenames["csm2"] = "cs_major1.txt";
+	entrance_filenames["gremlin"] = "cs_major_special.txt";
 
 	advance_state(0);
 }
@@ -980,7 +963,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
  * Could also be useful if something goes wrong.
  */
 void PlayMode::refresh_display() {
-	// draw bottom_text
+	// draw bottom_text 🥺
 	// draw the characters and images displayed
 	// these are all comments because I'm not sure what exactly this should look like yet
 }
@@ -1011,11 +994,8 @@ void PlayMode::apply_command(std::string line) {
 			GameCharacter g;
 			g.id = parsed[2];
 			g.name = parsed[3];
-
-
-
+			g.entrance_file = entrance_filenames[g.id];
 			if (parsed[4] == "Bleebus") {
-				std::cout << "here" << std::endl;
 				// USE THIS ONE
 				g.species = new ReverseCipher("Bleebus");
 				// testing protocols for other ciphers so far:
@@ -1041,13 +1021,12 @@ void PlayMode::apply_command(std::string line) {
 			} else if (g.id == "subeelb") {
 				g.asset_idx = 1;
 			}
-			// else if (g.name == "Gremlin") g.asset_idx = 2;
+			else if (g.id == "gremlin") g.asset_idx = 2;
 			// else if (g.name == "Gamer") g.asset_idx = 3;
 			// else {
 			// 	g.asset_idx = -1;
 			// 	// join_line(&g);
 			// }
-
 
 			if (g.id != "player")
 			{
@@ -1346,7 +1325,6 @@ void PlayMode::draw_state_text() {
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	update_texture(&tex_rev);
-
 }
 
 PlayMode::~PlayMode() {
@@ -1389,8 +1367,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_ESCAPE) {
 			
-		}
-		else if (evt.key.keysym.sym == SDLK_RETURN) {
+		} else if (evt.key.keysym.sym == SDLK_RETURN) {
 			//enter.pressed = false;
 			//std::cout << "editmode" << std::endl;
 			if (editStr != "") {
@@ -1419,10 +1396,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if(cursor_pos != editStr.length()){
 				cursor_pos += 1;
-			} else {
-				if (cs_open){
+			} else if (cs_open){
 					cursor_pos = 0;
-				}
 			}
 		}
 		else {
@@ -1538,7 +1513,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				}
 			}
 			return true;
-		} 
+		}
 	} else if (evt.type == SDL_MOUSEBUTTONDOWN) {
 
 		// convert motion to texture coordinate system
@@ -1548,7 +1523,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		bool isLocked = checkForClick(textures, tex_x, tex_y);
 
 		// only advance if click inside of dialogue
-		if (!isLocked && display_state.status != INPUT &&
+		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
+			!isLocked && display_state.status != INPUT &&
 			display_state.status != WAIT_FOR_SOLVE &&
 			tex_x >= tex_textbg.bounds[0] &&
 			tex_x < tex_textbg.bounds[1] &&
@@ -1563,7 +1539,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (curr_sound != nullptr && !curr_sound->stopping)
 			{
 				curr_sound->stop(1.0f);
-
 			} 
 
 			if (curr_sound == nullptr || curr_sound->stopped)
@@ -1578,7 +1553,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		// std::cout << tex_x << ", " << tex_y << std::endl;
-		
 	}
 
 	return false;
@@ -1618,13 +1592,7 @@ void PlayMode::update(float elapsed) {
 
 				prev_character = gc->id;
 			}
-
 		}
-			
-
-		
-
-
 
 		Scene::Transform *xform = creature_xforms[gc->asset_idx];
 
