@@ -184,13 +184,13 @@ void updateTextures(std::vector<TexStruct *> textures)
 						};
 
 		}
-		else if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneSelected)
+		else if (tex->alignment == MiddlePane || tex->alignment == MiddlePaneSelected || tex->alignment == MiddlePaneSelected)
 		{
 			tex->bounds = { -tex->relativeSizeX/2.0f,
 				tex->relativeSizeX/2.0f,
 				-tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY),
 				3*tex->relativeSizeY/4.0f-2.0f*(offset*tex->relativeSizeY)};
-		} else if (tex->alignment == MiddlePaneBG)
+		} else if (tex->alignment == MiddlePaneBG || tex->alignment == MiddlePaneBig)
 		{
 			tex->bounds = { -tex->relativeSizeX/2.0f,
 				tex->relativeSizeX/2.0f,

@@ -1037,7 +1037,7 @@ void PlayMode::apply_command(std::string line) {
 				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
 				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
-			else if (parsed[4] == "CSMajor") {
+			else if (parsed[4] == "CSMajor" || parsed[4] == "CS-Major") {
 				// since we're doing this as a substitution cipher
 				g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
 			}

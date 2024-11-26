@@ -105,8 +105,14 @@ struct PlayMode : Mode {
 									false, false,   // customer: blub
 									false, false,  // customer: subeelb
 									false, false,  // customer: gremlin
-									false, false,  // customer: gamer
+									false, false,  // customer: csm1
+									false, false,  // customer: csm2
+									false, false,  // customer: sp_shaper
+									false, false,  // customer: g1_shaper
+									false, false,  // customer: g2_shaper
+									false, false,  // customer: g3_shaper
 									false, false, false, false, // mini puzzle
+									false, false
 									};
 
 	std::vector<PanePosition> alignments = {LeftPaneMiddle, LeftPaneMiddle,
@@ -117,7 +123,13 @@ struct PlayMode : Mode {
 											TopMiddlePaneHidden, TopMiddlePaneHidden,
 											TopMiddlePaneHidden, TopMiddlePaneHidden,
 											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
+											TopMiddlePaneHidden, TopMiddlePaneHidden,
 											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane,
+											MiddlePaneBig, MiddlePaneChange
 											};
 	std::vector<std::string> paths = {"inventory_collapsed.png", "inventory.png",
 									"special_request_collapsed.png", "cipher_panel.png",
@@ -126,9 +138,15 @@ struct PlayMode : Mode {
 									"customer_basicbleeb.png", "customer_basicbleeb_selected.png",
 									"customer_subeelb.png", "customer_subeelb_selected.png",
 									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"customer_gamer.png", "customer_gamer_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png"
-			
+									"customer_csm1.png", "customer_csm1_selected.png",
+									"customer_csm2.png", "customer_csm2_selected.png",
+									"customer_sp_shaper.png", "customer_sp_shaper_selected.png",
+									"customer_g1_shaper.png", "customer_g1_shaper_selected.png",
+									"customer_g2_shaper.png", "customer_g2_shaper_selected.png",
+									"customer_g3_shaper.png", "customer_g3_shaper_selected.png",
+									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
+									"big_puzzle_panel.png", "changebutton.png"
+
 									
 									};
 									
