@@ -173,6 +173,8 @@ struct PlayMode : Mode {
 		uint8_t leaving_line = 0; // 0 = false, 1 = true, 2 = waiting to leave line until join animation finishes
 		int8_t asset_idx = -1;
 
+		bool character_completed = false;
+
 		std::string entrance_file = "";
 		std::string puzzle_file = "";
 		uint entrance_line = 0;
