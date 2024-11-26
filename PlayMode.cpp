@@ -686,7 +686,8 @@ void PlayMode::initializeCallbacks()
 					join_line(g);
 					std::string chfilecommand = "-1 Change_File ";
 					apply_command(chfilecommand.append(g->entrance_file));
-					/* while (display_state.status == CHANGING) advance_one_line(0); */
+					while (display_state.status == CHANGING) advance_one_line(0);
+					draw_state_text();
 				}
 			};
 
