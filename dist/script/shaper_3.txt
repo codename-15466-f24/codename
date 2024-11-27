@@ -1,8 +1,9 @@
 1 Character g3_shaper Charkutim Shaper
 2 Sound "ding.opus"
-3 Text d "You don't bother to look up."
+3 Text d "You don't bother to look up. The one you wanted to wave over puts a 40-pack on the counter."
 4 Speech g3_shaper "Quix Wipes"
 5 Show mini_puzzle g3_shaper "QUIX WIPES"
-6 Speech g3_shaper "...I love these chips"
-7 Exit g3_shaper
-8 Change_File "idle.txt"
+6 Text d "Solve the Puzzle!"
+7 Speech g3_shaper "...I love these chips"
+8 Exit g3_shaper
+9 Change_File "idle.txt"

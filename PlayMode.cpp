@@ -50,10 +50,12 @@ static std::vector<std::string> activeScript;
 static std::vector<std::string> links;
 static bool editMode = false;
 static std::string editStr = "";
+static std::string editStr_ui = "";
 static uint32_t cursor_pos = 0;
+static size_t cursor_pos_ui = 0;
 static PlayMode::TextureItem* editingBox;
 static bool cs_open = false;
-// static bool cheatsheet_open = false;
+static bool cheatsheet_open = false;
 static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
@@ -611,31 +613,37 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.puzzle_cipher->name != "Bleebus"
-					&& display_state.puzzle_cipher->name != "Reverse")
+				if (display_state.puzzle_cipher->name == "Substitution"
+				 || display_state.puzzle_cipher->name == "Shaper"
+				 || display_state.puzzle_cipher->name == "CSMajor")
 				{
 					if (display_state.solved_puzzle)
 					{
 						tex_rev_ptr->visible = true;
 					}
+					
 
 					if (!cs_open)
 					{
-						cs_open = true;
+						cheatsheet_open = true;
 						editingBox = tex_rev_ptr;
-						editStr = substitution_display;
-						cursor_pos = 0;				
+						editStr_ui = std::string(substitution_display);
+						cursor_pos_ui = 0;				
 						editMode = true;
 						display_state.status = INPUT;
 						clear_png(tex_rev_ptr);
-						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr, green, 'd');
+						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr_ui, green, 'd', 48);
+						update_texture(tex_rev_ptr);
+					} else {
+						clear_png(tex_rev_ptr);
+						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display), white, 'd', 48);
 						update_texture(tex_rev_ptr);
 					}
 
 					
 
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+					    || display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 					if (display_state.solved_puzzle)
@@ -656,27 +664,22 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				
 				togglePanel(textures, RightPane);
-				if (display_state.puzzle_cipher->name != "Bleebus"
-					|| display_state.puzzle_cipher->name != "Reverse")
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 				{
 
-					if (cs_open && tex_rev_ptr->visible)
+					if (cheatsheet_open)
 					{
-						for (size_t i = 0; i < 26; i++)
-							{
-								
-								if (substitution_display[i] != '.')
-								{
-									substitution[i] = editStr[i];
-									substitution_display[i] = editStr[i];
-								}
-							
-							}
+						editMode = false;
+						editStr_ui = "";
+						cursor_pos_ui = 0;
+						display_state.status = CHANGING;
+						cheatsheet_open = false;
+
+						draw_state_text();
 
 					}
-
-					if (tex_rev_ptr->visible)
-						cs_open = false;
 
 					tex_rev_ptr->visible = false;
 					
@@ -814,38 +817,27 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				bool solved = false;
 
-				if (display_state.puzzle_cipher->name != "Bleebus"
-					&& display_state.puzzle_cipher->name != "Reverse")
+				if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 				{
 
 
 					// TODO: Actually add-in solve checking
-
-					std::string lowercase_soln = "";
-					std::string lowercase_puzzle = "";
-
-					for (auto c :  display_state.solution_text)
-					{
-						lowercase_soln += tolower(c);
-					}
-
-					for (auto c :  display_state.puzzle_text)
-					{
-						lowercase_puzzle += tolower(c);
-					}
-
-					solved = lowercase_soln == editStr;
+					std::cout << display_state.puzzle_text << " versus " << editStr << std::endl;
+					solved = display_state.solution_text == editStr;
 					
 					if (solved)
 					{
+
+						// decode first
+						display_state.special_request_text = display_state.special_cipher->decode(display_state.special_solution_text);
 						// propogate the answer from the minipuzzle to the key
-						for (size_t i = 0; i < lowercase_puzzle.length(); i++)
+						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
-							size_t index = lowercase_puzzle[i] - 'a';
-							substitution[index] = editStr[i];
-							substitution_display[index] = editStr[i];
-							
-							std::cout << "Index: " << index << ", Letter: " << substitution_display[index] << std::endl;
+							size_t index = display_state.puzzle_text[i] - 'A';
+							display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
+							substitution_display[index] = tolower(editStr[i]);
 						}
 						std::cout << substitution_display << std::endl;
 
@@ -880,9 +872,8 @@ void PlayMode::initializeCallbacks()
 					}
 					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+					    || display_state.puzzle_cipher->name == "Reverse")
 				{
-				
 					// example: check if reverse button is enabled
 					bool reverseEnabled = true;
 
@@ -1254,14 +1245,18 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
+			getTexture(textures, "cipher_panel_full.png")->visible = false;
+			getTexture(textures, "cipher_panel.png")->visible = true;
+
+
 			display_state.solution_text = parsed[4];
 			display_state.puzzle_cipher = characters[parsed[3]].species;
 			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
 			display_state.puzzle_cipher->reset_features();
 			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
-			std::cout << display_state.puzzle_cipher->name << std::endl;
-			if (display_state.puzzle_cipher->name != "Reverse"
-					|| display_state.puzzle_cipher->name != "Bleebus")
+			if (display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper"
+					|| display_state.puzzle_cipher->name == "CSMajor")
 			{
 				cs_open = true;
 				editingBox = tex_cs_ptr;
@@ -1469,16 +1464,14 @@ void PlayMode::draw_state_text() {
 
 	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
-	if (display_state.puzzle_cipher->name != "Reverse"
-					|| display_state.puzzle_cipher->name != "Bleebus" )
-	{
-			std::string cipher_string =  display_state.puzzle_cipher->name != "Bleebus" ? 
+	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
+					|| display_state.puzzle_cipher->name == "Shaper" 
+					|| display_state.puzzle_cipher->name == "CSMajor" ?
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
-
-	render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
-
+	if (!cheatsheet_open)
+	{
+		render_text(&tex_rev, cipher_string, white, display_state.cipher, 48);
 	}
-
 	update_texture(&tex_rev);
 }
 
@@ -1527,17 +1520,31 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				
 			// 	// checking function
 
-			// 	if (!cs_open) {	
-			// 		if (correctStr != ""){
-			// 			check_jump(editStr, correctStr, cj, ij);
-			// 		}
-			// 		clear_png(editingBox);
-			// 		advance_state(display_state.current_choice);
-			// 	}
-			// 	editMode = false;
-			// 	editStr = "";
-			// 	cursor_pos = 0;
-			// 	display_state.status = CHANGING;
+				if (editStr != "") {
+				std::cout << "Sent " << editStr << " as input" << std::endl;
+				
+				// checking function
+
+				if (!cs_open) {	
+					if (correctStr != "") {
+						check_jump(editStr, correctStr, cj, ij);
+					}
+					clear_png(editingBox);
+					advance_state(display_state.current_choice);
+				}
+
+				if (!tex_rev_ptr->visible)
+				{
+					editMode = false;
+					editStr = "";
+					cursor_pos = 0;
+					display_state.status = CHANGING;
+				}
+				
+				/**/
+				return true;
+			}
+
 			// 	/**/
 			// 	return true;
 			// }
@@ -1548,7 +1555,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if (cursor_pos != editStr.length()){
 				cursor_pos += 1;
-			} else if (cs_open || tex_rev_ptr->visible){
+			} else if (cs_open) {
 					cursor_pos = 0;
 			}
 		}
@@ -1584,11 +1591,20 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				case SDLK_z: in = "Z"; success = true; break;
 				case SDLK_COMMA: in = ","; success = !cs_open; break;
 				case SDLK_SPACE: in = " "; success = !cs_open; 
-					if (cs_open || tex_rev_ptr->visible){
+					if (cs_open){
 						editStr[cursor_pos] = in[0];
 						//std::cout << editStr << std::endl;
 						if (cursor_pos < editStr.length()-1){
 							cursor_pos+=1;
+						}
+					}
+
+					if (cheatsheet_open){
+			
+						editStr_ui[cursor_pos] = in[0];
+						std::cout << editStr_ui << std::endl;
+						if (cursor_pos_ui < editStr_ui.length()-1){
+							cursor_pos_ui+=1;
 						}
 					}
 					break;
@@ -1616,17 +1632,42 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					//I'm testing having infinite sounds
 				}
 				if (cs_open){
-					editStr[cursor_pos] = in[0] - 'A' + 'a';
+					editStr[cursor_pos] = in[0];
 					//std::cout << editStr << std::endl;
 					if (cursor_pos < editStr.length()-1){
 						cursor_pos+=1;
 					} else {
 						cursor_pos = 0;
 					}
-				}else{
+				} else if (cheatsheet_open)
+				{
+					display_state.bottom_text = display_state.special_cipher->decode(display_state.bottom_text);
+					display_state.special_request_text = display_state.special_cipher->decode(display_state.special_request_text);
+
+					editStr_ui[cursor_pos_ui] = in[0];
+					substitution_display[cursor_pos_ui] = char(in[0]);
+					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = char(in[0]);
+					//std::cout << editStr << std::endl;
+					if (cursor_pos_ui < editStr_ui.length()-1){
+						cursor_pos_ui+=1;
+					} else {
+						cursor_pos_ui = 0;
+					}
+
+					display_state.bottom_text = display_state.special_cipher->encode(display_state.bottom_text);
+					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_request_text);
+
+					
+				} else {
 					editStr.insert(cursor_pos, in);
 					cursor_pos += 1;
+
+					editStr_ui.insert(cursor_pos_ui, in);
+					editStr_ui += 1;
+
 				}
+				
+				
 			}
 			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
 				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
@@ -1639,23 +1680,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 		if (cs_open) {
 
-			if (!tex_rev_ptr->visible)
-			{
 				clear_png(&tex_cs);
 				render_text(&tex_cs, editStr, green, 'd');
 				update_texture(&tex_cs);
 				clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white, display_state.cipher);
 				update_texture(&tex_box_text);
-			} else {
+			
+		}	else if (cheatsheet_open) {
 				clear_png(tex_rev_ptr);
-				render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr, green, 'd', 48);
+				render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr_ui, green, 'd', 48);
 				update_texture(tex_rev_ptr);
 				clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white, display_state.cipher);
 				update_texture(&tex_box_text);
 
-			}
+			
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
 			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
@@ -1889,7 +1929,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, tex_box_text.count);
 		GL_ERRORS();
 
-		if (cs_open && !tex_rev_ptr->visible)
+		if (cs_open)
 		{
 			glBindVertexArray(tex_cs.tristrip_for_texture_program);
 			glBindTexture(GL_TEXTURE_2D, tex_cs.tex);
