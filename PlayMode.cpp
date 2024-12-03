@@ -1114,10 +1114,10 @@ void PlayMode::apply_command(std::string line) {
 			leave_line(&(g_pair->second));
 		}
 
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->alignment = TopMiddlePaneHidden;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + "_selected.png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
 		display_state.status = CHANGING;
