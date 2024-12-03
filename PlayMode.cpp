@@ -65,9 +65,7 @@ static uint32_t ij = 0;
 bool hasReversed = false;
 static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m',
                                 'n','o','p','q','r','s','t','u','v','w','x','y','z'};
-static char substitution_display[26] = {'.','.','.','.','.','.','.','.','.','.','.',
-                                        '.','.','.','.','.','.','.','.','.','.','.',
-										'.','.', '.','.'};
+
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
 Load<MeshBuffer> codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
@@ -671,6 +669,7 @@ void PlayMode::initializeCallbacks()
 
 					if (cheatsheet_open)
 					{
+
 						editMode = false;
 						editStr_ui = "";
 						cursor_pos_ui = 0;
@@ -824,20 +823,24 @@ void PlayMode::initializeCallbacks()
 
 
 					// TODO: Actually add-in solve checking
-					std::cout << display_state.puzzle_text << " versus " << editStr << std::endl;
+					std::cout << display_state.solution_text << " versus " << editStr << std::endl;
 					solved = display_state.solution_text == editStr;
-					
+					std::cout << solved << std::endl;
+
 					if (solved)
 					{
+						std::cout << "solved!" << std::endl;
+
 
 						// decode first
 						display_state.special_request_text = display_state.special_cipher->decode(display_state.special_solution_text);
 						// propogate the answer from the minipuzzle to the key
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
-							size_t index = display_state.puzzle_text[i] - 'a';
+							size_t index = display_state.puzzle_text[i] - 'A';
 							display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
 							substitution_display[index] = tolower(editStr[i]);
+							
 						}
 						std::cout << substitution_display << std::endl;
 
@@ -993,6 +996,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_minipuzzle_ptr = &tex_minipuzzle;
 	tex_rev_ptr = &tex_rev;
 	tex_cs_ptr = &tex_cs;
+	substitution_display_ptr = &substitution_display;
 
 	//get pointers to stuff
 	for (auto &transform : scene.transforms) {
@@ -1644,10 +1648,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					display_state.bottom_text = display_state.special_cipher->decode(display_state.bottom_text);
 					display_state.special_request_text = display_state.special_cipher->decode(display_state.special_request_text);
 
-					editStr_ui[cursor_pos_ui] = in[0];
-					substitution_display[cursor_pos_ui] = char(in[0]);
-					std::cout << cursor_pos_ui << std::endl;
-					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = char(in[0]);
+					editStr_ui[cursor_pos_ui] = tolower(in[0]);
+					substitution_display[cursor_pos_ui] = tolower(char(in[0]));
+					// std::cout << cursor_pos_ui << std::endl;
+					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = tolower(char(in[0]));
 					//std::cout << editStr << std::endl;
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
