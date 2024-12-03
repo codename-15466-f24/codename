@@ -669,15 +669,12 @@ void PlayMode::initializeCallbacks()
 
 					if (cheatsheet_open)
 					{
-
 						editMode = false;
 						editStr_ui = "";
 						cursor_pos_ui = 0;
 						display_state.status = CHANGING;
 						cheatsheet_open = false;
-
 						draw_state_text();
-
 					}
 
 					tex_rev_ptr->visible = false;
@@ -829,20 +826,17 @@ void PlayMode::initializeCallbacks()
 
 					if (solved)
 					{
-						std::cout << "solved!" << std::endl;
-
-
 						// decode first
-						display_state.special_request_text = display_state.special_cipher->decode(display_state.special_solution_text);
 						// propogate the answer from the minipuzzle to the key
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
 							size_t index = display_state.puzzle_text[i] - 'A';
-							display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
-							substitution_display[index] = tolower(editStr[i]);
-							
+							if (0 <= index && index < 26)
+							{
+								display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
+								substitution_display[index] = tolower(editStr[i]);
+							}
 						}
-						std::cout << substitution_display << std::endl;
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
@@ -1644,10 +1638,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 						cursor_pos = 0;
 					}
 				} else if (cheatsheet_open)
-				{
-					display_state.bottom_text = display_state.special_cipher->decode(display_state.bottom_text);
-					display_state.special_request_text = display_state.special_cipher->decode(display_state.special_request_text);
-
+				{					
+			
+					
 					editStr_ui[cursor_pos_ui] = tolower(in[0]);
 					substitution_display[cursor_pos_ui] = tolower(char(in[0]));
 					// std::cout << cursor_pos_ui << std::endl;
@@ -1659,8 +1652,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 						cursor_pos_ui = 0;
 					}
 
-					display_state.bottom_text = display_state.special_cipher->encode(display_state.bottom_text);
-					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_request_text);
+					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
 
 					
 				} else {
