@@ -628,7 +628,6 @@ void PlayMode::initializeCallbacks()
 						editStr_ui = std::string(substitution_display);
 						cursor_pos_ui = 0;				
 						editMode = true;
-						display_state.status = INPUT;
 						clear_png(tex_rev_ptr);
 						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr_ui, green, 'd', 48);
 						update_texture(tex_rev_ptr);
@@ -663,8 +662,8 @@ void PlayMode::initializeCallbacks()
 				
 				togglePanel(textures, RightPane);
 				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper"
-					|| display_state.puzzle_cipher->name == "CSMajor")
+				 || display_state.puzzle_cipher->name == "Shaper"
+				 || display_state.puzzle_cipher->name == "CSMajor")
 				{
 
 					if (cheatsheet_open)
@@ -672,15 +671,14 @@ void PlayMode::initializeCallbacks()
 						editMode = false;
 						editStr_ui = "";
 						cursor_pos_ui = 0;
-						display_state.status = CHANGING;
 						cheatsheet_open = false;
-						draw_state_text();
+						// draw_state_text();
 					}
 
 					tex_rev_ptr->visible = false;
 					
 				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+					    || display_state.puzzle_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 					if (display_state.solved_puzzle)
@@ -948,7 +946,6 @@ void PlayMode::initializeCallbacks()
 				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
 				update_texture(&tex_box_text);
 			}
-
 		};
 			callbacks.emplace_back(callback);
 		}
@@ -1153,15 +1150,13 @@ void PlayMode::apply_command(std::string line) {
 			leave_line(&(g_pair->second));
 		}
 
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->alignment = TopMiddlePaneHidden;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id +  "_selected.png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
-
-		
-		
+		display_state.status = CHANGING;
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1511,19 +1506,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
-			//enter.pressed = false;
-			//std::cout << "editmode" << std::endl;
-			// if (editStr != "") {
-			// 	std::cout << "Sent " << editStr << " as input" << std::endl;
-				
-			// 	// checking function
-
-				if (editStr != "") {
+			if (editStr != "") {
 				std::cout << "Sent " << editStr << " as input" << std::endl;
 				
-				// checking function
-
-				if (!cs_open) {	
+				
+				if (!cs_open && !cheatsheet_open) {	
 					if (correctStr != "") {
 						check_jump(editStr, correctStr, cj, ij);
 					}
@@ -1531,21 +1518,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					advance_state(display_state.current_choice);
 				}
 
-				if (!tex_rev_ptr->visible)
-				{
-					editMode = false;
-					editStr = "";
-					cursor_pos = 0;
-					display_state.status = CHANGING;
-				}
+			
 				
 				/**/
 				return true;
 			}
 
-			// 	/**/
-			// 	return true;
-			// }
+				/**/
+				return true;
+			}
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if (cursor_pos != 0) {
 				cursor_pos -= 1;
@@ -1629,15 +1610,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 					//I'm testing having infinite sounds
 				}
-				if (cs_open){
+				if (cs_open) {
 					editStr[cursor_pos] = in[0];
 					//std::cout << editStr << std::endl;
-					if (cursor_pos < editStr.length()-1){
+					if (cursor_pos < editStr.length()-1) {
 						cursor_pos+=1;
 					} else {
 						cursor_pos = 0;
 					}
-				} else if (cheatsheet_open)
+				}  else  if (cheatsheet_open)
 				{					
 			
 					
@@ -1660,14 +1641,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					cursor_pos += 1;
 
 					editStr_ui.insert(cursor_pos_ui, in);
-					editStr_ui += 1;
+					cursor_pos_ui += 1;
 
 				}
 				
 				
 			}
 			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
-				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
+				editStr = editStr.substr(0, cursor_pos-1) + 
+				          editStr.substr(cursor_pos, editStr.length() - cursor_pos);
 				float rand_vol = 1.0f -  (rand()%30)/100.0f;
 				curr_sound.emplace_back(Sound::play(*keyclick1, rand_vol, 0.0f));
 				clean_curr();
@@ -1695,7 +1677,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
-			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
+			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" +
+			            editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
 			update_texture(editingBox);
 		}
 
@@ -1712,21 +1695,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				if (display_state.current_choice < choices - 1) {
 					display_state.current_choice++;	
 					clear_png(&tex_box_text);
-					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
+					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], 
+					            white, display_state.cipher);
 					update_texture(&tex_box_text);
 				}
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
-			if (display_state.jumps.size() > 0) {
-				if (display_state.current_choice > 0) {
-					display_state.current_choice--;
-				
-					clear_png(&tex_box_text);
-					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
-					update_texture(&tex_box_text);
-				}
+			if (display_state.jumps.size() > 0
+			 && display_state.current_choice > 0) {
+				display_state.current_choice--;
+			
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], 
+							white, display_state.cipher);
+				update_texture(&tex_box_text);
 			}
 			return true;
 		}
@@ -1747,7 +1731,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			tex_y >= tex_textbg.bounds[2] &&
 			tex_y < tex_textbg.bounds[3])
 		{
-
 			clear_png(&tex_box_text);
 			advance_state(0);
 
@@ -1786,14 +1769,14 @@ void PlayMode::update(float elapsed) {
 			continue;
 		}
 
-
 		if (!(gc->character_completed) && 
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
 			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
 			getTexture(textures, "customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
-			if(!getTexture(textures, "customer_" + gc->id + ".png")->visible && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
+			if (!getTexture(textures, "customer_" + gc->id + ".png")->visible 
+			 && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
 			{
 				getTexture(textures, "customer_" + gc->id + + "_selected.png")->visible = true;
 
