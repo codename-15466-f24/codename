@@ -953,7 +953,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_rev_ptr = &tex_rev;
 	tex_cs_ptr = &tex_cs;
 
-	//get pointers to stuff
+	//get pointers to character transforms
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "swap_creature") sp_shaper  = &transform;
 		if (transform.name == "Bleebus_Head")  basicbleeb = &transform;
@@ -965,15 +965,18 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		if (transform.name == "shaper3")       g2_shaper  = &transform;
 		if (transform.name == "shaper4")       g3_shaper  = &transform;
 	}
-	if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
-	if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
-	if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
-	if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
-	if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
-	if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
-	if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
-	if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
-	if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	// check that all characters' transforms are founc in the scene
+	{
+		if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
+		if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
+		if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
+		if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
+		if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
+		if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
+		if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
+		if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
+		if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	}
 	creature_xforms = {basicbleeb, subeelb, 
 	                   gremlin, csm1, csm2, 
 	                   sp_shaper, g1_shaper, g2_shaper, g3_shaper};
@@ -1012,16 +1015,6 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	entrance_filenames["g3_shaper"] = "shaper_3.txt";
 
 	advance_state(0);
-}
-
-/* This function should refresh the display according to whatever is in the state.
- * Might be necessary at the very start.
- * Could also be useful if something goes wrong.
- */
-void PlayMode::refresh_display() {
-	// draw bottom_text 🥺
-	// draw the characters and images displayed
-	// these are all comments because I'm not sure what exactly this should look like yet
 }
 
 void PlayMode::advance_one_line(uint32_t jump_choice) {
@@ -1285,7 +1278,6 @@ void PlayMode::apply_command(std::string line) {
 		/*if (curr_sound != nullptr && !curr_sound->stopping)
 		{
 			curr_sound->stop(1.0f);
-
 		} */
 
 		//if (curr_sound == nullptr || curr_sound->stopped) 
@@ -1328,7 +1320,8 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
 	}
-	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
+	// ensure we go to the next line
+	else display_state.jumps = {display_state.line_number + 1}; 
 
 	display_state.current_choice = 0; // reset choice
 }
