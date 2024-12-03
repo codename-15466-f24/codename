@@ -835,7 +835,7 @@ void PlayMode::initializeCallbacks()
 						// propogate the answer from the minipuzzle to the key
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
-							size_t index = display_state.puzzle_text[i] - 'A';
+							size_t index = display_state.puzzle_text[i] - 'a';
 							display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
 							substitution_display[index] = tolower(editStr[i]);
 						}
@@ -1646,6 +1646,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 					editStr_ui[cursor_pos_ui] = in[0];
 					substitution_display[cursor_pos_ui] = char(in[0]);
+					std::cout << cursor_pos_ui << std::endl;
 					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = char(in[0]);
 					//std::cout << editStr << std::endl;
 					if (cursor_pos_ui < editStr_ui.length()-1){
