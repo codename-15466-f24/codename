@@ -832,14 +832,8 @@ void PlayMode::initializeCallbacks()
 							if (0 <= index && index < 26)
 							{
 								substitution_display[index] = tolower(editStr[i]);
-							}
-
-							size_t index2 = editStr[i] - 'A';
-
-							if (0 <= index2 && index2 < 26)
-							{
 								display_state.special_cipher
-									->features["substitution"].alphabet[index2] = tolower(display_state.puzzle_text[i]);
+									->features["substitution"].alphabet[index] = tolower(editStr[i]);
 							}
 
 						}
@@ -1100,7 +1094,8 @@ void PlayMode::apply_command(std::string line) {
 			}
 			else if (parsed[4] == "CSMajor" || parsed[4] == "CS-Major") {
 				// since we're doing this as a substitution cipher
-				g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
+				// g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
+				g.species = new SubstitutionCipher("CSMajor", "zabcdefghijklmnopqrstuvwxy");
 			}
 			else if (parsed[4] == "Shaper") {
 				// probably change this to something more elaborate
@@ -1654,11 +1649,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				{	
 					editStr_ui[cursor_pos_ui] = tolower(in[0]);
 					substitution_display[cursor_pos_ui] = tolower(char(in[0]));
+					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
+						 tolower(char(in[0]));
 
-					size_t index = tolower(char(in[0])) - 'a';
-					display_state.special_cipher->features["substitution"].alphabet[index] = 
-						display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui];
-					//std::cout << editStr << std::endl;
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
 					} else {
