@@ -249,6 +249,7 @@ struct PlayMode : Mode {
 
 		enum Status status = CHANGING;
 		std::string bottom_text = "";
+		std::string speech_text = "";
 		char cipher = 'd';
 		
 		std::vector<DisplayCharacter> chars;
