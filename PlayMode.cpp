@@ -622,7 +622,7 @@ void PlayMode::initializeCallbacks()
 					}
 					
 
-					if (!cs_open)
+					if (!cs_open && !(display_state.status == INPUT))
 					{
 						cheatsheet_open = true;
 						editingBox = tex_rev_ptr;
@@ -1393,6 +1393,12 @@ void PlayMode::apply_command(std::string line) {
 		editMode = true;
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
+
+		// hide cipher panel
+		getTexture(textures, "cipher_panel_full.png")->visible = false;
+		getTexture(textures, "cipher_panel.png")->visible = true;
+		cheatsheet_open = false;
+		tex_rev.visible = false;
 	}
 	// ensure we go to the next line
 	else display_state.jumps = {display_state.line_number + 1}; 
