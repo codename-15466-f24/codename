@@ -241,7 +241,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "cs_major_1.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "cs_major_introduction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -267,7 +267,8 @@ struct PlayMode : Mode {
 		std::string puzzle_text;
 
 		ToggleCipher *special_cipher = new ToggleCipher();
-		std::string special_solution_text = "No special requests right now!";
+		ToggleCipher *progress_cipher = new ToggleCipher();
+		std::string special_original_text = "No special requests right now!";
 		std::string special_request_text = "No special requests right now!";
 	} display_state;
 
