@@ -832,9 +832,9 @@ void PlayMode::initializeCallbacks()
 							size_t index = display_state.puzzle_text[i] - 'A';
 							if (0 <= index && index < 26)
 							{
-								substitution_display[index] = tolower(editStr[i]);
+								substitution_display[index] = char(tolower(editStr[i]));
 								display_state.special_cipher
-									->features["substitution"].alphabet[index] = tolower(editStr[i]);
+									->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
 							}
 
 						}
@@ -1425,7 +1425,7 @@ void PlayMode::draw_state_text() {
 	}
 	else 
 	{
-		int index = display_state.bottom_text.find("₿");
+		int index = int(display_state.bottom_text.find("₿"));
 		if (index >= 0 && display_state.cipher == 'e')
 		{
 			std::string name  = display_state.bottom_text.substr(0, index);
@@ -1648,10 +1648,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					}
 				}  else  if (cheatsheet_open)
 				{	
-					editStr_ui[cursor_pos_ui] = tolower(in[0]);
-					substitution_display[cursor_pos_ui] = tolower(char(in[0]));
+					editStr_ui[cursor_pos_ui] = char(tolower(in[0]));
+					substitution_display[cursor_pos_ui] = char(tolower(char(in[0])));
 					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
-						 tolower(char(in[0]));
+						 char(tolower(char(in[0])));
 
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
