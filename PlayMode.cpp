@@ -1424,7 +1424,7 @@ void PlayMode::draw_state_text() {
 	}
 	else 
 	{
-		int index = display_state.bottom_text.find("₿");
+		int index = int(display_state.bottom_text.find("₿"));
 		if (index >= 0 && display_state.cipher == 'e')
 		{
 			std::string name  = display_state.bottom_text.substr(0, index);
