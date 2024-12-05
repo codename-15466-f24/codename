@@ -59,11 +59,11 @@ std::string SubstitutionCipher::decode_with_features(std::string text, CipherFea
     char key[27];
     if (cfm.find("substitution") == cfm.end()) {
         for (size_t i = 0; i < 26; i++) {
-            key[i] = cfm["substitution"].alphabet[i];
+            key[i] = features["substitution"].alphabet[i];
         }
     } else {
         for (size_t i = 0; i < 26; i++) {
-            key[i] = features["substitution"].alphabet[i];
+            key[i] = cfm["substitution"].alphabet[i];
         }
     }
     key[26] = '\0';

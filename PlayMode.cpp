@@ -842,15 +842,10 @@ void PlayMode::initializeCallbacks()
 							std::cout << display_state.progress_cipher
 									->features["substitution"].alphabet[i] << std::endl;
 						}
-						for (size_t i = 0; i < 26; i++) {
-							std::cout << display_state.progress_cipher
-									->features["substitution"].alphabet[i] << std::endl;
-						}
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
 						advance_state(0);
-
 						display_state.special_request_text = display_state.progress_cipher->decode(
 							display_state.special_cipher->encode(
 							display_state.special_original_text));
@@ -1569,21 +1564,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
-			if (cursor_pos != 0) {
+			if (cursor_pos > 0) {
 				cursor_pos -= 1;
 			}
 
-			if (cursor_pos_ui != 0) {
+			if (cursor_pos_ui > 0) {
 				cursor_pos_ui -= 1;
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			if (cursor_pos != editStr.length()){
+			if (cursor_pos < editStr.length()){
 				cursor_pos += 1;
 			} else if (cs_open) {
 				cursor_pos = 0;
 			}
 
-			if (cursor_pos_ui != editStr_ui.length()){
+			if (cursor_pos_ui < editStr_ui.length()){
 				cursor_pos_ui += 1;
 			} else if (cheatsheet_open) {
 				cursor_pos_ui = 0;
@@ -1668,7 +1663,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					} else {
 						cursor_pos = 0;
 					}
-				}  else  if (cheatsheet_open)
+				}  else if (cheatsheet_open)
 				{	
 					editStr_ui[cursor_pos_ui] = (char)tolower(in[0]);
 					substitution_display[cursor_pos_ui] = (char)tolower(char(in[0]));
