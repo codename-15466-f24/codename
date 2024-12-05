@@ -644,6 +644,8 @@ void PlayMode::initializeCallbacks()
 						cheatsheet_open = true;
 						editingBox = tex_rev_ptr;
 						editStr_ui = std::string(substitution_display);
+						std::cout << substitution_display << std::endl;
+						std::cout << editStr_ui << std::endl;
 						cursor_pos_ui = 0;				
 						editMode = true;
 						clear_png(tex_rev_ptr);
@@ -844,17 +846,19 @@ void PlayMode::initializeCallbacks()
 							size_t index = display_state.puzzle_text[i] - 'A';
 							if (0 <= index && index < 26)
 							{
-								substitution_display[index] = char(tolower(editStr[i]));
-								display_state.special_cipher
-									->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
+								substitution_display[index] = (char)tolower(editStr[i]);
+								display_state.progress_cipher
+									->features["substitution"].alphabet[editStr[i] - 'A'] = (char)tolower(display_state.puzzle_text[i]);
 							}
 						}
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
 						advance_state(0);
-
-						display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+						display_state.special_request_text = display_state.progress_cipher->decode(
+							display_state.special_cipher->encode(
+							display_state.special_original_text));
+						std::cout << display_state.special_request_text << std::endl;
 						draw_state_text();
 
 						if (cs_open) {
@@ -947,7 +951,9 @@ void PlayMode::initializeCallbacks()
 						display_state.special_cipher->set_feature("flip", cf);
 
 						// Actually propagate the special request text
-						display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+						display_state.special_request_text = display_state.progress_cipher->decode(
+							display_state.special_cipher->encode(
+							display_state.special_original_text));
 						draw_state_text();
 						// tex_special_ptr->visible = false;
 				}
@@ -1211,7 +1217,7 @@ void PlayMode::apply_command(std::string line) {
 			found_character = true;
 			speaker = characters[parsed[2]];
 			std::cout << speaker.species->name << std::endl;
-			// std::string res = display_state.special_cipher->encode(parsed[3]);
+			// std::string res = speaker.species->encode(parsed[3]);
 			std::string res = parsed[3];
 			std::cout << res << std::endl;
 			speech_text = res;
@@ -1260,8 +1266,16 @@ void PlayMode::apply_command(std::string line) {
 
 			display_state.solution_text = parsed[4];
 			display_state.special_cipher = characters[parsed[3]].species;
+
+			display_state.progress_cipher = new ToggleCipher();
+			if (display_state.special_cipher->name == "Bleebus") {
+				display_state.progress_cipher = new ReverseCipher();
+			}
+			else {
+				display_state.progress_cipher = new SubstitutionCipher();
+			}
 			std::cout << "Cipher in use for this puzzle: " << display_state.special_cipher->name << std::endl;
-			display_state.special_cipher->reset_features();
+			// display_state.special_cipher->reset_features();
 			display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
 			if (display_state.special_cipher->name == "Substitution"
 					|| display_state.special_cipher->name == "Shaper"
@@ -1304,9 +1318,8 @@ void PlayMode::apply_command(std::string line) {
 		} else if (panel == "special")
 		{
 			display_state.special_cipher = characters[parsed[3]].species;
-			display_state.special_cipher->reset_features();
-			display_state.special_solution_text = parsed[4];
-			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+			display_state.special_original_text = parsed[4];
+			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_original_text);
 			for (auto tex : textures)
 			{
 				if (tex->path == "special_request_collapsed.png")
@@ -1436,14 +1449,15 @@ void PlayMode::draw_state_text() {
 	}
 	else 
 	{
-		int index = int(display_state.bottom_text.find("₿"));
+		size_t index = display_state.bottom_text.find("₿");
 		if (index >= 0 && display_state.cipher == 'e')
 		{
 			std::string name  = display_state.bottom_text.substr(0, index);
 			std::string enc_message =
+				display_state.progress_cipher->decode(
 				display_state.special_cipher->encode(
 					display_state.bottom_text.substr(index, display_state.bottom_text.length()
-					- index));
+					- index)));
 
 			text_to_draw = name + enc_message;
 
@@ -1509,6 +1523,8 @@ void PlayMode::check_jump(std::string input, std::string correct, uint32_t corre
 		display_state.jumps = {correctJump};
 		display_state.status = CHANGING;
 		correctStr = "";
+
+		substitution_display = substitution_display_default; // reset this in advance
 	} else {
 		// Jump to incorrect line
 		display_state.jumps = {incorrectJump};
@@ -1554,21 +1570,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			}
 
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
-			if (cursor_pos != 0) {
+			if (cursor_pos > 0) {
 				cursor_pos -= 1;
 			}
 
-			if (cursor_pos_ui != 0) {
+			if (cursor_pos_ui > 0) {
 				cursor_pos_ui -= 1;
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			if (cursor_pos != editStr.length()){
+			if (cursor_pos < editStr.length()){
 				cursor_pos += 1;
 			} else if (cs_open) {
 				cursor_pos = 0;
 			}
 
-			if (cursor_pos_ui != editStr_ui.length()){
+			if (cursor_pos_ui < editStr_ui.length()){
 				cursor_pos_ui += 1;
 			} else if (cheatsheet_open) {
 				cursor_pos_ui = 0;
@@ -1653,12 +1669,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					} else {
 						cursor_pos = 0;
 					}
-				}  else  if (cheatsheet_open)
+				}  else if (cheatsheet_open)
 				{	
-					editStr_ui[cursor_pos_ui] = char(tolower(in[0]));
-					substitution_display[cursor_pos_ui] = char(tolower(char(in[0])));
-					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
-						 char(tolower(char(in[0])));
+					editStr_ui[cursor_pos_ui] = (char)tolower(in[0]);
+					substitution_display[cursor_pos_ui] = (char)tolower(char(in[0]));
+					display_state.progress_cipher->features["substitution"].alphabet[char(in[0]) - 'A'] = 
+						 'a' + (char)cursor_pos_ui;
 
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
@@ -1666,7 +1682,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 						cursor_pos_ui = 0;
 					}
 
-					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+					display_state.special_request_text = display_state.progress_cipher->decode(
+						display_state.special_cipher->encode(
+						display_state.special_original_text));
 					draw_state_text();
 					
 				} else {

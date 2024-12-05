@@ -9,5 +9,6 @@
 9 Text d "The galaxy is home to thousands of species of aliens, each with their own language and culture."
 10 Text d "Luckily, a few eras ago the intergalactic language council standardized a lot of things, so these languages can be easily translated back into your home language with a few steps."
 11 Text d "Unluckily, those steps aren't always simple or straightforward. With some experience and smart problem-solving skills though, you'll be able to communicate with anyone who walks through these doors."
-12 Text d "Speaking of which, it looks like you'll have to deal with one of those in a moment..."
-13 Change_File "special_bleeb1.txt"
+12 Sound "docking.opus"
+13 Text d "Speaking of which, it looks like you'll have to deal with one of those in a moment..."
+14 Change_File "special_bleeb1.txt"
