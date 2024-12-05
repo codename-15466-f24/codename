@@ -25,9 +25,9 @@ std::string SubstitutionCipher::encode_with_features(std::string text, CipherFea
 
     std::string res = "";
     for (size_t i = 0; i < text.length(); i++) {
-        if (text[i] >= 'a' && text[i] <= 'z') {
+        if (text[i] >= 'a' && text[i] <= 'z' && key[text[i] - 'a'] >= 'a' && key[text[i] - 'a'] <= 'z') {
             res = res + key[text[i] - 'a'];
-        } else if (text[i] >= 'A' && text[i] <= 'Z') {
+        } else if (text[i] >= 'A' && text[i] <= 'Z' && key[text[i] - 'A'] >= 'a' && key[text[i] - 'A'] <= 'z') {
             char add = key[text[i] - 'A'];
             add = add - 32;
             res = res + add;
@@ -50,7 +50,8 @@ bool SubstitutionCipher::valid_permutation(std::string key) {
 std::string SubstitutionCipher::invert_alphabet(std::string key) {
     std::string res = "abcdefghijklmnopqrstuvwxyz";
     for (size_t i = 0; i < 26; i++) {
-        res[key[i] - 'a'] = 'a' + (char)i;
+        if (0 <= key[i] - 'a' && key[i] - 'a' < 26)
+            res[key[i] - 'a'] = 'a' + (char)i;
     }
     return res;
 }

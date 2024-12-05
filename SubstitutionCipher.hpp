@@ -14,13 +14,13 @@ struct SubstitutionCipher : ToggleCipher {
 
     SubstitutionCipher() {
         for (size_t i = 0; i < 26; i++) {
-            features["substitution"].alphabet[i] = 'a' + (char)i;
+            features["substitution"].alphabet[i] = '.';
         }
     };
     SubstitutionCipher(std::string input_name) {
         name = input_name;
         for (size_t i = 0; i < 26; i++) {
-            features["substitution"].alphabet[i] = 'a' + (char)i;
+            features["substitution"].alphabet[i] = '.';
         }
     };
     SubstitutionCipher(std::string input_name, std::string key) {
