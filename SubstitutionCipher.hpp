@@ -43,4 +43,6 @@ struct SubstitutionCipher : ToggleCipher {
     // assumes encoding of "abcdefghijklmnopqrstuvwxyz" -> "[key]"
     // constructs the decoder such that "abcdefghijklmnopqrstuvwxyz" -> "[decoder]" does the opposite
     std::string invert_alphabet(std::string key);
+
+    virtual std::string cipher_type() override;
 };

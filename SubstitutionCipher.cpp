@@ -81,3 +81,7 @@ void SubstitutionCipher::reset_features() {
         features["substitution"].alphabet[i] = default_alphabet[i];
     }
 }
+
+std::string SubstitutionCipher::cipher_type() {
+    return "substitution";
+}

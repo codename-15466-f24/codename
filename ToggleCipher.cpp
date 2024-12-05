@@ -27,6 +27,10 @@ void ToggleCipher::reset_features() {
     }
 }
 
+std::string ToggleCipher::cipher_type() {
+    return "default";
+}
+
 // std::string SubstitutionCipher::encode_with_features(std::string text, CipherFeatureMap &cfm) {
 //     // I think every encoding/decoding function should look like this.
 //     // Basically, get the features you need, then use that information to actually do the cipher.

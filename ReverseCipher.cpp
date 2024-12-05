@@ -47,3 +47,7 @@ std::string ReverseCipher::decode_with_features(std::string text, CipherFeatureM
 void ReverseCipher::reset_features() {
     features["flip"].b = true;
 }
+
+std::string ReverseCipher::cipher_type() {
+    return "reverse";
+}
