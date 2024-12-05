@@ -241,7 +241,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "cs_major_introduction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "cs_major_1.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -249,6 +249,7 @@ struct PlayMode : Mode {
 
 		enum Status status = CHANGING;
 		std::string bottom_text = "";
+		std::string speech_text = "";
 		char cipher = 'd';
 		
 		std::vector<DisplayCharacter> chars;

@@ -440,7 +440,8 @@ void PlayMode::render_text(PlayMode::TextureItem *tex_in, std::string line_in,
 			// bitmap drawing function
 			if (glyphname != "franc") 
 			{
-				if (colorOut == green && n == cursor_pos){
+				if (colorOut == green && ((cs_open && n == cursor_pos) || 
+					(cheatsheet_open && n == cursor_pos_ui))){
 					draw_glyph_png(&slot->bitmap, tex_in, static_cast<int>(x_position + slot->bitmap_left), static_cast<int>(y_position - slot->bitmap_top), white);
 				}
 				else {
@@ -611,9 +612,9 @@ void PlayMode::initializeCallbacks()
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
-				if (display_state.puzzle_cipher->name == "Substitution"
-				 || display_state.puzzle_cipher->name == "Shaper"
-				 || display_state.puzzle_cipher->name == "CSMajor")
+				if (display_state.special_cipher->name == "Substitution"
+				 || display_state.special_cipher->name == "Shaper"
+				 || display_state.special_cipher->name == "CSMajor")
 				{
 					if (display_state.solved_puzzle)
 					{
@@ -628,7 +629,6 @@ void PlayMode::initializeCallbacks()
 						editStr_ui = std::string(substitution_display);
 						cursor_pos_ui = 0;				
 						editMode = true;
-						display_state.status = INPUT;
 						clear_png(tex_rev_ptr);
 						render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr_ui, green, 'd', 48);
 						update_texture(tex_rev_ptr);
@@ -640,8 +640,8 @@ void PlayMode::initializeCallbacks()
 
 					
 
-				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					    || display_state.puzzle_cipher->name == "Reverse")
+				} else if (display_state.special_cipher->name == "Bleebus"
+					    || display_state.special_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 					if (display_state.solved_puzzle)
@@ -662,28 +662,23 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				
 				togglePanel(textures, RightPane);
-				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper"
-					|| display_state.puzzle_cipher->name == "CSMajor")
+				if (display_state.special_cipher->name == "Substitution"
+				 || display_state.special_cipher->name == "Shaper"
+				 || display_state.special_cipher->name == "CSMajor")
 				{
 
 					if (cheatsheet_open)
 					{
-
 						editMode = false;
 						editStr_ui = "";
 						cursor_pos_ui = 0;
-						display_state.status = CHANGING;
 						cheatsheet_open = false;
-
-						draw_state_text();
-
 					}
 
 					tex_rev_ptr->visible = false;
 					
-				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					|| display_state.puzzle_cipher->name == "Reverse")
+				} else if (display_state.special_cipher->name == "Bleebus"
+					    || display_state.special_cipher->name == "Reverse")
 				{
 					// reverse cipher here
 					if (display_state.solved_puzzle)
@@ -776,8 +771,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = false;
-				display_state.puzzle_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
+				display_state.special_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
@@ -803,8 +798,8 @@ void PlayMode::initializeCallbacks()
 				}
 				CipherFeature cf;
 				cf.b = true;
-				display_state.puzzle_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
+				display_state.special_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
 				draw_state_text();
 			};
 
@@ -816,9 +811,9 @@ void PlayMode::initializeCallbacks()
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 				bool solved = false;
 
-				if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper"
-					|| display_state.puzzle_cipher->name == "CSMajor")
+				if (display_state.special_cipher->name == "Substitution"
+					|| display_state.special_cipher->name == "Shaper"
+					|| display_state.special_cipher->name == "CSMajor")
 				{
 
 
@@ -829,20 +824,19 @@ void PlayMode::initializeCallbacks()
 
 					if (solved)
 					{
-						std::cout << "solved!" << std::endl;
-
-
 						// decode first
-						display_state.special_request_text = display_state.special_cipher->decode(display_state.special_solution_text);
 						// propogate the answer from the minipuzzle to the key
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
 							size_t index = display_state.puzzle_text[i] - 'A';
-							display_state.special_cipher->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
-							substitution_display[index] = char(tolower(editStr[i]));
-							
+							if (0 <= index && index < 26)
+							{
+								substitution_display[index] = char(tolower(editStr[i]));
+								display_state.special_cipher
+									->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
+							}
+
 						}
-						std::cout << substitution_display << std::endl;
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
@@ -874,8 +868,8 @@ void PlayMode::initializeCallbacks()
 						}
 					}
 					
-				} else if (display_state.puzzle_cipher->name == "Bleebus"
-					    || display_state.puzzle_cipher->name == "Reverse")
+				} else if (display_state.special_cipher->name == "Bleebus"
+					    || display_state.special_cipher->name == "Reverse")
 				{
 					// example: check if reverse button is enabled
 					bool reverseEnabled = true;
@@ -954,7 +948,6 @@ void PlayMode::initializeCallbacks()
 				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
 				update_texture(&tex_box_text);
 			}
-
 		};
 			callbacks.emplace_back(callback);
 		}
@@ -998,7 +991,7 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	tex_cs_ptr = &tex_cs;
 	substitution_display_ptr = &substitution_display;
 
-	//get pointers to stuff
+	//get pointers to character transforms
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "swap_creature") sp_shaper  = &transform;
 		if (transform.name == "Bleebus_Head")  basicbleeb = &transform;
@@ -1010,15 +1003,18 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		if (transform.name == "shaper3")       g2_shaper  = &transform;
 		if (transform.name == "shaper4")       g3_shaper  = &transform;
 	}
-	if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
-	if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
-	if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
-	if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
-	if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
-	if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
-	if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
-	if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
-	if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	// check that all characters' transforms are founc in the scene
+	{
+		if (basicbleeb == nullptr) throw std::runtime_error("basicbleeb not found.");
+		if (subeelb    == nullptr) throw std::runtime_error("subeelb not found.");
+		if (gremlin    == nullptr) throw std::runtime_error("gremlin not found.");
+		if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
+		if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
+		if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
+		if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
+		if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
+		if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+	}
 	creature_xforms = {basicbleeb, subeelb, 
 	                   gremlin, csm1, csm2, 
 	                   sp_shaper, g1_shaper, g2_shaper, g3_shaper};
@@ -1057,16 +1053,6 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	entrance_filenames["g3_shaper"] = "shaper_3.txt";
 
 	advance_state(0);
-}
-
-/* This function should refresh the display according to whatever is in the state.
- * Might be necessary at the very start.
- * Could also be useful if something goes wrong.
- */
-void PlayMode::refresh_display() {
-	// draw bottom_text 🥺
-	// draw the characters and images displayed
-	// these are all comments because I'm not sure what exactly this should look like yet
 }
 
 void PlayMode::advance_one_line(uint32_t jump_choice) {
@@ -1108,7 +1094,8 @@ void PlayMode::apply_command(std::string line) {
 			}
 			else if (parsed[4] == "CSMajor" || parsed[4] == "CS-Major") {
 				// since we're doing this as a substitution cipher
-				g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
+				// g.species = new SubstitutionCipher("CSMajor", "fghijklmnopqrstuvwxyzabcde");
+				g.species = new SubstitutionCipher("CSMajor", "zabcdefghijklmnopqrstuvwxy");
 			}
 			else if (parsed[4] == "Shaper") {
 				// probably change this to something more elaborate
@@ -1159,15 +1146,13 @@ void PlayMode::apply_command(std::string line) {
 			leave_line(&(g_pair->second));
 		}
 
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + + "_selected.png")->alignment = TopMiddlePaneHidden;
-		getTexture(textures, "customer_" + (g_pair->second).id + + ".png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id +  "_selected.png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->visible = false;
+		getTexture(textures, "customer_" + (g_pair->second).id + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
-
-		
-		
+		display_state.status = CHANGING;
 	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
@@ -1203,6 +1188,8 @@ void PlayMode::apply_command(std::string line) {
 		std::string speech_text = parsed[3];
 		bool found_character = false;
 		GameCharacter speaker;
+
+		display_state.cipher = 'd';
 		if (parsed[2] == player_id) {
 			display_state.bottom_text = parsed[3];
 			found_character = true;
@@ -1212,10 +1199,16 @@ void PlayMode::apply_command(std::string line) {
 			found_character = true;
 			speaker = characters[parsed[2]];
 			std::cout << speaker.species->name << std::endl;
-			std::string res = speaker.species->encode(parsed[3]);
+			// std::string res = display_state.special_cipher->encode(parsed[3]);
+			std::string res = parsed[3];
 			std::cout << res << std::endl;
 			speech_text = res;
+			display_state.cipher = 'e';
 		}
+
+		display_state.bottom_text = "";
+		display_state.speech_text = "";
+
 		display_state.bottom_text = (found_character ? "[" + speaker.name + "]₿" : "") + speech_text;
 		display_state.status = TEXT;
 	}
@@ -1254,13 +1247,13 @@ void PlayMode::apply_command(std::string line) {
 
 
 			display_state.solution_text = parsed[4];
-			display_state.puzzle_cipher = characters[parsed[3]].species;
-			std::cout << "Cipher in use for this puzzle: " << display_state.puzzle_cipher->name << std::endl;
-			display_state.puzzle_cipher->reset_features();
-			display_state.puzzle_text = display_state.puzzle_cipher->encode(display_state.solution_text);
-			if (display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper"
-					|| display_state.puzzle_cipher->name == "CSMajor")
+			display_state.special_cipher = characters[parsed[3]].species;
+			std::cout << "Cipher in use for this puzzle: " << display_state.special_cipher->name << std::endl;
+			display_state.special_cipher->reset_features();
+			display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
+			if (display_state.special_cipher->name == "Substitution"
+					|| display_state.special_cipher->name == "Shaper"
+					|| display_state.special_cipher->name == "CSMajor")
 			{
 				cs_open = true;
 				editingBox = tex_cs_ptr;
@@ -1344,7 +1337,6 @@ void PlayMode::apply_command(std::string line) {
 		/*if (curr_sound != nullptr && !curr_sound->stopping)
 		{
 			curr_sound->stop(1.0f);
-
 		} */
 
 		//if (curr_sound == nullptr || curr_sound->stopped) 
@@ -1387,7 +1379,8 @@ void PlayMode::apply_command(std::string line) {
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
 	}
-	else display_state.jumps = {display_state.line_number + 1}; // ensure we go to the next line
+	// ensure we go to the next line
+	else display_state.jumps = {display_state.line_number + 1}; 
 
 	display_state.current_choice = 0; // reset choice
 }
@@ -1429,7 +1422,24 @@ void PlayMode::draw_state_text() {
 			text_to_draw += s + '\n';
 		}
 	}
-	else text_to_draw = display_state.bottom_text;
+	else 
+	{
+		int index = display_state.bottom_text.find("₿");
+		if (index >= 0 && display_state.cipher == 'e')
+		{
+			std::string name  = display_state.bottom_text.substr(0, index);
+			std::string enc_message =
+				display_state.special_cipher->encode(
+					display_state.bottom_text.substr(index, display_state.bottom_text.length()
+					- index));
+
+
+			text_to_draw = name + enc_message;
+
+		} else {
+			text_to_draw = display_state.bottom_text;
+		}
+	}
 
 	//tex_box_text.size = glm::uvec2(render_width, render_height);
 	tex_box_text.bounds = {-1.0f, 1.0f, -1.0f, -0.33f, 0.0f};
@@ -1468,9 +1478,9 @@ void PlayMode::draw_state_text() {
 
 	tex_rev.bounds = {0.35f, 0.95f, 0.0f, 0.6f, -0.00001f};
 	set_size(&tex_rev);
-	std::string cipher_string = display_state.puzzle_cipher->name == "Substitution"
-					|| display_state.puzzle_cipher->name == "Shaper" 
-					|| display_state.puzzle_cipher->name == "CSMajor" ?
+	std::string cipher_string = display_state.special_cipher->name == "Substitution"
+					|| display_state.special_cipher->name == "Shaper" 
+					|| display_state.special_cipher->name == "CSMajor" ?
 					 "abcdefghijklmnopqrstuvwxyz₣" + std::string(substitution_display)  : "DROW₣WORD";
 	if (!cheatsheet_open)
 	{
@@ -1517,19 +1527,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 	} else if (evt.type == SDL_KEYDOWN) {
 		//Edit Mode
 		if (evt.key.keysym.sym == SDLK_RETURN) {
-			//enter.pressed = false;
-			//std::cout << "editmode" << std::endl;
-			// if (editStr != "") {
-			// 	std::cout << "Sent " << editStr << " as input" << std::endl;
-				
-			// 	// checking function
-
-				if (editStr != "") {
+			if (editStr != "") {
 				std::cout << "Sent " << editStr << " as input" << std::endl;
 				
-				// checking function
-
-				if (!cs_open) {	
+				
+				if (!cs_open && !cheatsheet_open) {	
 					if (correctStr != "") {
 						check_jump(editStr, correctStr, cj, ij);
 					}
@@ -1537,30 +1539,31 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					advance_state(display_state.current_choice);
 				}
 
-				if (!tex_rev_ptr->visible)
-				{
-					editMode = false;
-					editStr = "";
-					cursor_pos = 0;
-					display_state.status = CHANGING;
-				}
+			
 				
 				/**/
 				return true;
 			}
 
-			// 	/**/
-			// 	return true;
-			// }
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if (cursor_pos != 0) {
 				cursor_pos -= 1;
+			}
+
+			if (cursor_pos_ui != 0) {
+				cursor_pos_ui -= 1;
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if (cursor_pos != editStr.length()){
 				cursor_pos += 1;
 			} else if (cs_open) {
-					cursor_pos = 0;
+				cursor_pos = 0;
+			}
+
+			if (cursor_pos_ui != editStr_ui.length()){
+				cursor_pos_ui += 1;
+			} else if (cheatsheet_open) {
+				cursor_pos_ui = 0;
 			}
 		}
 		else {
@@ -1606,7 +1609,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					if (cheatsheet_open){
 			
 						editStr_ui[cursor_pos] = in[0];
-						std::cout << editStr_ui << std::endl;
 						if (cursor_pos_ui < editStr_ui.length()-1){
 							cursor_pos_ui+=1;
 						}
@@ -1635,47 +1637,44 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 					//I'm testing having infinite sounds
 				}
-				if (cs_open){
+				if (cs_open) {
 					editStr[cursor_pos] = in[0];
 					//std::cout << editStr << std::endl;
-					if (cursor_pos < editStr.length()-1){
+					if (cursor_pos < editStr.length()-1) {
 						cursor_pos+=1;
 					} else {
 						cursor_pos = 0;
 					}
-				} else if (cheatsheet_open)
-				{
-					display_state.bottom_text = display_state.special_cipher->decode(display_state.bottom_text);
-					display_state.special_request_text = display_state.special_cipher->decode(display_state.special_request_text);
-
+				}  else  if (cheatsheet_open)
+				{	
 					editStr_ui[cursor_pos_ui] = char(tolower(in[0]));
 					substitution_display[cursor_pos_ui] = char(tolower(char(in[0])));
-					// std::cout << cursor_pos_ui << std::endl;
-					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = char(tolower(char(in[0])));
-					//std::cout << editStr << std::endl;
+					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
+						 char(tolower(char(in[0])));
+
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
 					} else {
 						cursor_pos_ui = 0;
 					}
 
-					display_state.bottom_text = display_state.special_cipher->encode(display_state.bottom_text);
-					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_request_text);
-
+					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_solution_text);
+					draw_state_text();
 					
 				} else {
 					editStr.insert(cursor_pos, in);
 					cursor_pos += 1;
 
 					editStr_ui.insert(cursor_pos_ui, in);
-					editStr_ui += 1;
+					cursor_pos_ui += 1;
 
 				}
 				
 				
 			}
 			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
-				editStr = editStr.substr(0, cursor_pos-1) + editStr.substr(cursor_pos, editStr.length() - cursor_pos);
+				editStr = editStr.substr(0, cursor_pos-1) + 
+				          editStr.substr(cursor_pos, editStr.length() - cursor_pos);
 				float rand_vol = 1.0f -  (rand()%30)/100.0f;
 				curr_sound.emplace_back(Sound::play(*keyclick1, rand_vol, 0.0f));
 				clean_curr();
@@ -1703,7 +1702,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			
 		}else{
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
-			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" + editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
+			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" +
+			            editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');
 			update_texture(editingBox);
 		}
 
@@ -1720,21 +1720,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				if (display_state.current_choice < choices - 1) {
 					display_state.current_choice++;	
 					clear_png(&tex_box_text);
-					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
+					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], 
+					            white, display_state.cipher);
 					update_texture(&tex_box_text);
 				}
 			}
 			return true;
 		} else if (evt.key.keysym.sym == SDLK_UP) {
 			upArrow.pressed = false;
-			if (display_state.jumps.size() > 0) {
-				if (display_state.current_choice > 0) {
-					display_state.current_choice--;
-				
-					clear_png(&tex_box_text);
-					render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], white, display_state.cipher);
-					update_texture(&tex_box_text);
-				}
+			if (display_state.jumps.size() > 0
+			 && display_state.current_choice > 0) {
+				display_state.current_choice--;
+			
+				clear_png(&tex_box_text);
+				render_text(&tex_box_text, display_state.jump_names[display_state.current_choice], 
+							white, display_state.cipher);
+				update_texture(&tex_box_text);
 			}
 			return true;
 		}
@@ -1744,7 +1745,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
-		bool isLocked = checkForClick(textures, tex_x, tex_y);
+		bool isLocked = checkForClick(textures, tex_x, tex_y, 
+					(!selected_character || selected_character->joining_line));
 
 		// only advance if click inside of dialogue
 		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
@@ -1755,7 +1757,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			tex_y >= tex_textbg.bounds[2] &&
 			tex_y < tex_textbg.bounds[3])
 		{
-
 			clear_png(&tex_box_text);
 			advance_state(0);
 
@@ -1794,14 +1795,14 @@ void PlayMode::update(float elapsed) {
 			continue;
 		}
 
-
 		if (!(gc->character_completed) && 
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
 			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
 			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
 			getTexture(textures, "customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
-			if(!getTexture(textures, "customer_" + gc->id + ".png")->visible && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
+			if (!getTexture(textures, "customer_" + gc->id + ".png")->visible 
+			 && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
 			{
 				getTexture(textures, "customer_" + gc->id + + "_selected.png")->visible = true;
 

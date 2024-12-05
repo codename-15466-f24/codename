@@ -339,7 +339,7 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 	}
 }
 	
-bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
+bool checkForClick(std::vector<TexStruct *> textures, float x, float y, bool locked)
 {
 	bool isLocked = false;
 
@@ -353,13 +353,16 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y)
 
 
 		// don't allow clicking on invisible textures
-		if (tex.visible)
+		if (tex.visible && tex.alignment != TopMiddlePaneHidden &&
+							tex.alignment != MiddlePaneHidden)
 		{
 
 			if (x >= tex.bounds[0] &&
 				x < tex.bounds[1] &&
 				y > tex.bounds[2] &&
-				y <= tex.bounds[3])
+				y <= tex.bounds[3] &&
+				!(locked && (tex.alignment == TopMiddlePane || 
+							tex.alignment == TopMiddlePaneSelected)))
 			{
 				top_texture = tex_;
 			}
