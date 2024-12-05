@@ -706,6 +706,7 @@ void PlayMode::initializeCallbacks()
 					{
 						tex->visible = false;
 						tex_minipuzzle_ptr->visible = false;
+						cs_open = false;
 					}
 				}
 
@@ -1768,7 +1769,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		bool isLocked = checkForClick(textures, tex_x, tex_y, 
-					(!selected_character || selected_character->joining_line));
+					(selected_character && selected_character->joining_line));
 
 		// only advance if click inside of dialogue
 		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
