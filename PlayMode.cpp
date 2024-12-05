@@ -1575,10 +1575,14 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if (cursor_pos > 0) {
 				cursor_pos -= 1;
+			} else if (cursor_pos == 0) {
+				cursor_pos = uint32_t(editStr.length()-2);
 			}
 
 			if (cursor_pos_ui > 0) {
 				cursor_pos_ui -= 1;
+			} else if (cursor_pos_ui == 0) {
+				cursor_pos_ui = uint32_t(editStr_ui.length()-2);
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
 			if (cursor_pos < editStr.length()){
@@ -1587,7 +1591,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				cursor_pos = 0;
 			}
 
-			if (cursor_pos_ui < editStr_ui.length()){
+			if (cursor_pos_ui < (editStr_ui.length()-2)){
 				cursor_pos_ui += 1;
 			} else if (cheatsheet_open) {
 				cursor_pos_ui = 0;
@@ -1628,16 +1632,22 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					if (cs_open){
 						editStr[cursor_pos] = in[0];
 						//std::cout << editStr << std::endl;
-						if (cursor_pos < editStr.length()-1){
+						std::cout << "Reached here 1";
+						if (cursor_pos < (editStr.length()-2)){
 							cursor_pos+=1;
+						} else if (cursor_pos == (editStr_ui.length()-2)) {
+							cursor_pos = 0;
 						}
 					}
 
 					if (cheatsheet_open){
 			
 						editStr_ui[cursor_pos] = in[0];
-						if (cursor_pos_ui < editStr_ui.length()-1){
+						std::cout << "Reached here 2";
+						if (cursor_pos_ui < (editStr_ui.length()-2)){
 							cursor_pos_ui+=1;
+						} else if (cursor_pos_ui == (editStr_ui.length()-2)) {
+							cursor_pos_ui =0;
 						}
 					}
 					break;
@@ -1678,7 +1688,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					display_state.progress_cipher->features["substitution"].alphabet[char(in[0]) - 'A'] = 
 						 'a' + (char)cursor_pos_ui;
 
-					if (cursor_pos_ui < editStr_ui.length()-1){
+					if (cursor_pos_ui < editStr_ui.length()-2){
 						cursor_pos_ui+=1;
 					} else {
 						cursor_pos_ui = 0;
