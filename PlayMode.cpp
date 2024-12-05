@@ -673,6 +673,7 @@ void PlayMode::initializeCallbacks()
 					{
 						editMode = false;
 						editStr_ui = "";
+						cursor_pos = 0;
 						cursor_pos_ui = 0;
 						cheatsheet_open = false;
 					}
@@ -1395,6 +1396,9 @@ void PlayMode::apply_command(std::string line) {
 		editMode = true;
 		display_state.status = INPUT;
 		editingBox = &tex_box_text;
+		editStr = "";
+		cursor_pos = 0;
+		cursor_pos_ui = 0;
 
 		// hide cipher panel
 		getTexture(textures, "cipher_panel_full.png")->visible = false;
@@ -1574,7 +1578,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		} else if (evt.key.keysym.sym == SDLK_LEFT) {
 			if (cursor_pos > 0) {
 				cursor_pos -= 1;
-			} else if (cursor_pos == 0) {
+			} else if (cursor_pos == 0 && editingBox != &tex_box_text) {
 				if (tex_minipuzzle.visible){
 					cursor_pos = uint32_t(editStr.length()-1);
 				} else {
@@ -1584,7 +1588,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 			if (cursor_pos_ui > 0) {
 				cursor_pos_ui -= 1;
-			} else if (cursor_pos_ui == 0) {
+			} else if (cursor_pos_ui == 0 && editingBox != &tex_box_text) {
 				if (tex_minipuzzle.visible){
 					cursor_pos_ui = uint32_t(editStr_ui.length()-1);
 				} else {
