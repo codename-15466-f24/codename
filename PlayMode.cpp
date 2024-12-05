@@ -87,9 +87,27 @@ Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
 		Scene::Drawable &drawable = scene.drawables.back();
 
 		drawable.pipeline = lit_color_texture_program_pipeline;
-		// if (mesh_name == "holo_screen") {
-		// 	drawable.pipeline = texture_program_pipeline;
-		// }
+		if (mesh_name == "holo_screen") {
+			GLuint tex;
+			glGenTextures(1, &tex);
+
+			glBindTexture(GL_TEXTURE_2D, tex);
+			std::vector< glm::u8vec4 > tex_data = {};
+			glm::uvec2 imgsize = glm::uvec2(1, 1);
+			printf("got here\n");
+			tex_data.resize(512 * 710);
+			imgsize = glm::uvec2(512,710);
+			load_png(data_path("guide.png"), &imgsize, &tex_data, UpperLeftOrigin);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgsize.x, imgsize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data.data());
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			drawable.pipeline.textures[0].texture = tex;
+			drawable.pipeline.textures[0].target = GL_TEXTURE_2D;
+		}
 
 		drawable.pipeline.vao = codename_meshes_for_lit_color_texture_program;
 		drawable.pipeline.type = mesh.type;
@@ -620,7 +638,6 @@ void PlayMode::initializeCallbacks()
 					{
 						tex_rev_ptr->visible = true;
 					}
-					
 
 					if (!cs_open)
 					{
@@ -666,7 +683,6 @@ void PlayMode::initializeCallbacks()
 				 || display_state.special_cipher->name == "Shaper"
 				 || display_state.special_cipher->name == "CSMajor")
 				{
-
 					if (cheatsheet_open)
 					{
 						editMode = false;
@@ -674,7 +690,6 @@ void PlayMode::initializeCallbacks()
 						cursor_pos_ui = 0;
 						cheatsheet_open = false;
 					}
-
 					tex_rev_ptr->visible = false;
 					
 				} else if (display_state.special_cipher->name == "Bleebus"
@@ -693,7 +708,6 @@ void PlayMode::initializeCallbacks()
 			callbacks.emplace_back(callback);
 		} else if (path.substr(0,8) == "customer")
 		{
-
 			// special customer selector, either select or deselect customer
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
 
@@ -816,8 +830,6 @@ void PlayMode::initializeCallbacks()
 					|| display_state.special_cipher->name == "Shaper"
 					|| display_state.special_cipher->name == "CSMajor")
 				{
-
-
 					// TODO: Actually add-in solve checking
 					std::cout << display_state.solution_text << " versus " << editStr << std::endl;
 					solved = display_state.solution_text == editStr;
@@ -836,7 +848,6 @@ void PlayMode::initializeCallbacks()
 								display_state.special_cipher
 									->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
 							}
-
 						}
 
 						tex_minipuzzle_ptr->visible = false;
@@ -1434,7 +1445,6 @@ void PlayMode::draw_state_text() {
 					display_state.bottom_text.substr(index, display_state.bottom_text.length()
 					- index));
 
-
 			text_to_draw = name + enc_message;
 
 		} else {
@@ -1539,10 +1549,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					clear_png(editingBox);
 					advance_state(display_state.current_choice);
 				}
-
-			
 				
-				/**/
 				return true;
 			}
 
@@ -1692,16 +1699,15 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				render_text(&tex_box_text, current_line, white, display_state.cipher);
 				update_texture(&tex_box_text);
 			
-		}	else if (cheatsheet_open) {
+		} else if (cheatsheet_open) {
 				clear_png(tex_rev_ptr);
 				render_text(tex_rev_ptr, "abcdefghijklmnopqrstuvwxyz₣" + editStr_ui, green, 'd', 48);
 				update_texture(tex_rev_ptr);
 				clear_png(&tex_box_text);
 				render_text(&tex_box_text, current_line, white, display_state.cipher);
 				update_texture(&tex_box_text);
-
 			
-		}else{
+		} else {
 			clear_png(editingBox, editingBox->size.x, editingBox->size.y);
 			render_text(editingBox, editStr.substr(0, cursor_pos) + "|" +
 			            editStr.substr(cursor_pos, editStr.length() - cursor_pos), white, 'd');

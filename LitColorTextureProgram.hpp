@@ -32,7 +32,8 @@ struct LitColorTextureProgram {
 	GLuint colorscheme_vec3_6 = -1U;
 	
 	//Textures:
-	//TEXTURE0 - texture that is accessed by TexCoord
+	// TEXTURE0 - texture that is accessed by TexCoord
+	// GLuint TEXTURE0 = -1U;
 };
 
 extern Load< LitColorTextureProgram > lit_color_texture_program;
