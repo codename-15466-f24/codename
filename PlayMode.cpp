@@ -774,9 +774,11 @@ void PlayMode::initializeCallbacks()
 					}
 				}
 				CipherFeature cf;
-				cf.b = false;
-				display_state.special_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
+				cf.b = true;
+				display_state.progress_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.progress_cipher->decode(
+					display_state.special_cipher->encode(
+					display_state.solution_text));
 				draw_state_text();
 			};
 			callbacks.emplace_back(callback);
@@ -801,9 +803,11 @@ void PlayMode::initializeCallbacks()
 					}
 				}
 				CipherFeature cf;
-				cf.b = true;
-				display_state.special_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.special_cipher->encode(display_state.solution_text);
+				cf.b = false;
+				display_state.progress_cipher->set_feature("flip", cf);
+				display_state.puzzle_text = display_state.progress_cipher->decode(
+					display_state.special_cipher->encode(
+					display_state.solution_text));
 				draw_state_text();
 			};
 
@@ -829,7 +833,8 @@ void PlayMode::initializeCallbacks()
 					if (solved)
 					{
 						// decode first
-						// propogate the answer from the minipuzzle to the key
+						// propagate the answer from the minipuzzle to the key
+						std::cout << display_state.puzzle_text << ", " << editStr << std::endl;
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
 							size_t index = display_state.puzzle_text[i] - 'A';
@@ -840,6 +845,11 @@ void PlayMode::initializeCallbacks()
 									->features["substitution"].alphabet[editStr[i] - 'A'] = (char)tolower(display_state.puzzle_text[i]);
 							}
 
+						}
+
+						for (size_t i = 0; i < 26; i++) {
+							std::cout << char('A' + i) << " -> " << display_state.progress_cipher
+									->features["substitution"].alphabet[i] << std::endl;
 						}
 
 						tex_minipuzzle_ptr->visible = false;
@@ -938,8 +948,8 @@ void PlayMode::initializeCallbacks()
 						
 						// do not flip anymore
 						CipherFeature cf;
-						cf.b = false;
-						display_state.special_cipher->set_feature("flip", cf);
+						cf.b = true;
+						display_state.progress_cipher->set_feature("flip", cf);
 
 						// Actually propagate the special request text
 						display_state.special_request_text = display_state.progress_cipher->decode(
@@ -1259,12 +1269,16 @@ void PlayMode::apply_command(std::string line) {
 			display_state.solution_text = parsed[4];
 			display_state.special_cipher = characters[parsed[3]].species;
 
-			display_state.progress_cipher = new ToggleCipher();
-			if (display_state.special_cipher->name == "Bleebus") {
-				display_state.progress_cipher = new ReverseCipher();
-			}
-			else {
-				display_state.progress_cipher = new SubstitutionCipher();
+			if (display_state.progress_cipher->cipher_type() != display_state.special_cipher->cipher_type()) {
+				std::cout << "reset progress" << std::endl;
+				display_state.progress_cipher = new ToggleCipher();
+				if (display_state.special_cipher->name == "Bleebus"
+					|| display_state.special_cipher->name == "Reverse") {
+					display_state.progress_cipher = new ReverseCipher();
+				}
+				else {
+					display_state.progress_cipher = new SubstitutionCipher();
+				}
 			}
 			std::cout << "Cipher in use for this puzzle: " << display_state.special_cipher->name << std::endl;
 			// display_state.special_cipher->reset_features();
