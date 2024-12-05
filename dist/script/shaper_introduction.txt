@@ -1,5 +1,5 @@
-1 Text d "Some time later, you recognize the sound of a ship docking once more."
-2 Sound "docking.opus"
+1 Sound "docking.opus"
+2 Text d "Some time later, you recognize the sound of a ship docking once more."
 3 Speech player "Didn't think I'd ever get used to that"
 4 Sound "door.opus"
 5 Character sp_shaper Shifix Shaper
