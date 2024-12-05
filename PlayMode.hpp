@@ -283,6 +283,7 @@ struct PlayMode : Mode {
 	std::string substitution_display = {'.','.','.','.','.','.','.','.','.','.','.',
                                         '.','.','.','.','.','.','.','.','.','.','.',
 										'.','.', '.','.', '\0'};
+	std::string substitution_display_default = substitution_display;
 	std::string *substitution_display_ptr = nullptr;
 	// sound
 	std::vector<std::shared_ptr< Sound::PlayingSample >> curr_sound;

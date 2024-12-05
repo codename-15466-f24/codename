@@ -626,7 +626,9 @@ void PlayMode::initializeCallbacks()
 					{
 						cheatsheet_open = true;
 						editingBox = tex_rev_ptr;
-						editStr_ui = std::string(substitution_display, 26);
+						editStr_ui = std::string(substitution_display);
+						std::cout << substitution_display << std::endl;
+						std::cout << editStr_ui << std::endl;
 						cursor_pos_ui = 0;				
 						editMode = true;
 						clear_png(tex_rev_ptr);
@@ -837,10 +839,6 @@ void PlayMode::initializeCallbacks()
 									->features["substitution"].alphabet[editStr[i] - 'A'] = (char)tolower(display_state.puzzle_text[i]);
 							}
 
-						}
-						for (size_t i = 0; i < 26; i++) {
-							std::cout << display_state.progress_cipher
-									->features["substitution"].alphabet[i] << std::endl;
 						}
 
 						tex_minipuzzle_ptr->visible = false;
@@ -1309,7 +1307,6 @@ void PlayMode::apply_command(std::string line) {
 		} else if (panel == "special")
 		{
 			display_state.special_cipher = characters[parsed[3]].species;
-			display_state.special_cipher->reset_features();
 			display_state.special_original_text = parsed[4];
 			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_original_text);
 			for (auto tex : textures)
@@ -1516,6 +1513,8 @@ void PlayMode::check_jump(std::string input, std::string correct, uint32_t corre
 		display_state.jumps = {correctJump};
 		display_state.status = CHANGING;
 		correctStr = "";
+
+		substitution_display = substitution_display_default; // reset this in advance
 	} else {
 		// Jump to incorrect line
 		display_state.jumps = {incorrectJump};
@@ -1667,8 +1666,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				{	
 					editStr_ui[cursor_pos_ui] = (char)tolower(in[0]);
 					substitution_display[cursor_pos_ui] = (char)tolower(char(in[0]));
-					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
-						 (char)tolower(char(in[0]));
+					display_state.progress_cipher->features["substitution"].alphabet[char(in[0]) - 'A'] = 
+						 'a' + (char)cursor_pos_ui;
 
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
@@ -1676,7 +1675,9 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 						cursor_pos_ui = 0;
 					}
 
-					display_state.special_request_text = display_state.special_cipher->encode(display_state.special_original_text);
+					display_state.special_request_text = display_state.progress_cipher->decode(
+						display_state.special_cipher->encode(
+						display_state.special_original_text));
 					draw_state_text();
 					
 				} else {
