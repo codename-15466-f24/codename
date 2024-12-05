@@ -79,6 +79,6 @@ void drawTextures(std::vector<TexStruct *> textures, const TextureProgram *ui_te
 
 void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size);
 
-bool checkForClick(std::vector<TexStruct *> textures, float x, float y);
+bool checkForClick(std::vector<TexStruct *> textures, float x, float y, bool locked);
 
 TexStruct* getTexture(std::vector<TexStruct *> textures, std::string path);

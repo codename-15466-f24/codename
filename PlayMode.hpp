@@ -244,6 +244,7 @@ struct PlayMode : Mode {
 
 		enum Status status = CHANGING;
 		std::string bottom_text = "";
+		std::string speech_text = "";
 		char cipher = 'd';
 		
 		std::vector<DisplayCharacter> chars;
@@ -272,6 +273,11 @@ struct PlayMode : Mode {
 
 	std::string prev_character = "";
 
+
+	std::string substitution_display = {'.','.','.','.','.','.','.','.','.','.','.',
+                                        '.','.','.','.','.','.','.','.','.','.','.',
+										'.','.', '.','.', '\0'};
+	std::string *substitution_display_ptr = nullptr;
 	// sound
 	std::vector<std::shared_ptr< Sound::PlayingSample >> curr_sound;
 	std::deque<std::shared_ptr< Sound::PlayingSample >> next_sound;
