@@ -1005,14 +1005,14 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 	}
 
 	entrance_filenames["basicbleeb"] = "basic_bleeb1.txt";
-	entrance_filenames["subeelb"] = "special_bleeb_call1.txt";
-	entrance_filenames["csm1"] = "cs_major_1.txt";
-	entrance_filenames["csm2"] = "cs_major_2.txt";
-	entrance_filenames["gremlin"] = "cs_major_special.txt";
-	entrance_filenames["sp_shaper"] = "shaper_special.txt";
-	entrance_filenames["g1_shaper"] = "shaper_1.txt";
-	entrance_filenames["g2_shaper"] = "shaper_2.txt";
-	entrance_filenames["g3_shaper"] = "shaper_3.txt";
+	entrance_filenames["subeelb"]    = "special_bleeb_call1.txt";
+	entrance_filenames["csm1"]       = "cs_major_1.txt";
+	entrance_filenames["csm2"]       = "cs_major_2.txt";
+	entrance_filenames["gremlin"]    = "cs_major_special.txt";
+	entrance_filenames["sp_shaper"]  = "shaper_special.txt";
+	entrance_filenames["g1_shaper"]  = "shaper_1.txt";
+	entrance_filenames["g2_shaper"]  = "shaper_2.txt";
+	entrance_filenames["g3_shaper"]  = "shaper_3.txt";
 
 	advance_state(0);
 }
@@ -1066,11 +1066,11 @@ void PlayMode::apply_command(std::string line) {
 				g.species = new ToggleCipher();
 			}
 
-			if (g.id == "basicbleeb") g.asset_idx = 0;
-			else if (g.id == "subeelb") g.asset_idx = 1;
-			else if (g.id == "gremlin") g.asset_idx = 2;
-			else if (g.id == "csm1") g.asset_idx = 3;
-			else if (g.id == "csm2") g.asset_idx = 4;
+			if (g.id == "basicbleeb")     g.asset_idx = 0;
+			else if (g.id == "subeelb")   g.asset_idx = 1;
+			else if (g.id == "gremlin")   g.asset_idx = 2;
+			else if (g.id == "csm1")      g.asset_idx = 3;
+			else if (g.id == "csm2")      g.asset_idx = 4;
 			else if (g.id == "sp_shaper") g.asset_idx = 5;
 			else if (g.id == "g1_shaper") g.asset_idx = 6;
 			else if (g.id == "g2_shaper") g.asset_idx = 7;

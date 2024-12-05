@@ -28,7 +28,6 @@ struct PlayMode : Mode {
 
 	//----- game state -----
 
-
 	enum Position {
 			LEFT,
 			MIDDLE,
@@ -73,8 +72,6 @@ struct PlayMode : Mode {
 	//local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 	
-
-	
 	// //Color constants because why not
 	glm::u8vec4 white = glm::u8vec4(255,255,255,1);
 	// glm::u8vec4 red = glm::u8vec4(255,0,0,1);
@@ -98,19 +95,19 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<bool> visibilities = {
-									true, false, // inventory
-									false, true, // request(collapsed), cipher
-									false, false,  // request, cipher(full)
-									true,          // bg_customer
-									false, false,   // customer: blub
-									false, false,  // customer: subeelb
-									false, false,  // customer: gremlin
-									false, false,  // customer: csm1
-									false, false,  // customer: csm2
-									false, false,  // customer: sp_shaper
-									false, false,  // customer: g1_shaper
-									false, false,  // customer: g2_shaper
-									false, false,  // customer: g3_shaper
+									true, false,  // inventory
+									false, true,  // request(collapsed), cipher
+									false, false, // request, cipher(full)
+									true,         // bg_customer
+									false, false, // customer: blub
+									false, false, // customer: subeelb
+									false, false, // customer: gremlin
+									false, false, // customer: csm1
+									false, false, // customer: csm2
+									false, false, // customer: sp_shaper
+									false, false, // customer: g1_shaper
+									false, false, // customer: g2_shaper
+									false, false, // customer: g3_shaper
 									false, false, false, false, // mini puzzle
 									false, false
 									};
@@ -131,6 +128,7 @@ struct PlayMode : Mode {
 											MiddlePaneBG, MiddlePane, MiddlePaneSelected, MiddlePane,
 											MiddlePaneBig, MiddlePaneChange
 											};
+	
 	std::vector<std::string> paths = {"inventory_collapsed.png", "inventory.png",
 									"special_request_collapsed.png", "cipher_panel.png",
 									"special_request.png", "cipher_panel_full.png", 
@@ -146,13 +144,11 @@ struct PlayMode : Mode {
 									"customer_g3_shaper.png", "customer_g3_shaper_selected.png",
 									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
 									"big_puzzle_panel.png", "changebutton.png"
-
-									
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>,std::string)>> callbacks;
 
-	//stuff in the scene
+	// character transform pointers
 	Scene::Transform *sp_shaper  = nullptr;
 	Scene::Transform *basicbleeb = nullptr;
 	Scene::Transform *subeelb    = nullptr;
@@ -162,10 +158,12 @@ struct PlayMode : Mode {
 	Scene::Transform *g1_shaper  = nullptr;
 	Scene::Transform *g2_shaper  = nullptr;
 	Scene::Transform *g3_shaper  = nullptr;
+
+	// important locations in the scene
 	const float x_by_counter = 2.9f;
-	// float x_next_in_line = x_by_counter;
 	const float x_entering_store = -14.f;
 	const float y_exited_store = 14.f;
+
 	const float creature_speed = 5.0f;
 	std::vector<Scene::Transform *> creature_xforms;
 	
@@ -206,8 +204,6 @@ struct PlayMode : Mode {
 	/// @warning ⚠️ this is gonna be null when no game character is selected, watch out when dereferencing 🙀
 	GameCharacter *selected_character = nullptr;
 
-	// uint8_t customers_in_line = 0;
-	// glm::vec3 pos_in_line(float t); // parametric function on a silly little rectangle
 	void join_line(GameCharacter *g);
 	void leave_line(GameCharacter *g);
 
@@ -221,7 +217,6 @@ struct PlayMode : Mode {
 	// Jim said something about having a struct for all characters, for example.
 	// I'm not sure how to do that properly here so I'm leaving it like this for now.
 
-	
 	struct DisplayCharacter {
 		GameCharacter* ref;
 		enum Position pos;
