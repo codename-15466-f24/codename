@@ -841,6 +841,10 @@ void PlayMode::initializeCallbacks()
 							std::cout << display_state.progress_cipher
 									->features["substitution"].alphabet[i] << std::endl;
 						}
+						for (size_t i = 0; i < 26; i++) {
+							std::cout << display_state.progress_cipher
+									->features["substitution"].alphabet[i] << std::endl;
+						}
 
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
