@@ -838,8 +838,8 @@ void PlayMode::initializeCallbacks()
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
 							size_t index = display_state.puzzle_text[i] - 'A';
-							display_state.special_cipher->features["substitution"].alphabet[index] = tolower(editStr[i]);
-							substitution_display[index] = tolower(editStr[i]);
+							display_state.special_cipher->features["substitution"].alphabet[index] = char(tolower(editStr[i]));
+							substitution_display[index] = char(tolower(editStr[i]));
 							
 						}
 						std::cout << substitution_display << std::endl;
@@ -1648,10 +1648,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					display_state.bottom_text = display_state.special_cipher->decode(display_state.bottom_text);
 					display_state.special_request_text = display_state.special_cipher->decode(display_state.special_request_text);
 
-					editStr_ui[cursor_pos_ui] = tolower(in[0]);
-					substitution_display[cursor_pos_ui] = tolower(char(in[0]));
+					editStr_ui[cursor_pos_ui] = char(tolower(in[0]));
+					substitution_display[cursor_pos_ui] = char(tolower(char(in[0])));
 					// std::cout << cursor_pos_ui << std::endl;
-					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = tolower(char(in[0]));
+					display_state.special_cipher->features["substitution"].alphabet[cursor_pos_ui] = char(tolower(char(in[0])));
 					//std::cout << editStr << std::endl;
 					if (cursor_pos_ui < editStr_ui.length()-1){
 						cursor_pos_ui+=1;
