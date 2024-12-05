@@ -657,8 +657,6 @@ void PlayMode::initializeCallbacks()
 						update_texture(tex_rev_ptr);
 					}
 
-					
-
 				} else if (display_state.special_cipher->name == "Bleebus"
 					    || display_state.special_cipher->name == "Reverse")
 				{
@@ -1311,8 +1309,6 @@ void PlayMode::apply_command(std::string line) {
 
 			}
 
-			
-		
 			tex_minipuzzle_ptr->visible = true;
 			display_state.status = WAIT_FOR_SOLVE;
 
@@ -1655,7 +1651,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					/*if (curr_sound != nullptr && !curr_sound->stopping)
 					{
 						curr_sound->stop(1.0f);
-
 					} 
 
 					if (curr_sound == nullptr || curr_sound->stopped) {
@@ -1700,10 +1695,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 					editStr_ui.insert(cursor_pos_ui, in);
 					cursor_pos_ui += 1;
-
 				}
-				
-				
 			}
 			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
 				editStr = editStr.substr(0, cursor_pos-1) + 
