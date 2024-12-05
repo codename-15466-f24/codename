@@ -236,7 +236,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "introduction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "cs_major_introduction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
@@ -244,6 +244,7 @@ struct PlayMode : Mode {
 
 		enum Status status = CHANGING;
 		std::string bottom_text = "";
+		std::string speech_text = "";
 		char cipher = 'd';
 		
 		std::vector<DisplayCharacter> chars;
@@ -261,7 +262,8 @@ struct PlayMode : Mode {
 		std::string puzzle_text;
 
 		ToggleCipher *special_cipher = new ToggleCipher();
-		std::string special_solution_text = "No special requests right now!";
+		ToggleCipher *progress_cipher = new ToggleCipher();
+		std::string special_original_text = "No special requests right now!";
 		std::string special_request_text = "No special requests right now!";
 	} display_state;
 
@@ -272,6 +274,12 @@ struct PlayMode : Mode {
 
 	std::string prev_character = "";
 
+
+	std::string substitution_display = {'.','.','.','.','.','.','.','.','.','.','.',
+                                        '.','.','.','.','.','.','.','.','.','.','.',
+										'.','.', '.','.', '\0'};
+	std::string substitution_display_default = substitution_display;
+	std::string *substitution_display_ptr = nullptr;
 	// sound
 	std::vector<std::shared_ptr< Sound::PlayingSample >> curr_sound;
 	std::deque<std::shared_ptr< Sound::PlayingSample >> next_sound;

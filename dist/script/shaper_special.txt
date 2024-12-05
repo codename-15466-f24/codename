@@ -23,5 +23,8 @@
 23 Speech player "jssq jkss..."
 24 Speech sp_shaper "We will! Toodles!"
 25 Exit sp_shaper
-26 Speech player "What was that??"
-27 Change_File "epilogue.txt"
+26 Exit g1_shaper
+27 Exit g2_shaper
+28 Exit g3_shaper
+29 Speech player "What was that??"
+30 Change_File "epilogue.txt"

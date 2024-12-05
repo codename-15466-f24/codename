@@ -1,9 +1,10 @@
 1 Character csm1 Sippy CS-Major
 2 Sound "ding.opus"
-3 Text d "You gesture for the one holding a red can to come ring up her purchase"
+3 Text d "You gesture for the one holding a red can to come ring up her purchase..."
 4 Speech csm1 "energy drink"
 5 Show mini_puzzle csm1 "ENERGY DRINK"
 6 Text d "Solve the puzzle!"
-7 Speech csm1 "Thankya boss, this stuff is my blood"
-8 Exit csm1
-9 Change_File "idle.txt"
+7 Speech csm1 "energy drink"
+8 Speech csm1 "Thankya boss, this stuff is my blood"
+9 Exit csm1
+10 Change_File "idle.txt"

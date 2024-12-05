@@ -5,16 +5,17 @@
 5 Text d "Wonder what that noise could've been..."
 6 Sound "door.opus"
 7 Character gremlin Gremlin CSMajor
-8 Speech gremlin "I'm in biiiiig trouble, I need to finish my project for the big Catathon so I'm working on it during the trip there, yeah, and BAM! My RGB transceiver explodes cuz I was overclocking it too much or something."
-9 Speech gremlin "But anyways, without my intergalactinet connection I can't work anymore. What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
-10 Text d "Um..."
-11 Speech player "I'm saying this because you don't know what I'm saying, but please breathe when you're talking."
-12 Show special gremlin "What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
-13 Speech player "Uh..."
-14 Character csm1 Sippy CSMajor
-15 Sound "door.opus"
-16 Text d "At least someone else is here!"
-17 Character csm2 Zazmadew CSMajor
-18 Sound "door.opus"
-19 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
-20 Change_File "idle.txt"
+8 Show special gremlin " "
+9 Speech gremlin "I'm in biiiiig trouble, I need to finish my project for the big Catathon so I'm working on it during the trip there, yeah, and BAM! My RGB transceiver explodes cuz I was overclocking it too much or something."
+10 Speech gremlin "But anyways, without my intergalactinet connection I can't work anymore. What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
+11 Text d "Um..."
+12 Speech player "I'm saying this because you don't know what I'm saying, but please breathe when you're talking."
+13 Show special gremlin "What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
+14 Speech player "I'll... note this for later."
+15 Character csm1 Sippy CSMajor
+16 Sound "door.opus"
+17 Text d "At least someone else is here!"
+18 Character csm2 Zazmadew CSMajor
+19 Sound "door.opus"
+20 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
+21 Change_File "idle.txt"
