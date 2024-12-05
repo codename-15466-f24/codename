@@ -857,6 +857,7 @@ void PlayMode::initializeCallbacks()
 
 						editStr = "";
 						cursor_pos = 0;
+						cursor_pos_ui = 0;
 						display_state.status = CHANGING;
 
 						togglePanel(textures, RightPane);
@@ -1018,9 +1019,9 @@ PlayMode::PlayMode() : scene(*codename_scene) {
 		if (csm1       == nullptr) throw std::runtime_error("csm1 not found.");
 		if (csm2       == nullptr) throw std::runtime_error("csm2 not found.");
 		if (sp_shaper  == nullptr) throw std::runtime_error("sp_shaper not found.");
-		if (g1_shaper  == nullptr) throw std::runtime_error("g1_haper not found.");
-		if (g2_shaper  == nullptr) throw std::runtime_error("g2_haper not found.");
-		if (g3_shaper  == nullptr) throw std::runtime_error("g3_haper not found.");
+		if (g1_shaper  == nullptr) throw std::runtime_error("g1_shaper not found.");
+		if (g2_shaper  == nullptr) throw std::runtime_error("g2_shaper not found.");
+		if (g3_shaper  == nullptr) throw std::runtime_error("g3_shaper not found.");
 	}
 	creature_xforms = {basicbleeb, subeelb, 
 	                   gremlin, csm1, csm2, 
@@ -1274,7 +1275,8 @@ void PlayMode::apply_command(std::string line) {
 				cs_open = true;
 				editingBox = tex_cs_ptr;
 				editStr = display_state.puzzle_text;
-				cursor_pos = 0;				
+				cursor_pos = 0;
+				cursor_pos_ui = 0;
 				editMode = true;
 				display_state.status = INPUT;
 				clear_png(tex_cs_ptr);
@@ -1573,24 +1575,41 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			if (cursor_pos > 0) {
 				cursor_pos -= 1;
 			} else if (cursor_pos == 0) {
-				cursor_pos = uint32_t(editStr.length()-2);
+				if (tex_minipuzzle.visible){
+					cursor_pos = uint32_t(editStr.length()-1);
+				} else {
+					cursor_pos = uint32_t(editStr.length()-2);
+				}
 			}
 
 			if (cursor_pos_ui > 0) {
 				cursor_pos_ui -= 1;
 			} else if (cursor_pos_ui == 0) {
-				cursor_pos_ui = uint32_t(editStr_ui.length()-2);
+				if (tex_minipuzzle.visible){
+					cursor_pos_ui = uint32_t(editStr_ui.length()-1);
+				} else {
+					cursor_pos_ui = uint32_t(editStr_ui.length()-2);
+				}
 			}
 		} else if (evt.key.keysym.sym == SDLK_RIGHT) {
-			if (cursor_pos < editStr.length()){
+			if (cursor_pos < (editStr.length()-1)){
+				//std::cout << std::to_string(editStr.length()) << " vs " << std::to_string(cursor_pos) << std::endl;
 				cursor_pos += 1;
 			} else if (cs_open) {
 				cursor_pos = 0;
+				cursor_pos_ui = 0;
 			}
 
-			if (cursor_pos_ui < (editStr_ui.length()-2)){
-				cursor_pos_ui += 1;
+			if (cursor_pos_ui < (editStr_ui.length()-1)){
+				//std::cout << std::to_string(editStr_ui.length()) << " vs (ui) " << std::to_string(cursor_pos_ui) << std::endl;
+				if (cheatsheet_open && (cursor_pos_ui >= (editStr_ui.length()-2))) { // admittedly stupid but brain no work
+					cursor_pos = 0;
+					cursor_pos_ui = 0;
+				}else{
+					cursor_pos_ui += 1;
+				}
 			} else if (cheatsheet_open) {
+				cursor_pos = 0;
 				cursor_pos_ui = 0;
 			}
 		}
@@ -1629,10 +1648,10 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					if (cs_open){
 						editStr[cursor_pos] = in[0];
 						//std::cout << editStr << std::endl;
-						std::cout << "Reached here 1";
+						//std::cout << "Reached here 1 " << std::to_string(tex_minipuzzle.visible) << std::endl;
 						if (cursor_pos < (editStr.length()-2)){
 							cursor_pos+=1;
-						} else if (cursor_pos == (editStr_ui.length()-2)) {
+						} else if (cursor_pos == (editStr.length()-2)) {
 							cursor_pos = 0;
 						}
 					}
@@ -1640,7 +1659,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 					if (cheatsheet_open){
 			
 						editStr_ui[cursor_pos] = in[0];
-						std::cout << "Reached here 2";
+						//std::cout << "Reached here 2 " << std::to_string(tex_minipuzzle.visible) << std::endl;
 						if (cursor_pos_ui < (editStr_ui.length()-2)){
 							cursor_pos_ui+=1;
 						} else if (cursor_pos_ui == (editStr_ui.length()-2)) {
@@ -1708,7 +1727,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				
 				
 			}
-			if (!cs_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
+			if (!cs_open && !cheatsheet_open && evt.key.keysym.sym == SDLK_BACKSPACE && cursor_pos > 0) {
 				editStr = editStr.substr(0, cursor_pos-1) + 
 				          editStr.substr(cursor_pos, editStr.length() - cursor_pos);
 				float rand_vol = 1.0f -  (rand()%30)/100.0f;
