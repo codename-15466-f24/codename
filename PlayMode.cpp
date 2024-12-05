@@ -1152,6 +1152,8 @@ void PlayMode::apply_command(std::string line) {
 	else if (keyword == "Exit") {
 		if (characters.find(parsed[2]) == characters.end()) {
 			printf("Error in 'Exit' script command: Character %s not found\n", parsed[2].c_str());
+			display_state.jumps = {display_state.line_number + 1};
+			display_state.status = CHANGING;
 			return;
 		}
 		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
