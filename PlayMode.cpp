@@ -1251,7 +1251,8 @@ void PlayMode::apply_command(std::string line) {
 		{
 			getTexture(textures, "cipher_panel_full.png")->visible = false;
 			getTexture(textures, "cipher_panel.png")->visible = true;
-
+			cheatsheet_open = false;
+			tex_rev.visible = false;
 
 			display_state.solution_text = parsed[4];
 			display_state.special_cipher = characters[parsed[3]].species;
