@@ -380,7 +380,7 @@ bool checkForClick(std::vector<TexStruct *> textures, float x, float y, bool loc
 
 	for (auto tex : textures)
 	{
-		if (tex->visible && tex->path == "mini_puzzle_panel.png")
+		if (tex->visible && tex->path == "textures/mini_puzzle_panel.png")
 		{
 			isLocked = true;
 		}

@@ -35,10 +35,10 @@
 // Storing font here, we can also refactor the text storage to load a font path
 // as the first line per script or have a font buffer.
 
-static std::string tex_path = "out.png";
-static std::string textbg_path = "textbg.png";
-//static constexpr std::string bg_path = "black.png";
-static std::string font_path = "RobotoMono-Regular.ttf";
+static std::string tex_path = "textures/out.png";
+static std::string textbg_path = "textures/textbg.png";
+//static constexpr std::string bg_path = "textures/black.png";
+static std::string font_path = "fonts/RobotoMono-Regular.ttf";
 static constexpr uint32_t window_height = 720;
 static constexpr uint32_t window_width = 1280;
 // static constexpr uint32_t render_height = window_height/3;
@@ -69,14 +69,14 @@ static char substitution[26] = {'a','b','c','d','e','f','g','h','i','j','k','l',
 
 GLuint codename_meshes_for_lit_color_texture_program = 0;
 Load<MeshBuffer> codename_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("codename.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("scenes/codename.pnct"));
 	codename_meshes_for_lit_color_texture_program = 
 		ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
 Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("codename.scene"), [&](
+	return new Scene(data_path("scenes/codename.scene"), [&](
 		    Scene &scene, 
 		    Scene::Transform *transform, 
 			std::string const &mesh_name
@@ -100,51 +100,51 @@ Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 Load< Sound::Sample > codename_bgm(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("codename.opus"));
+	return new Sound::Sample(data_path("sounds/codename.opus"));
 });
 
 Load< Sound::Sample > keyclick1(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("keyclick1.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/keyclick1.opus"));
 	return s;
 });
 
 Load< Sound::Sample > keyclick2(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("keyclick2.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/keyclick2.opus"));
 	return s;
 });
 
 Load< Sound::Sample > door(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("door.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/door.opus"));
 	return s;
 });
 
 Load< Sound::Sample > ding(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("ding.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/ding.opus"));
 	return s;
 });
 
 Load< Sound::Sample > chaos(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("chaos.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/chaos.opus"));
 	return s;
 });
 
 Load< Sound::Sample > docking(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("docking.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/docking.opus"));
 	return s;
 });
 
 Load< Sound::Sample > chomp(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("chomp.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/chomp.opus"));
 	return s;
 });
 
 Load< Sound::Sample > successful(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("success.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/success.opus"));
 	return s;
 });
 
 Load< Sound::Sample > fail(LoadTagDefault, []() -> Sound::Sample const * {
-	Sound::Sample *s = new Sound::Sample(data_path("fail.opus"));
+	Sound::Sample *s = new Sound::Sample(data_path("sounds/fail.opus"));
 	return s;
 });
 
@@ -580,7 +580,8 @@ void PlayMode::initializeCallbacks()
 
 	for (std::string path : paths)
 	{
-		if (path == "special_request_collapsed.png")
+		std::cout << path << std:: endl;
+		if (path == "textures/special_request_collapsed.png")
 		{
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -590,7 +591,7 @@ void PlayMode::initializeCallbacks()
 
 			callbacks.emplace_back(callback);
 		}
-		else if (path == "special_request.png")
+		else if (path == "textures/special_request.png")
 		{
 			// special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -599,7 +600,7 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		} else if (path == "inventory_collapsed.png")
+		} else if (path == "textures/inventory_collapsed.png")
 		{
 			// icon that opens special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -608,7 +609,7 @@ void PlayMode::initializeCallbacks()
 
 			callbacks.emplace_back(callback);
 		}
-		else if (path == "inventory.png")
+		else if (path == "textures/inventory.png")
 		{
 			// special request menu
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -617,7 +618,7 @@ void PlayMode::initializeCallbacks()
 
 			callbacks.emplace_back(callback);
 		} 
-		else if (path == "cipher_panel.png")
+		else if (path == "textures/cipher_panel.png")
 		{
 			// cipher panel button, on click expands the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -668,7 +669,7 @@ void PlayMode::initializeCallbacks()
 
 			callbacks.emplace_back(callback);
 		}
-		else if (path == "cipher_panel_full.png")
+		else if (path == "textures/cipher_panel_full.png")
 		{
 			// full cipher panel, on click collapses the cipher panel
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -704,7 +705,7 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		} else if (path.substr(0,8) == "customer")
+		} else if (path.substr(9,8) == "customer")
 		{
 
 			// special customer selector, either select or deselect customer
@@ -731,7 +732,7 @@ void PlayMode::initializeCallbacks()
 				
 				std::string cname;
 				// get customer name
-				cname = path.substr(9, path.length() - 13);
+				cname = path.substr(18, path.length() - 22);
 				std::cout << "selecting customer: " << cname << std::endl;
 				std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(cname);
 				if (g_pair == characters.end()) {
@@ -745,16 +746,16 @@ void PlayMode::initializeCallbacks()
 				if (selected_character && !(selected_character->character_completed)) {
 					printf("selected_character variable: %s\n", 
 							selected_character->id.c_str());
-					getTexture(textures, "customer_" + selected_character->id  + "_selected.png")->visible = false;
-					getTexture(textures, "customer_" + selected_character->id  + ".png")->visible = true;
+					getTexture(textures, "textures/customer_" + selected_character->id  + "_selected.png")->visible = false;
+					getTexture(textures, "textures/customer_" + selected_character->id  + ".png")->visible = true;
 					leave_line(selected_character);
 				} else {
 					printf("selected_character is null\n");
 				} 
 			
 				if (selected_character != g) {
-					getTexture(textures, "customer_" + cname + "_selected.png")->visible = true;
-					getTexture(textures, "customer_" + cname + ".png")->visible = false;
+					getTexture(textures, "textures/customer_" + cname + "_selected.png")->visible = true;
+					getTexture(textures, "textures/customer_" + cname + ".png")->visible = false;
 					join_line(g);
 					std::string chfilecommand = "-1 Change_File ";
 					apply_command(chfilecommand.append(g->entrance_file));
@@ -764,7 +765,7 @@ void PlayMode::initializeCallbacks()
 			};
 
 			callbacks.emplace_back(callback);
-		} else if (path == "reverse_button.png")
+		} else if (path == "textures/reverse_button.png")
 		{
 			// button that reverses the text
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -773,12 +774,12 @@ void PlayMode::initializeCallbacks()
 				// toggle selected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button.png")
+					if (tex->path == "textures/reverse_button.png")
 					{
 						tex->visible = false;
 					}
 
-					if (tex->path == "reverse_button_selected.png")
+					if (tex->path == "textures/reverse_button_selected.png")
 					{
 						tex->visible = true;
 					}
@@ -794,7 +795,7 @@ void PlayMode::initializeCallbacks()
 			callbacks.emplace_back(callback);
 
 
-		} else if (path == "reverse_button_selected.png")
+		} else if (path == "textures/reverse_button_selected.png")
 		{
 			// button that unreverses the text
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -802,12 +803,12 @@ void PlayMode::initializeCallbacks()
 				// toggle unselected version on
 				for (auto tex : textures)
 				{
-					if (tex->path == "reverse_button_selected.png")
+					if (tex->path == "textures/reverse_button_selected.png")
 					{
 						tex->visible = false;
 					}
 
-					if (tex->path == "reverse_button.png")
+					if (tex->path == "textures/reverse_button.png")
 					{
 						tex->visible = true;
 					}
@@ -823,7 +824,7 @@ void PlayMode::initializeCallbacks()
 
 			callbacks.emplace_back(callback);
 		}
-		else if (path == "submitbutton.png")
+		else if (path == "textures/submitbutton.png")
 		{
 			// submit button for mini puzzle window
 			auto callback = [&](std::vector<TexStruct *> textures, std::string path){
@@ -948,7 +949,7 @@ void PlayMode::initializeCallbacks()
 
 						for (auto tex : textures)
 						{
-							if (tex->path == "cipher_panel_full.png" && !tex->visible)
+							if (tex->path == "textures/cipher_panel_full.png" && !tex->visible)
 							{
 								togglePanel(textures, RightPane);
 								tex_rev_ptr->visible = true;
@@ -1121,8 +1122,8 @@ void PlayMode::apply_command(std::string line) {
 				// testing protocols for other ciphers so far:
 				// g.species = new CaesarCipher("CSMajor", 5);
 				// g.species = new SubstitutionCipher("Shaper", "cabdefghijklmnopqrstuvwxyz");
-				// getTexture(textures, "reverse_button.png")->alignment = MiddlePaneHidden;
-				// getTexture(textures, "reverse_button_selected.png")->alignment = MiddlePaneHidden;
+				// getTexture(textures, "textures/reverse_button.png")->alignment = MiddlePaneHidden;
+				// getTexture(textures, "textures/reverse_button_selected.png")->alignment = MiddlePaneHidden;
 			}
 			else if (parsed[4] == "CSMajor" || parsed[4] == "CS-Major") {
 				// since we're doing this as a substitution cipher
@@ -1180,10 +1181,10 @@ void PlayMode::apply_command(std::string line) {
 			leave_line(&(g_pair->second));
 		}
 
-		getTexture(textures, "customer_" + (g_pair->second).id +  "_selected.png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->visible = false;
-		getTexture(textures, "customer_" + (g_pair->second).id + "_selected.png")->alignment = TopMiddlePaneHidden;
-		getTexture(textures, "customer_" + (g_pair->second).id + ".png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "textures/customer_" + (g_pair->second).id +  "_selected.png")->visible = false;
+		getTexture(textures, "textures/customer_" + (g_pair->second).id + ".png")->visible = false;
+		getTexture(textures, "textures/customer_" + (g_pair->second).id + "_selected.png")->alignment = TopMiddlePaneHidden;
+		getTexture(textures, "textures/customer_" + (g_pair->second).id + ".png")->alignment = TopMiddlePaneHidden;
 
 		(g_pair->second).character_completed = true;
 		display_state.status = CHANGING;
@@ -1276,8 +1277,8 @@ void PlayMode::apply_command(std::string line) {
 		auto panel = parsed[2];
 		if (panel == "mini_puzzle")
 		{
-			getTexture(textures, "cipher_panel_full.png")->visible = false;
-			getTexture(textures, "cipher_panel.png")->visible = true;
+			getTexture(textures, "textures/cipher_panel_full.png")->visible = false;
+			getTexture(textures, "textures/cipher_panel.png")->visible = true;
 			cheatsheet_open = false;
 			tex_rev.visible = false;
 
@@ -1313,8 +1314,8 @@ void PlayMode::apply_command(std::string line) {
 				render_text(tex_cs_ptr, editStr, green, 'd');
 				update_texture(tex_cs_ptr);
 
-				getTexture(textures, "mini_puzzle_panel.png")->visible = true;
-				getTexture(textures, "submitbutton.png")->visible = true;
+				getTexture(textures, "textures/mini_puzzle_panel.png")->visible = true;
+				getTexture(textures, "textures/submitbutton.png")->visible = true;
 				
 			} else {
 				for (auto tex : textures)
@@ -1344,7 +1345,7 @@ void PlayMode::apply_command(std::string line) {
 			display_state.special_request_text = display_state.special_cipher->encode(display_state.special_original_text);
 			for (auto tex : textures)
 			{
-				if (tex->path == "special_request_collapsed.png")
+				if (tex->path == "textures/special_request_collapsed.png")
 				{
 					tex->visible = true;
 				}
@@ -1433,8 +1434,8 @@ void PlayMode::apply_command(std::string line) {
 		cursor_pos_ui = 0;
 
 		// hide cipher panel
-		getTexture(textures, "cipher_panel_full.png")->visible = false;
-		getTexture(textures, "cipher_panel.png")->visible = true;
+		getTexture(textures, "textures/cipher_panel_full.png")->visible = false;
+		getTexture(textures, "textures/cipher_panel.png")->visible = true;
 		cheatsheet_open = false;
 		tex_rev.visible = false;
 	}
@@ -1891,20 +1892,20 @@ void PlayMode::update(float elapsed) {
 		}
 
 		if (!(gc->character_completed) && 
-			getTexture(textures, "customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
-			getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
+			getTexture(textures, "textures/customer_" + gc->id + ".png")->alignment == TopMiddlePaneHidden && 
+			getTexture(textures, "textures/customer_" + gc->id + + "_selected"+ ".png")->alignment == TopMiddlePaneHidden)
 		{
-			getTexture(textures, "customer_" + gc->id + ".png")->alignment = TopMiddlePane;
-			getTexture(textures, "customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
-			if (!getTexture(textures, "customer_" + gc->id + ".png")->visible 
-			 && !getTexture(textures, "customer_" + gc->id + + "_selected"+ ".png")->visible)
+			getTexture(textures, "textures/customer_" + gc->id + ".png")->alignment = TopMiddlePane;
+			getTexture(textures, "textures/customer_" + gc->id + "_selected.png")->alignment = TopMiddlePaneSelected;
+			if (!getTexture(textures, "textures/customer_" + gc->id + ".png")->visible 
+			 && !getTexture(textures, "textures/customer_" + gc->id + + "_selected"+ ".png")->visible)
 			{
-				getTexture(textures, "customer_" + gc->id + + "_selected.png")->visible = true;
+				getTexture(textures, "textures/customer_" + gc->id + + "_selected.png")->visible = true;
 
 				if (prev_character != "")
 				{
-					getTexture(textures, "customer_" + prev_character + "_selected.png")->visible = false;
-					getTexture(textures, "customer_" + prev_character + ".png")->visible = true;
+					getTexture(textures, "textures/customer_" + prev_character + "_selected.png")->visible = false;
+					getTexture(textures, "textures/customer_" + prev_character + ".png")->visible = true;
 				} 
 				selected_character = gc;
 				prev_character = gc->id;
