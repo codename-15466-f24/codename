@@ -22,4 +22,5 @@
 22 Character csm2 Zazmadew CSMajor
 23 Sound "door.opus"
 24 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
-25 Change_File "idle.txt"
+25 Kick csm2
+26 Change_File "idle.txt"

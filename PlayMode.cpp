@@ -1189,6 +1189,24 @@ void PlayMode::apply_command(std::string line) {
 		(g_pair->second).character_completed = true;
 		display_state.status = CHANGING;
 	}
+	else if (keyword == "Kick") {
+		if (characters.find(parsed[2]) == characters.end()) {
+			printf("Error in 'Kick' script command: Character %s not found\n", parsed[2].c_str());
+			display_state.jumps = {display_state.line_number + 1};
+			display_state.status = CHANGING;
+			return;
+		}
+		std::unordered_map<std::string, GameCharacter>::iterator g_pair = characters.find(parsed[2]);
+		prev_character = g_pair->first;
+
+		if (g_pair != characters.end()) {
+			leave_line(&(g_pair->second));
+		}
+		
+		getTexture(textures, "textures/customer_" + (g_pair->second).id +  "_selected.png")->visible = false;
+		getTexture(textures, "textures/customer_" + (g_pair->second).id + ".png")->visible = true;
+		display_state.status = CHANGING;
+	}
 	else if (keyword == "Display") {
 		if (characters.find(parsed[2]) != characters.end()) {
 			// loop through existing characters on display, which should be fine since there aren't many

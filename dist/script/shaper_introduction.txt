@@ -19,5 +19,6 @@
 19 Character g3_shaper Charkutim Shaper
 20 Speech player "These... th-... fellas."
 21 Speech player "Looks like I got lots of work all of a sudden."
-22 Speech player "Well, no choice but to start from the start."
-23 Change_File "idle.txt"
+22 Kick g3_shaper
+23 Speech player "Well, no choice but to start from the start."
+24 Change_File "idle.txt"
