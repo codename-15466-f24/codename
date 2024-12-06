@@ -1348,6 +1348,9 @@ void PlayMode::apply_command(std::string line) {
 			}
 		}
 		display_state.status = CHANGING;
+	} else if (keyword == "Reset_Progress") {
+		display_state.progress_cipher = new ToggleCipher();
+		display_state.status = CHANGING;
 	}
 
 	// jump-modifying keywords

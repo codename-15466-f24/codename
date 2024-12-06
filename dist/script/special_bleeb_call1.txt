@@ -19,4 +19,5 @@
 19 Speech subeelb "You've been a darling, I'll be sure to stop by next time I'm in a parsec"
 20 Exit subeelb
 21 Text d "The group of bleebuses warp away, leaving your rest stop empty once more..."
-22 Change_File "cs_major_introduction.txt"
+22 Reset_Progress
+23 Change_File "cs_major_introduction.txt"

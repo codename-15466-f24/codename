@@ -27,4 +27,5 @@
 27 Exit g2_shaper
 28 Exit g3_shaper
 29 Speech player "What was that??"
-30 Change_File "epilogue.txt"
+30 Reset_Progress
+31 Change_File "epilogue.txt"
