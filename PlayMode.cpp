@@ -138,6 +138,16 @@ Load< Sound::Sample > chomp(LoadTagDefault, []() -> Sound::Sample const * {
 	return s;
 });
 
+Load< Sound::Sample > successful(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("success.opus"));
+	return s;
+});
+
+Load< Sound::Sample > fail(LoadTagDefault, []() -> Sound::Sample const * {
+	Sound::Sample *s = new Sound::Sample(data_path("fail.opus"));
+	return s;
+});
+
 //Reset the current text (or other) png
 void clear_png(PlayMode::TextureItem *png_in, uint32_t height = 0, uint32_t width = 0) {
     /*for (uint32_t y = 0; y < height; y++) {
@@ -835,6 +845,7 @@ void PlayMode::initializeCallbacks()
 						// decode first
 						// propagate the answer from the minipuzzle to the key
 						std::cout << display_state.puzzle_text << ", " << editStr << std::endl;
+						curr_sound.emplace_back(Sound::play(*successful, 0.3f, 0.0f));
 						for (size_t i = 0; i < display_state.puzzle_text.length(); i++)
 						{
 							size_t index = display_state.puzzle_text[i] - 'A';
@@ -965,6 +976,7 @@ void PlayMode::initializeCallbacks()
 			{
 				counter = counter > 0 ? 0 : counter + 1;
 				std::vector<std::string> responses = {"That doesn't seem right...", "The customer seems unsatisfied by that."};
+				curr_sound.emplace_back(Sound::play(*fail, 0.3f, 0.0f));
 				render_text(&tex_box_text, responses[counter], white, display_state.cipher);
 				update_texture(&tex_box_text);
 			}
@@ -1546,6 +1558,7 @@ void PlayMode::check_jump(std::string input, std::string correct, uint32_t corre
 		display_state.jumps = {correctJump};
 		display_state.status = CHANGING;
 		correctStr = "";
+		curr_sound.emplace_back(Sound::play(*successful, 0.3f, 0.0f));
 
 		substitution_display = substitution_display_default; // reset this in advance
 	} else {
@@ -1553,6 +1566,7 @@ void PlayMode::check_jump(std::string input, std::string correct, uint32_t corre
 		display_state.jumps = {incorrectJump};
 		display_state.status = CHANGING;
 		correctStr = "";
+		curr_sound.emplace_back(Sound::play(*fail, 0.3f, 0.0f));
 	}
 }
 
