@@ -776,7 +776,7 @@ void PlayMode::initializeCallbacks()
 				CipherFeature cf;
 				cf.b = true;
 				display_state.progress_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.progress_cipher->decode(
+				display_state.puzzle_text = display_state.progress_cipher->encode(
 					display_state.special_cipher->encode(
 					display_state.solution_text));
 				draw_state_text();
@@ -805,7 +805,7 @@ void PlayMode::initializeCallbacks()
 				CipherFeature cf;
 				cf.b = false;
 				display_state.progress_cipher->set_feature("flip", cf);
-				display_state.puzzle_text = display_state.progress_cipher->decode(
+				display_state.puzzle_text = display_state.progress_cipher->encode(
 					display_state.special_cipher->encode(
 					display_state.solution_text));
 				draw_state_text();
@@ -841,8 +841,9 @@ void PlayMode::initializeCallbacks()
 							if (0 <= index && index < 26)
 							{
 								substitution_display[index] = (char)tolower(editStr[i]);
-								display_state.progress_cipher
-									->features["substitution"].alphabet[editStr[i] - 'A'] = (char)tolower(display_state.puzzle_text[i]);
+								// if ('A' <= editStr[i] && editStr[i] <= 'Z')
+									display_state.progress_cipher
+									->features["substitution"].alphabet[index] = (char)tolower(editStr[i]);
 							}
 
 						}
@@ -855,7 +856,7 @@ void PlayMode::initializeCallbacks()
 						tex_minipuzzle_ptr->visible = false;
 						display_state.solved_puzzle = true;
 						advance_state(0);
-						display_state.special_request_text = display_state.progress_cipher->decode(
+						display_state.special_request_text = display_state.progress_cipher->encode(
 							display_state.special_cipher->encode(
 							display_state.special_original_text));
 						std::cout << display_state.special_request_text << std::endl;
@@ -952,7 +953,7 @@ void PlayMode::initializeCallbacks()
 						display_state.progress_cipher->set_feature("flip", cf);
 
 						// Actually propagate the special request text
-						display_state.special_request_text = display_state.progress_cipher->decode(
+						display_state.special_request_text = display_state.progress_cipher->encode(
 							display_state.special_cipher->encode(
 							display_state.special_original_text));
 						draw_state_text();
@@ -1475,7 +1476,7 @@ void PlayMode::draw_state_text() {
 		{
 			std::string name  = display_state.bottom_text.substr(0, index);
 			std::string enc_message =
-				display_state.progress_cipher->decode(
+				display_state.progress_cipher->encode(
 				display_state.special_cipher->encode(
 					display_state.bottom_text.substr(index, display_state.bottom_text.length()
 					- index)));
@@ -1724,9 +1725,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				}  else if (cheatsheet_open)
 				{	
 					editStr_ui[cursor_pos_ui] = (char)tolower(in[0]);
+					// just recalculate the entire cipher lol
 					substitution_display[cursor_pos_ui] = (char)tolower(char(in[0]));
-					display_state.progress_cipher->features["substitution"].alphabet[char(in[0]) - 'A'] = 
-						 'a' + (char)cursor_pos_ui;
+					// if ('A' <= in[0] && in[0] <= 'Z')
+					display_state.progress_cipher->features["substitution"].alphabet[cursor_pos_ui] = 
+						(char)tolower(in[0]);
 
 					if (cursor_pos_ui < editStr_ui.length()-2){
 						cursor_pos_ui+=1;
@@ -1734,7 +1737,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 						cursor_pos_ui = 0;
 					}
 
-					display_state.special_request_text = display_state.progress_cipher->decode(
+					display_state.special_request_text = display_state.progress_cipher->encode(
 						display_state.special_cipher->encode(
 						display_state.special_original_text));
 					draw_state_text();
