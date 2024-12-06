@@ -1,6 +1,6 @@
-1 Speech player "Guess it's time to cook."
-2 Character sp_shaper Shifix Shaper
-3 Sound "ding.opus"
+1 Sound "ding.opus"
+2 Speech player "Guess it's time to cook."
+3 Character sp_shaper Shifix Shaper
 4 Text d "The first one that arrived comes back to the counter."
 5 Jump 7
 6 Speech sp_shaper "huh?"
