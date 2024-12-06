@@ -885,8 +885,11 @@ void PlayMode::initializeCallbacks()
 						cursor_pos_ui = 0;
 						display_state.status = CHANGING;
 
-						togglePanel(textures, RightPane);
-						tex_rev_ptr->visible = true;
+						getTexture(textures, "textures/cipher_panel_full.png")->visible = true;
+						getTexture(textures, "textures/cipher_panel.png")->visible = false;
+						cheatsheet_open = false;
+						tex_rev.visible = true;
+						
 
 						for (auto tex : textures)
 						{
@@ -948,14 +951,6 @@ void PlayMode::initializeCallbacks()
 						display_state.solved_puzzle = true;
 						advance_state(0);
 
-						for (auto tex : textures)
-						{
-							if (tex->path == "textures/cipher_panel_full.png" && !tex->visible)
-							{
-								togglePanel(textures, RightPane);
-								tex_rev_ptr->visible = true;
-							}
-						}
 
 						// Propagate the cipher text. This is going to get unwieldy eventually.
 						// First change the necessary features.
@@ -1871,7 +1866,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		bool isLocked = checkForClick(textures, tex_x, tex_y, 
-					(selected_character && selected_character->joining_line || !char_switching));
+					(selected_character && (selected_character->joining_line || !char_switching)));
 
 		// only advance if click inside of dialogue
 		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
