@@ -1306,7 +1306,6 @@ void PlayMode::apply_command(std::string line) {
 						tex->visible = false;
 					}
 				}
-
 			}
 
 			tex_minipuzzle_ptr->visible = true;
