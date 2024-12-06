@@ -5,6 +5,6 @@
 5 Show mini_puzzle csm1 "ENERGY DRINK"
 6 Text d "Solve the puzzle!"
 7 Speech csm1 "energy drink"
-8 Speech csm1 "Thankya boss, this stuff is my blood"
+8 Speech csm1 "Thankya boss, this stuff is my blood."
 9 Exit csm1
 10 Change_File "idle.txt"

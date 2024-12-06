@@ -3,7 +3,7 @@
 3 Text d "Hitting the bell, the one you wanted to come over just, does. It places a pyl- a prismatic box on the counter."
 4 Speech g2_shaper "Protoss Bars"
 5 Show mini_puzzle g2_shaper "PROTOSS BARS"
-6 Text d "Solve the Puzzle!"
-7 Speech g2_shaper "My life for Aiur"
+6 Text d "Solve the puzzle!"
+7 Speech g2_shaper "My life for Aiur..."
 8 Exit g2_shaper
 9 Change_File "idle.txt"
