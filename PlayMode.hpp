@@ -95,7 +95,7 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<bool> visibilities = {
-									true, false,  // inventory
+									false, false,  // inventory
 									false, true,  // request(collapsed), cipher
 									false, false, // request, cipher(full)
 									true,         // bg_customer
