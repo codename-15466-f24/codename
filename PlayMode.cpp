@@ -98,7 +98,7 @@ Load<Scene> codename_scene(LoadTagDefault, []() -> Scene const * {
 			printf("got here\n");
 			tex_data.resize(512 * 710);
 			imgsize = glm::uvec2(512,710);
-			load_png(data_path("guide.png"), &imgsize, &tex_data, UpperLeftOrigin);
+			load_png(data_path("textures/guide.png"), &imgsize, &tex_data, LowerLeftOrigin);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgsize.x, imgsize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data.data());
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
