@@ -12,10 +12,14 @@
 12 Speech player "I'm saying this because you don't know what I'm saying, but please breathe when you're talking."
 13 Show special gremlin "What color A-to-B ethergalactinet adapter do you sell here? I hope it's not blue, blue does NOT fit with my vibe."
 14 Speech player "I'll... note this for later."
-15 Character csm1 Sippy CSMajor
-16 Sound "door.opus"
-17 Text d "At least someone else is here!"
-18 Character csm2 Zazmadew CSMajor
-19 Sound "door.opus"
-20 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
-21 Change_File "idle.txt"
+15 Text d "One more thing! From here on, your codebook has some new features. Once you solve a typical transaction from a species, it'll populate the letter substitutions automatically. When new code has been populated, it will show up on the right automatically (in white text)"
+16 Text d "When you're not in a text-editing menu, you can open the codebook and try to adjust it (the text will show green if you are editing the codebook). Try to use the information you have to fully decode their languages!"
+17 Text d "As usual, your knowledge from the codebook is reflected in the dialogue box and special request. Try to use standard dialogue as a hint too sometimes!"
+18 Text d "Changes to the codebook are permanent (and automatic changes are always correct!) so be careful editing! Happy decrypting!"
+19 Character csm1 Sippy CSMajor
+20 Sound "door.opus"
+21 Text d "At least someone else is here!"
+22 Character csm2 Zazmadew CSMajor
+23 Sound "door.opus"
+24 Text d "Looks like this one came with some company. Maybe they'll be a little more comprehensible."
+25 Change_File "idle.txt"

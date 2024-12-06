@@ -4,8 +4,8 @@
 4 Sound "door.opus"
 5 Character sp_shaper Shifix Shaper
 6 Show special sp_shaper " "
-7 Speech player "Alright, let's get ourselves some more positive Squawk reviews."
-8 Sound "ding.opus"
+7 Jump 8
+8 Speech player "Alright, let's get ourselves some more positive Squawk reviews."
 9 Speech sp_shaper "The, uh, the hive mother... (yawns)... we need a new energy cell for mother. Mother wants... wait a moment; I hear she wants a... what? A size... she's particular about the size. What size do you have? Thanks for the... help."
 10 Speech player "Another one of these..."
 11 Show special sp_shaper "A size... she's particular about the size. What size do you have? Thanks for the... help."
