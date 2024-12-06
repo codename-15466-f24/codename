@@ -1,7 +1,7 @@
 1 Sound "docking.opus"
 2 Lock
 3 Text d "Some time later, you recognize the sound of a ship docking once more."
-4 Speech player "Didn't think I'd ever get used to that"
+4 Speech player "Didn't think I'd ever get used to that..."
 5 Sound "door.opus"
 6 Character sp_shaper Shifix Shaper
 7 Show special sp_shaper " "
@@ -12,15 +12,15 @@
 12 Show special sp_shaper "A size... she's particular about the size. What size do you have? Thanks for the... help."
 13 Sound "door.opus"
 14 Character g1_shaper Woluk Shaper
-15 Speech player "Well at least I hope I'll be able to get a hint from this fella."
+15 Speech player "Well, at least I hope I'll be able to get a hint from this fella."
 16 Sound "door.opus"
 17 Character g2_shaper Kutom Shaper
 18 Speech player "These two fellas."
 19 Sound "door.opus"
 20 Character g3_shaper Charkutim Shaper
-21 Speech player "These... th-... fellas."
+21 Speech player "These th-... these fellas."
 22 Speech player "Looks like I got lots of work all of a sudden."
 23 Kick g3_shaper
 24 Unlock
-25 Speech player "Well, no choice but to start from the start."
+25 Speech player "Well, no choice but to start somewhere."
 26 Change_File "idle.txt"

@@ -1,5 +1,5 @@
 1 Character player You Human
-2 Speech player "That darned Grandpa and his scheming, you never know what he's gonna do next. Taking off though, didn't know that was in his playbook."
+2 Speech player "That darned Grandpa and his scheming. You never know what he's gonna do next. Taking off though, didn't know that was in his playbook."
 3 Speech player "Never thought I'd get stuck with his dirty old rest stop. What am I gonna do with this?"
 4 Speech player "*sigh*..."
 5 Speech player "24/7 stop too. Not sure how he ever ran this place on his own. Maybe I should just close it while he's away..."

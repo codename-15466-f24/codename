@@ -3,7 +3,7 @@
 3 Text d "You don't bother to look up. The one you wanted to wave over puts a 40-pack on the counter."
 4 Speech g3_shaper "Quix Wipes"
 5 Show mini_puzzle g3_shaper "QUIX WIPES"
-6 Text d "Solve the Puzzle!"
-7 Speech g3_shaper "...I love these chips"
+6 Text d "Solve the puzzle!"
+7 Speech g3_shaper "...I love these chips."
 8 Exit g3_shaper
 9 Change_File "idle.txt"
