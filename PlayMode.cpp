@@ -60,6 +60,7 @@ static std::string current_line = "";
 static std::string correctStr = "";
 static uint32_t cj = 0;
 static uint32_t ij = 0;
+static bool char_switching = true;
 
 // Leaving the cipher up here for now because the substitution is here
 bool hasReversed = false;
@@ -580,7 +581,7 @@ void PlayMode::initializeCallbacks()
 
 	for (std::string path : paths)
 	{
-		std::cout << path << std:: endl;
+		// std::cout << path << std:: endl;
 		if (path == "textures/special_request_collapsed.png")
 		{
 			// icon that opens special request menu
@@ -1457,6 +1458,16 @@ void PlayMode::apply_command(std::string line) {
 		cheatsheet_open = false;
 		tex_rev.visible = false;
 	}
+	else if (keyword == "Lock") {
+		char_switching = false;
+		display_state.jumps = {display_state.line_number + 1}; 
+		display_state.status = CHANGING;
+	}
+	else if (keyword == "Unlock") {
+		char_switching = true;
+		display_state.jumps = {display_state.line_number + 1}; 
+		display_state.status = CHANGING;
+	}
 	// ensure we go to the next line
 	else display_state.jumps = {display_state.line_number + 1}; 
 
@@ -1860,7 +1871,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
 
 		bool isLocked = checkForClick(textures, tex_x, tex_y, 
-					(selected_character && selected_character->joining_line));
+					(selected_character && selected_character->joining_line || !char_switching));
 
 		// only advance if click inside of dialogue
 		if ((selected_character == nullptr || !(selected_character->joining_line)) &&
@@ -1888,11 +1899,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			clean_curr();
 		}
 
-	} else if (evt.type == SDL_MOUSEMOTION) {
-		// float tex_x = 2.0f*(((float)evt.motion.x)/window_size.x)-1.0f;
-		// float tex_y = -2.0f*(((float)evt.motion.y)/window_size.y)+1.0f;
-
-		// std::cout << tex_x << ", " << tex_y << std::endl;
 	}
 
 	return false;

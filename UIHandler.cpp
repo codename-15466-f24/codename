@@ -342,7 +342,6 @@ void rescaleTextures(std::vector<TexStruct *> textures, glm::vec2 window_size)
 bool checkForClick(std::vector<TexStruct *> textures, float x, float y, bool locked)
 {
 	bool isLocked = false;
-
 	//find the topmost texture
 	TexStruct *top_texture = nullptr;
 
