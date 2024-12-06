@@ -36,6 +36,8 @@ struct ToggleCipher {
     virtual void set_feature(std::string key, CipherFeature val);
     virtual CipherFeature get_feature(std::string key);
     virtual void reset_features();
+
+    virtual std::string cipher_type();
 };
 
 // struct SubstitutionCipher : ToggleCipher {

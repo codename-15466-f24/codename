@@ -1,6 +1,6 @@
-1 Speech player "Guess it's time to cook."
-2 Character sp_shaper Shifix Shaper
-3 Sound "ding.opus"
+1 Sound "ding.opus"
+2 Speech player "Guess it's time to cook."
+3 Character sp_shaper Shifix Shaper
 4 Text d "The first one that arrived comes back to the counter."
 5 Jump 7
 6 Speech sp_shaper "huh?"
@@ -19,7 +19,7 @@
 19 Speech sp_shaper "We're like, so excited for her!! Hold for applause."
 20 Speech sp_shaper "I mean, we're like, part of her too so it's our first date! Hold for applesauce."
 21 Speech player "Af, ieev qaur?"
-22 Speech sp_shaper "Thankies! If mother gets stood up we're blaming you! If you get a dozen negative Squawk reviews just know your good vibes were bad luck! But if it goes well we'll be nice and give good ones!
+22 Speech sp_shaper "Thankies! If mother gets stood up we're blaming you! If you get a dozen negative Squawk reviews just know your good vibes were bad luck! But if it goes well we'll be nice and give good ones!"
 23 Speech player "jssq jkss..."
 24 Speech sp_shaper "We will! Toodles!"
 25 Exit sp_shaper
@@ -27,4 +27,5 @@
 27 Exit g2_shaper
 28 Exit g3_shaper
 29 Speech player "What was that??"
-30 Change_File "epilogue.txt"
+30 Reset_Progress
+31 Change_File "epilogue.txt"

@@ -1,23 +1,26 @@
 1 Sound "docking.opus"
-2 Text d "Some time later, you recognize the sound of a ship docking once more."
-3 Speech player "Didn't think I'd ever get used to that"
-4 Sound "door.opus"
-5 Character sp_shaper Shifix Shaper
-6 Show special sp_shaper " "
-7 Speech player "Alright, let's get ourselves some more positive Squawk reviews."
-8 Sound "ding.opus"
-9 Speech sp_shaper "The, uh, the hive mother... (yawns)... we need a new energy cell for mother. Mother wants... wait a moment; I hear she wants a... what? A size... she's particular about the size. What size do you have? Thanks for the... help."
-10 Speech player "Another one of these..."
-11 Show special sp_shaper "A size... she's particular about the size. What size do you have? Thanks for the... help."
-12 Sound "door.opus"
-13 Character g1_shaper Woluk Shaper
-14 Speech player "Well at least I hope I'll be able to get a hint from this fella."
-15 Sound "door.opus"
-16 Character g2_shaper Kutom Shaper
-17 Speech player "These two fellas."
-18 Sound "door.opus"
-19 Character g3_shaper Charkutim Shaper
-20 Speech player "These... th-... fellas."
-21 Speech player "Looks like I got lots of work all of a sudden."
-22 Speech player "Well, no choice but to start from the start."
-23 Change_File "idle.txt"
+2 Lock
+3 Text d "Some time later, you recognize the sound of a ship docking once more."
+4 Speech player "Didn't think I'd ever get used to that..."
+5 Sound "door.opus"
+6 Character sp_shaper Shifix Shaper
+7 Show special sp_shaper " "
+8 Jump 9
+9 Speech player "Alright, let's get ourselves some more positive Squawk reviews."
+10 Speech sp_shaper "The, uh, the hive mother... (yawns)... we need a new energy cell for mother. Mother wants... wait a moment; I hear she wants a... what? A size... she's particular about the size. What size do you have? Thanks for the... help."
+11 Speech player "Another one of these..."
+12 Show special sp_shaper "A size... she's particular about the size. What size do you have? Thanks for the... help."
+13 Sound "door.opus"
+14 Character g1_shaper Woluk Shaper
+15 Speech player "Well, at least I hope I'll be able to get a hint from this fella."
+16 Sound "door.opus"
+17 Character g2_shaper Kutom Shaper
+18 Speech player "These two fellas."
+19 Sound "door.opus"
+20 Character g3_shaper Charkutim Shaper
+21 Speech player "These th-... these fellas."
+22 Speech player "Looks like I got lots of work all of a sudden."
+23 Kick g3_shaper
+24 Unlock
+25 Speech player "Well, no choice but to start somewhere."
+26 Change_File "idle.txt"

@@ -2,7 +2,7 @@
 2 Text d "Makes more sense now right? Once you've solved a hint about a species, their spoken language will automatically be translated according to your current understanding of their translation rule(s)."
 3 Speech player "All backwards eh..."
 4 Jump 7
-5 Text d "That's not quite right. Let's try this again. Remember, you can find the answer to this question in the store's inventory (if you missed downloading it, you can find the pdf for download on our itch.io page)"
+5 Text d "That's not quite right. Let's try this again. Remember, you can find the answer to this question in the store's inventory. (If you missed downloading it, you can find the pdf for download on our itch.io page!)"
 6 Speech subeelb "What typa warp drives you got 'ere? I wanna make darned sure it'll werk with me drive port."
 7 Text d "For special requests, the customer is going to need an answer to a specific question. You'll have to type out a correct response to their question (don't worry about translating it)."
 8 Text d "You can check your store’s inventory using the inventory pdf. Look for ‘Type’ under ‘Warp Drive’, then type the answer in the next part."
@@ -19,4 +19,5 @@
 19 Speech subeelb "You've been a darling, I'll be sure to stop by next time I'm in a parsec"
 20 Exit subeelb
 21 Text d "The group of bleebuses warp away, leaving your rest stop empty once more..."
-22 Change_File "cs_major_introduction.txt"
+22 Reset_Progress
+23 Change_File "cs_major_introduction.txt"

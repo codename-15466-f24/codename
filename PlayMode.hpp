@@ -42,7 +42,7 @@ struct PlayMode : Mode {
 
 		GLsizei count = 0; 
 		glm::mat4 CLIP_FROM_LOCAL = glm::mat4(1.0f);
-		std::string path = "error.png";
+		std::string path = "textures/error.png";
 		bool loadme = false;
 		glm::uvec2 size;
 		glm::uvec2 margin = glm::uvec2(0, 0);
@@ -95,7 +95,7 @@ struct PlayMode : Mode {
 
 	// right is true, left is false
 	std::vector<bool> visibilities = {
-									true, false,  // inventory
+									false, false,  // inventory
 									false, true,  // request(collapsed), cipher
 									false, false, // request, cipher(full)
 									true,         // bg_customer
@@ -129,21 +129,21 @@ struct PlayMode : Mode {
 											MiddlePaneBig, MiddlePaneChange
 											};
 	
-	std::vector<std::string> paths = {"inventory_collapsed.png", "inventory.png",
-									"special_request_collapsed.png", "cipher_panel.png",
-									"special_request.png", "cipher_panel_full.png", 
-									"bg_customer.png", 
-									"customer_basicbleeb.png", "customer_basicbleeb_selected.png",
-									"customer_subeelb.png", "customer_subeelb_selected.png",
-									"customer_gremlin.png", "customer_gremlin_selected.png",
-									"customer_csm1.png", "customer_csm1_selected.png",
-									"customer_csm2.png", "customer_csm2_selected.png",
-									"customer_sp_shaper.png", "customer_sp_shaper_selected.png",
-									"customer_g1_shaper.png", "customer_g1_shaper_selected.png",
-									"customer_g2_shaper.png", "customer_g2_shaper_selected.png",
-									"customer_g3_shaper.png", "customer_g3_shaper_selected.png",
-									"mini_puzzle_panel.png", "reverse_button.png","reverse_button_selected.png", "submitbutton.png",
-									"big_puzzle_panel.png", "changebutton.png"
+	std::vector<std::string> paths = {"textures/inventory_collapsed.png", "textures/inventory.png",
+									"textures/special_request_collapsed.png", "textures/cipher_panel.png",
+									"textures/special_request.png", "textures/cipher_panel_full.png", 
+									"textures/bg_customer.png", 
+									"textures/customer_basicbleeb.png", "textures/customer_basicbleeb_selected.png",
+									"textures/customer_subeelb.png", "textures/customer_subeelb_selected.png",
+									"textures/customer_gremlin.png", "textures/customer_gremlin_selected.png",
+									"textures/customer_csm1.png", "textures/customer_csm1_selected.png",
+									"textures/customer_csm2.png", "textures/customer_csm2_selected.png",
+									"textures/customer_sp_shaper.png", "textures/customer_sp_shaper_selected.png",
+									"textures/customer_g1_shaper.png", "textures/customer_g1_shaper_selected.png",
+									"textures/customer_g2_shaper.png", "textures/customer_g2_shaper_selected.png",
+									"textures/customer_g3_shaper.png", "textures/customer_g3_shaper_selected.png",
+									"textures/mini_puzzle_panel.png", "textures/reverse_button.png","textures/reverse_button_selected.png", "textures/submitbutton.png",
+									"textures/big_puzzle_panel.png", "textures/changebutton.png"
 									};
 									
 	std::vector<std::function<void(std::vector<TexStruct *>,std::string)>> callbacks;
@@ -236,7 +236,7 @@ struct PlayMode : Mode {
 		INPUT
 	};
 	struct DisplayState {
-		std::string file = "cs_major_introduction.txt"; // whatever we initialize this to is the start of the script
+		std::string file = "introduction.txt"; // whatever we initialize this to is the start of the script
 		std::vector<std::string> current_lines;
 		uint32_t line_number = 0;
 		// Note: line number, jump, etc. are according to the script, so 1-indexed.
